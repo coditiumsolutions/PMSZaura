@@ -1,0 +1,27 @@
+<div class="dropdown pms-listing-operations-dropdown">
+    <button class="btn btn-outline-primary btn-sm dropdown-toggle pms-listing-operations-btn"
+            type="button"
+            id="allotmentOperationsDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+        Operations
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="allotmentOperationsDropdown">
+        <li>
+            <a class="dropdown-item" asp-action="Create">
+                <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>Create Allotment
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-action="UnAllot">
+                <i class="bi bi-arrow-counterclockwise me-2" aria-hidden="true"></i>Un-Allot Property
+            </a>
+        </li>
+        <li><hr class="dropdown-divider" /></li>
+        <li>
+            <button type="button" class="dropdown-item" onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>Refresh
+            </button>
+        </li>
+    </ul>
+</div>

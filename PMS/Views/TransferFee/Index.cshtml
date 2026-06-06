@@ -7,6 +7,7 @@
     ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
     ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
     ViewData["ListingAddText"] = "Add Transfer Fee";
+    ViewData["ListingHideToolbarActions"] = true;
     var projects = ViewBag.Projects as IEnumerable<PMS.Models.Project> ?? Enumerable.Empty<PMS.Models.Project>();
 }
 
@@ -42,13 +43,11 @@
                 </div>
             </div>
             <div class="col-12 col-lg-4">
-                <div class="d-flex flex-wrap gap-2 pms-listing-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                <div class="d-flex flex-nowrap gap-2 pms-listing-search-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">
                         <i class="bi bi-search me-1" aria-hidden="true"></i>Search
                     </button>
-                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm flex-grow-1">
-                        <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Clear
-                    </a>
+                    <partial name="_OperationsDropdown" />
                 </div>
             </div>
         </div>
@@ -71,7 +70,6 @@
                             <th>Transfer Type</th>
                             <th>Priority</th>
                             <th>Amount/Unit</th>
-                            <th>Created On</th>
                             <th>Created By</th>
                             <th>Modified By</th>
                             <th class="pms-saas-th-actions">Actions</th>
@@ -87,7 +85,6 @@
                                 <td data-label="Transfer Type">@(row.TransferType ?? "—")</td>
                                 <td data-label="Priority"><span class="pms-pill pms-pill--info">@(row.TransferPriority ?? "—")</span></td>
                                 <td data-label="Amount/Unit">@row.AmountPerUnit.ToString("N2")</td>
-                                <td data-label="Created On"><span class="text-nowrap">@row.CreatedOn.ToString("MMM dd, yyyy HH:mm")</span></td>
                                 <td data-label="Created By">@(row.CreatedBy ?? "—")</td>
                                 <td data-label="Modified By">@(row.ModifiedBy ?? "—")</td>
                                 <td class="pms-saas-td-actions" data-label="Actions">

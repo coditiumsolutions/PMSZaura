@@ -6,6 +6,7 @@
     ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
     ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
     ViewData["ListingAddText"] = "New Request";
+    ViewData["ListingHideToolbarActions"] = true;
     const string Initiated = "Initiated";
     const string Approved = "Approved";
     const string Declined = "Declined";
@@ -111,13 +112,11 @@
                 </div>
             </div>
             <div class="col-12 col-lg-4">
-                <div class="d-flex flex-wrap gap-2 pms-listing-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                <div class="d-flex flex-nowrap gap-2 pms-listing-search-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">
                         <i class="bi bi-search me-1" aria-hidden="true"></i>Search
                     </button>
-                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm flex-grow-1">
-                        <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Clear
-                    </a>
+                    <partial name="_OperationsDropdown" />
                 </div>
             </div>
         </div>
@@ -136,7 +135,6 @@
                         <th>Customer</th>
                         <th class="text-end">Fee Due</th>
                         <th>Status</th>
-                        <th>Created</th>
                         <th class="pms-saas-th-actions">Actions</th>
                     </tr>
                 </thead>
@@ -154,7 +152,6 @@
                             </td>
                             <td class="text-end" data-label="Fee Due">@(r.FeeDue.HasValue ? $"PKR {r.FeeDue:N0}" : "—")</td>
                             <td data-label="Status"><span class="pms-pill @pillClass">@wf</span></td>
-                            <td data-label="Created"><span class="text-nowrap">@r.CreatedAt.ToString("MMM dd, yyyy")</span></td>
                             <td class="pms-saas-td-actions" data-label="Actions">
                                 <div class="pms-row-actions" role="group">
                                     <a asp-action="Details" asp-route-id="@r.Id" class="btn btn-sm btn-outline-secondary" title="Details"><i class="bi bi-eye" aria-hidden="true"></i></a>
@@ -179,7 +176,7 @@
 @section Scripts {
 <script>
     $(function () {
-        $('#dftTable').DataTable({ pageLength: 25, order: [[4, 'desc']], columnDefs: [{ orderable: false, targets: 5 }] });
+        $('#dftTable').DataTable({ pageLength: 25, order: [[0, 'desc']], columnDefs: [{ orderable: false, targets: 4 }] });
     });
 </script>
 }

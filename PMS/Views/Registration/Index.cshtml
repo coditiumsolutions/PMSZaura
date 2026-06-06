@@ -65,14 +65,10 @@
                             <th>Registration ID</th>
                             <th>Full Name</th>
                             <th>Project</th>
-                            <th>Form No</th>
                             <th>Size</th>
                             <th>SubProject</th>
-                            <th>CNIC</th>
                             <th>Contact</th>
-                            <th>Registration Date</th>
                             <th>Status</th>
-                            <th>Customer Link</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -104,10 +100,8 @@
                                 <td><code>@registration.RegID</code></td>
                                 <td><strong class="pms-cell-truncate" title="@registration.FullName">@registration.FullName</strong></td>
                                 <td><span class="pms-cell-truncate" title="@(registration.Project?.ProjectName ?? "—")">@(registration.Project?.ProjectName ?? "—")</span></td>
-                                <td>@(registration.FormNo ?? "—")</td>
                                 <td>@(registration.Size ?? "—")</td>
                                 <td>@(registration.SubProject ?? "—")</td>
-                                <td>@(registration.CNIC ?? "N/A")</td>
                                 <td>
                                     <div>
                                         <i class="fas fa-phone text-primary me-1"></i>@registration.Phone
@@ -120,11 +114,6 @@
                                             </small>
                                         </div>
                                     }
-                                </td>
-                                <td>
-                                    @registration.CreatedAt.ToString("MMM dd, yyyy")
-                                    <br />
-                                    <small class="text-muted">@registration.CreatedAt.ToString("hh:mm tt")</small>
                                 </td>
                                 <td>
                                     @if (registration.Status == "Pending")
@@ -148,23 +137,6 @@
                                     else
                                     {
                                         <span class="badge bg-secondary">@registration.Status</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (registration.Customers != null && registration.Customers.Any())
-                                    {
-                                        var customer = registration.Customers.FirstOrDefault();
-                                        @if (customer != null)
-                                        {
-                                            <a asp-controller="Customer" asp-action="Details" asp-route-id="@(customer.CustomerID ?? "")"
-                                               class="btn btn-sm btn-success">
-                                                <i class="bi bi-person me-1"></i>View
-                                            </a>
-                                        }
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">Not converted</span>
                                     }
                                 </td>
                             </tr>
@@ -232,9 +204,9 @@
         $(document).ready(function () {
             $('#registrationsTable').DataTable({
                 "pageLength": 25,
-                "order": [[9, "desc"]],
+                "order": [[1, "desc"]],
                 "columnDefs": [
-                    { "orderable": false, "targets": [0, 11] }
+                    { "orderable": false, "targets": [0] }
                 ]
             });
         });

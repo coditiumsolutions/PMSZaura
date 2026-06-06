@@ -505,6 +505,27 @@
     min-width: 0;
 }
 
+.pms-listing-operations-dropdown .pms-listing-operations-btn,
+.pms-customer-operations-dropdown .pms-customer-operations-btn {
+    min-height: var(--pms-listing-control-h, 36px);
+    min-width: 10.5rem;
+    padding: 0.35rem 1rem;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    justify-content: center;
+}
+
+.pms-listing-operations-dropdown .dropdown-menu,
+.pms-customer-operations-dropdown .dropdown-menu {
+    min-width: 14rem;
+}
+
+.pms-listing-search-actions .pms-listing-operations-dropdown,
+.pms-transfer-search-actions .pms-listing-operations-dropdown,
+.pms-customer-search-actions .pms-customer-operations-dropdown {
+    flex-shrink: 0;
+}
+
 @media (min-width: 992px) {
     .pms-listing-search-wrap .row,
     .pms-registration-search-wrap .row,
@@ -521,12 +542,19 @@
         justify-content: flex-end;
     }
 
-    .pms-registration-search-actions .btn,
-    .pms-customer-search-actions .btn,
-    .pms-transfer-search-actions .btn,
-    .pms-listing-search-actions .btn {
+    .pms-registration-search-actions .btn:not(.pms-listing-operations-btn):not(.pms-customer-operations-btn),
+    .pms-customer-search-actions .btn:not(.pms-listing-operations-btn):not(.pms-customer-operations-btn),
+    .pms-transfer-search-actions .btn:not(.pms-listing-operations-btn):not(.pms-customer-operations-btn),
+    .pms-listing-search-actions .btn:not(.pms-listing-operations-btn):not(.pms-customer-operations-btn) {
         flex: 1 1 0;
         max-width: calc(50% - 0.25rem);
+    }
+
+    .pms-listing-operations-dropdown .pms-listing-operations-btn,
+    .pms-customer-operations-dropdown .pms-customer-operations-btn {
+        flex: 0 0 auto;
+        min-width: 10.5rem;
+        max-width: none;
     }
 }
 
@@ -592,7 +620,7 @@
 
     .pms-customer-listing .pms-customer-search-actions .pms-customer-operations-btn {
         flex: 0 0 auto;
-        min-width: 9.5rem;
+        min-width: 10.5rem;
         max-width: none;
         justify-content: center;
     }
@@ -600,6 +628,52 @@
     .pms-customer-listing .pms-customer-dt-controls {
         flex-wrap: nowrap !important;
     }
+}
+
+/* Customer grid: keep row action buttons visible (no hover reveal) */
+.pms-customer-listing.pms-saas-grid .pms-row-actions {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Customer grid: compact title + data cells */
+.pms-customer-listing.pms-saas-grid {
+    --saas-row-h: 52px;
+}
+
+.pms-customer-listing.pms-saas-grid .pms-saas-table {
+    font-size: 0.8125rem;
+}
+
+.pms-customer-listing.pms-saas-grid .pms-saas-table thead th {
+    font-size: 11px;
+    padding: 0.65rem 0.85rem;
+}
+
+.pms-customer-listing.pms-saas-grid .pms-saas-table tbody td {
+    padding: 0 0.85rem;
+}
+
+.pms-customer-listing.pms-saas-grid .pms-cell-primary-title {
+    font-size: 0.8125rem;
+}
+
+.pms-customer-listing.pms-saas-grid .pms-cell-primary-sub {
+    font-size: 0.6875rem;
+}
+
+.pms-customer-listing.pms-saas-grid .pms-pill,
+.pms-customer-listing.pms-saas-grid .text-muted.small {
+    font-size: 0.6875rem;
+}
+
+.pms-customer-listing.pms-saas-grid .pms-row-actions .btn {
+    width: 32px;
+    height: 32px;
+}
+
+.pms-customer-listing.pms-saas-grid .pms-row-actions .btn i {
+    font-size: 0.85rem;
 }
 
 [data-theme="dark"] .pms-listing-flat.pms-search-card,

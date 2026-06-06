@@ -7,6 +7,7 @@
     ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
     ViewData["ListingAddUrl"] = Url.Action("Create");
     ViewData["ListingAddText"] = "New Rental";
+    ViewData["ListingHideToolbarActions"] = true;
 }
 
 <form method="get" asp-action="Index" class="mb-4 pms-listing-page">
@@ -34,13 +35,11 @@
                 </div>
             </div>
             <div class="col-12 col-lg-4">
-                <div class="d-flex flex-wrap gap-2 pms-listing-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                <div class="d-flex flex-nowrap gap-2 pms-listing-search-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">
                         <i class="bi bi-search me-1" aria-hidden="true"></i>Search
                     </button>
-                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm flex-grow-1">
-                        <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Clear
-                    </a>
+                    <partial name="_OperationsDropdown" />
                 </div>
             </div>
         </div>
@@ -61,7 +60,6 @@
                         <th>Start</th>
                         <th>Monthly Rent</th>
                         <th>Status</th>
-                        <th>Created</th>
                         <th class="pms-saas-th-actions">Actions</th>
                     </tr>
                 </thead>
@@ -103,7 +101,6 @@
                                 else
                                 { <span class="pms-pill pms-pill--warning">@r.Status</span> }
                             </td>
-                            <td data-label="Created"><span class="text-nowrap">@r.CreatedAt.ToString("MMM dd, yyyy")</span></td>
                             <td class="pms-saas-td-actions" data-label="Actions">
                                 <div class="pms-row-actions" role="group">
                                     <a asp-action="Details" asp-route-id="@r.RentalID" class="btn btn-sm btn-outline-secondary" title="Details">
@@ -127,8 +124,8 @@
         $(document).ready(function () {
             $('#rentalsTable').DataTable({
                 pageLength: 25,
-                order: [[6, 'desc']],
-                columnDefs: [{ orderable: false, targets: 7 }]
+                order: [[0, 'desc']],
+                columnDefs: [{ orderable: false, targets: 6 }]
             });
         });
     </script>

@@ -6,6 +6,7 @@
     ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
     ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
     ViewData["ListingAddText"] = "New Waiver";
+    ViewData["ListingHideToolbarActions"] = true;
     var initiatedStatus = (string?)ViewBag.InitiatedStatus ?? "Initiated";
     var approvedStatus = (string?)ViewBag.ApprovedStatus ?? "Approved";
     var declinedStatus = (string?)ViewBag.DeclinedStatus ?? "Declined";
@@ -81,13 +82,11 @@
                 </div>
             </div>
             <div class="col-12 col-lg-4">
-                <div class="d-flex flex-wrap gap-2 pms-listing-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                <div class="d-flex flex-nowrap gap-2 pms-listing-search-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">
                         <i class="bi bi-search me-1" aria-hidden="true"></i>Search
                     </button>
-                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm flex-grow-1">
-                        <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Clear
-                    </a>
+                    <partial name="_OperationsDropdown" />
                 </div>
             </div>
         </div>
@@ -108,7 +107,6 @@
                         <th class="text-end">Total Surcharge</th>
                         <th class="text-end">Waived</th>
                         <th>Status</th>
-                        <th>Created</th>
                         <th class="pms-saas-th-actions">Actions</th>
                     </tr>
                 </thead>
@@ -132,7 +130,6 @@
                             <td class="text-end" data-label="Total Surcharge">@w.TotalAmount.ToString("N0")</td>
                             <td class="text-end fw-bold text-success" data-label="Waived">@w.WaivedAmount.ToString("N0")</td>
                             <td data-label="Status"><span class="pms-pill @pillClass">@status</span></td>
-                            <td data-label="Created"><span class="text-nowrap">@w.CreatedAt.ToString("MMM dd, yyyy")</span></td>
                             <td class="pms-saas-td-actions" data-label="Actions">
                                 <div class="pms-row-actions" role="group">
                                     <a asp-action="Details" asp-route-id="@w.WaiverID" class="btn btn-sm btn-outline-secondary" title="Details">
@@ -168,8 +165,8 @@
     $(function () {
         $('#waiverTable').DataTable({
             pageLength: 25,
-            order: [[6, 'desc']],
-            columnDefs: [{ orderable: false, targets: 7 }]
+            order: [[0, 'desc']],
+            columnDefs: [{ orderable: false, targets: 6 }]
         });
     });
 </script>

@@ -138,14 +138,14 @@ else
     <script>
         $(document).ready(function() {
             var showBulkSelection = @showBulkSelection.ToString().ToLowerInvariant();
-            var createdDateColumnIndex = showBulkSelection ? 7 : 6;
-            var actionsColumnIndex = showBulkSelection ? 8 : 7;
+            var customerIdColumnIndex = showBulkSelection ? 1 : 0;
+            var actionsColumnIndex = showBulkSelection ? 7 : 6;
 
             if ($('#customersTable').length) {
                 $('#customersTable').DataTable({
                     dom: '<"pms-customer-dt-controls d-flex flex-wrap align-items-center gap-3 mb-2"lf>rtip',
                     "pageLength": 25,
-                    "order": [[ createdDateColumnIndex, "desc" ]],
+                    "order": [[ customerIdColumnIndex, "desc" ]],
                     "columnDefs": [
                         { "orderable": false, "targets": actionsColumnIndex }
                     ]

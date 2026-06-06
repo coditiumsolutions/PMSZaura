@@ -21,7 +21,6 @@
                     <th>Allotment Status</th>
                     <th>PlanPlan</th>
                     <th>Status</th>
-                    <th>Created Date</th>
                     <th class="pms-saas-th-actions">Actions</th>
                 </tr>
             </thead>
@@ -108,9 +107,6 @@
                             { <span class="pms-pill pms-pill--warning">@custStatus</span> }
                             else
                             { <span class="pms-pill pms-pill--neutral">@custStatus</span> }
-                        </td>
-                        <td data-label="Created Date">
-                            <span class="text-nowrap">@customer.CreatedAt.ToString("MMM dd, yyyy")</span>
                         </td>
                         <td class="pms-saas-td-actions" data-label="Actions">
                             <div class="pms-row-actions" role="group">

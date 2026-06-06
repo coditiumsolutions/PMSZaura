@@ -7,15 +7,7 @@
     ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
     ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
     ViewData["ListingAddText"] = "New Transfer";
-
-    var extraActions = "<a href=\"" + Url.Action("Index", "TransferFee") + "\" class=\"btn btn-outline-info btn-sm\">" +
-        "<i class=\"bi bi-tags me-1\" aria-hidden=\"true\"></i>Transfer Fee Module</a>";
-    if (ViewBag.ShowDuplicateFileTransferLink as bool? == true)
-    {
-        extraActions += "<a href=\"" + Url.Action("Index", "DuplicateFileTransfer") + "\" class=\"btn btn-outline-primary btn-sm\">" +
-            "<i class=\"bi bi-files me-1\" aria-hidden=\"true\"></i>Duplicate file transfer</a>";
-    }
-    ViewData["ListingExtraActions"] = extraActions;
+    ViewData["ListingHideToolbarActions"] = true;
 }
 
 @if (TempData["SuccessMessage"] != null)
@@ -62,13 +54,11 @@
                 </div>
             </div>
             <div class="col-12 col-lg-4">
-                <div class="d-flex flex-wrap gap-2 pms-transfer-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                <div class="d-flex flex-nowrap gap-2 pms-transfer-search-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">
                         <i class="bi bi-search me-1" aria-hidden="true"></i>Search
                     </button>
-                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm flex-grow-1">
-                        <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Clear
-                    </a>
+                    <partial name="_OperationsDropdown" />
                 </div>
             </div>
         </div>
@@ -89,7 +79,6 @@
                         <th>Seller</th>
                         <th>Buyer</th>
                         <th>Workflow</th>
-                        <th>Created</th>
                         <th class="pms-saas-th-actions">Actions</th>
                     </tr>
                 </thead>
@@ -123,7 +112,6 @@
                                 else
                                 { <span class="pms-pill pms-pill--warning">@(t.WorkFlowStatus ?? "—")</span> }
                             </td>
-                            <td data-label="Created"><span class="text-nowrap">@t.CreatedAt.ToString("MMM dd, yyyy")</span></td>
                             <td class="pms-saas-td-actions" data-label="Actions">
                                 <div class="pms-row-actions" role="group">
                                     <a asp-action="Details" asp-route-id="@t.TransferID" class="btn btn-sm btn-outline-secondary" title="Details">
@@ -171,8 +159,8 @@
         $(document).ready(function() {
             $('#transfersTable').DataTable({
                 pageLength: 25,
-                order: [[6, 'desc']],
-                columnDefs: [{ orderable: false, targets: 7 }]
+                order: [[0, 'desc']],
+                columnDefs: [{ orderable: false, targets: 6 }]
             });
         });
     </script>

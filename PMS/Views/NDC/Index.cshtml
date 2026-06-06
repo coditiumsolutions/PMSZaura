@@ -7,9 +7,7 @@
     ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
     ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
     ViewData["ListingAddText"] = "New NDC";
-    ViewData["ListingExtraActions"] =
-        "<a href=\"" + Url.Action("Index", "TransferFee") + "\" class=\"btn btn-outline-info btn-sm\">" +
-        "<i class=\"bi bi-tags me-1\" aria-hidden=\"true\"></i>Transfer Fee Module</a>";
+    ViewData["ListingHideToolbarActions"] = true;
 }
 
 @if (TempData["Success"] != null)
@@ -52,13 +50,11 @@
                 </div>
             </div>
             <div class="col-12 col-lg-4">
-                <div class="d-flex flex-wrap gap-2 pms-listing-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                <div class="d-flex flex-nowrap gap-2 pms-listing-search-actions">
+                    <button type="submit" class="btn btn-primary btn-sm">
                         <i class="bi bi-search me-1" aria-hidden="true"></i>Search
                     </button>
-                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm flex-grow-1">
-                        <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Clear
-                    </a>
+                    <partial name="_OperationsDropdown" />
                 </div>
             </div>
         </div>
@@ -88,7 +84,6 @@
                             <th>All Clear</th>
                             <th>Expiry</th>
                             <th>Workflow</th>
-                            <th>Created</th>
                             <th class="pms-saas-th-actions">Actions</th>
                         </tr>
                     </thead>
@@ -134,7 +129,6 @@
                                 </td>
                                 <td data-label="Expiry">@(n.NDCExpiryDate?.ToString("MMM dd, yyyy") ?? "—")</td>
                                 <td data-label="Workflow"><span class="pms-pill pms-pill--info">@(n.WorkFlowStatus ?? "—")</span></td>
-                                <td data-label="Created"><span class="text-nowrap">@n.CreatedAt.ToString("MMM dd, yyyy")</span></td>
                                 <td class="pms-saas-td-actions" data-label="Actions">
                                     <div class="pms-row-actions" role="group">
                                         <a asp-action="Print" asp-route-id="@n.NDCID" target="_blank" class="btn btn-sm btn-outline-secondary" title="Print">
