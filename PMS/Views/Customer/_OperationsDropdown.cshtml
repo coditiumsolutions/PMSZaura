@@ -1,0 +1,55 @@
+@{
+    var pendingCount = ViewBag.PendingCustomersCount;
+}
+
+<div class="dropdown pms-customer-operations-dropdown">
+    <button class="btn btn-outline-primary btn-sm dropdown-toggle pms-customer-operations-btn"
+            type="button"
+            id="customerOperationsDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+        Operations
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="customerOperationsDropdown">
+        @if (ViewBag.CanCreate == true)
+        {
+            <li>
+                <a class="dropdown-item" asp-action="Create">
+                    <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>Add New
+                </a>
+            </li>
+        }
+        <li>
+            <a class="dropdown-item" asp-action="ByProject">
+                <i class="bi bi-layers me-2" aria-hidden="true"></i>By Project
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-action="Index" asp-route-statusFilter="Pending">
+                <i class="bi bi-clock me-2" aria-hidden="true"></i>Pending
+                <span class="badge bg-warning text-dark ms-1">@pendingCount</span>
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-action="UpdateRequests">
+                <i class="bi bi-person-lines-fill me-2" aria-hidden="true"></i>Update Requests
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-action="Reports">
+                <i class="bi bi-bar-chart me-2" aria-hidden="true"></i>Reports
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-action="CustomerBlocking">
+                <i class="bi bi-slash-circle me-2" aria-hidden="true"></i>Blocking
+            </a>
+        </li>
+        <li><hr class="dropdown-divider" /></li>
+        <li>
+            <button type="button" class="dropdown-item" onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>Refresh
+            </button>
+        </li>
+    </ul>
+</div>

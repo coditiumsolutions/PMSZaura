@@ -1,473 +1,461 @@
 @model PMS.Models.Customer
 
 @{
-    ViewData["Title"] = "Add New Customer";
+    ViewData["Title"] = "Add Customer";
 }
 
-<div class="row">
-    <div class="col-12">
-        <!-- Customer Wizard Form -->
+<div class="d-flex justify-content-between align-items-center mb-1">
+    <h2 class="mb-0 pms-registration-page-title">Add Customer</h2>
+    <a asp-action="Index" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i>Back to List
+    </a>
+</div>
+
+<div class="card pms-listing-flat pms-customer-create">
+    <div class="card-body">
         <form asp-action="Create" method="post" id="customerWizardForm" enctype="multipart/form-data">
             <input type="hidden" id="currentStepHidden" name="currentStep" value="3" />
 
-            <div class="card">
-                <div class="card-header" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 text-white">
-                            <i class="fas fa-user-plus me-2"></i>Create New Customer
-                        </h5>
-                        <div class="text-white">
-                            <span id="wizardStepIndicator">Step 1 of 3</span>
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="d-flex justify-content-between align-items-center mb-0 pms-customer-wizard-progress">
+                <span id="wizardStepIndicator" class="small text-muted">Step 1 of 3</span>
+            </div>
+            <div class="progress mb-3 pms-customer-wizard-progress">
+                <div class="progress-bar"
+                     role="progressbar"
+                     id="wizardProgress"
+                     style="width: 33.33%;">
+                </div>
+            </div>
+
+            <div id="wizardSteps">
+                <!-- Step 1: Personal Info -->
+                <div class="wizard-step pms-customer-wizard-step" id="step1" data-step="1">
+                    <h5 class="pms-customer-wizard-step-title">Step 1: Personal Information</h5>
+
+                    <div class="pms-customer-4col-form pms-registration-4col-form mb-3">
+                        <p class="pms-customer-wizard-section-title mb-2">Link to Registration (optional)</p>
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label for="registrationSearchInput" class="form-label pms-registration-4col-label">Registration ID</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="text" id="registrationSearchInput" class="form-control" placeholder="e.g. REG0000001" />
+                            </div>
+                            <div class="col-12 col-lg-2 d-none d-lg-block"></div>
+                            <div class="col-12 col-lg-4">
+                                <button type="button" id="btnSearchRegistration" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-search me-1"></i>Search Registration
+                                </button>
+                                <span id="registrationSearchMessage" class="text-muted small d-block mt-1"></span>
+                            </div>
+                        </div>
+                        <input type="hidden" asp-for="RegID" id="RegID" />
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="FullName" class="form-label pms-registration-4col-label">Full Name *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="FullName" class="form-control" id="FullName" required />
+                                <span asp-validation-for="FullName" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="FatherName" class="form-label pms-registration-4col-label">S/D/W/O</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="FatherName" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="CNIC" class="form-label pms-registration-4col-label">National ID (CNIC)</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="CNIC" id="CNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+                                <span id="cnicValidationError" class="text-danger small d-none"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="PassportNo" class="form-label pms-registration-4col-label">Passport No</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="PassportNo" id="PassportNo" class="form-control" placeholder="Min 5 characters if no CNIC" />
+                                <span id="passportValidationError" class="text-danger small d-none"></span>
+                            </div>
+                        </div>
+
+                        <div id="cnicPassportRuleError" class="alert alert-warning small py-2 d-none mb-2" role="alert">
+                            <i class="fas fa-exclamation-triangle me-1"></i><span id="cnicPassportRuleErrorText"></span>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="DOB" class="form-label pms-registration-4col-label">Date of Birth</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="DOB" type="date" id="DOB" class="form-control" lang="en-GB" />
+                                <span id="dobValidationError" class="text-danger small d-none"></span>
+                                <span asp-validation-for="DOB" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="Gender" class="form-label pms-registration-4col-label">Gender</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="Gender" class="form-select">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="Nationality" class="form-label pms-registration-4col-label">Nationality</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="Nationality" class="form-control" list="nationalityList-customer-create" autocomplete="off" placeholder="Select from list or type a value" />
+                                <datalist id="nationalityList-customer-create">
+                                    @if (ViewBag.Nationalities != null)
+                                    {
+                                        foreach (var nationality in ViewBag.Nationalities)
+                                        {
+                                            <option value="@nationality"></option>
+                                        }
+                                    }
+                                </datalist>
+                                <span asp-validation-for="Nationality" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="FormNo" class="form-label pms-registration-4col-label">Form No</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="FormNo" id="FormNo" class="form-control" placeholder="Enter form number (optional)" />
+                                <span asp-validation-for="FormNo" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="Email" class="form-label pms-registration-4col-label">Email Address</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="Email" id="Email" type="email" class="form-control" />
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="Phone" class="form-label pms-registration-4col-label">Phone No</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="Phone" id="Phone" class="form-control" required />
+                                <span asp-validation-for="Phone" class="text-danger"></span>
+                                <span id="phoneValidationError" class="text-danger small d-none"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="MobileNo" class="form-label pms-registration-4col-label">Mobile *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="MobileNo" id="MobileNo" class="form-control" required />
+                                <span asp-validation-for="MobileNo" class="text-danger"></span>
+                                <span id="mobileValidationError" class="text-danger small d-none"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="MobileNo2" class="form-label pms-registration-4col-label">Mobile 2</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="MobileNo2" id="MobileNo2" class="form-control" />
+                                <span asp-validation-for="MobileNo2" class="text-danger"></span>
+                                <span id="mobile2ValidationError" class="text-danger small d-none"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="City" class="form-label pms-registration-4col-label">City *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="City" class="form-control" list="cityOptions" placeholder="Select or type city" required />
+                                <datalist id="cityOptions">
+                                    @if (ViewBag.Cities != null)
+                                    {
+                                        @foreach (var city in ViewBag.Cities)
+                                        {
+                                            <option value="@city"></option>
+                                        }
+                                    }
+                                </datalist>
+                                <span asp-validation-for="City" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="Country" class="form-label pms-registration-4col-label">Country *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="Country" class="form-control" list="countryOptions" placeholder="Select or type country" required />
+                                <datalist id="countryOptions">
+                                    @if (ViewBag.Countries != null)
+                                    {
+                                        @foreach (var country in ViewBag.Countries)
+                                        {
+                                            <option value="@country"></option>
+                                        }
+                                    }
+                                </datalist>
+                                <span asp-validation-for="Country" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="MailingAddress" class="form-label pms-registration-4col-label">Mailing Address *</label>
+                            </div>
+                            <div class="col-12 col-lg-10">
+                                <textarea asp-for="MailingAddress" class="form-control pms-customer-address-input" rows="1" required></textarea>
+                                <span asp-validation-for="MailingAddress" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="PermanentAddress" class="form-label pms-registration-4col-label">Permanent Address</label>
+                            </div>
+                            <div class="col-12 col-lg-10">
+                                <textarea asp-for="PermanentAddress" class="form-control pms-customer-address-input" rows="1"></textarea>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
-                    @if (TempData["ErrorMessage"] != null)
-                    {
-                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                            @TempData["ErrorMessage"]
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    }
 
-                    <!-- Wizard Progress Bar -->
-                    <div class="mb-4">
-                        <div class="progress" style="height: 30px;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                 role="progressbar" 
-                                 id="wizardProgress" 
-                                 style="width: 33.33%; background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
-                                <strong>Step 1: Personal Info</strong>
+                <!-- Step 2: Next of Kin Info -->
+                <div class="wizard-step pms-customer-wizard-step" id="step2" data-step="2" style="display: none;">
+                    <h5 class="pms-customer-wizard-step-title">Step 2: Next of Kin Information</h5>
+                    <div class="pms-customer-4col-form pms-registration-4col-form">
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="NomineeName" class="form-label pms-registration-4col-label">Next of Kin Name</label>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Wizard Steps -->
-                    <div id="wizardSteps">
-                        <!-- Step 1: Personal Info -->
-                        <div class="wizard-step" id="step1" data-step="1">
-                            <h5 class="mb-4" style="color: rgb(104, 167, 226);">
-                                <i class="fas fa-user-circle me-2"></i>Step 1: Personal Information
-                            </h5>
-                            <!-- Registration Search -->
-                            <div class="card mb-4 border-primary">
-                                <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="fas fa-file-alt me-2"></i>Link to Registration (optional)</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row align-items-end">
-                                        <div class="col-md-4">
-                                            <label for="registrationSearchInput" class="form-label">Registration ID</label>
-                                            <input type="text" id="registrationSearchInput" class="form-control" placeholder="e.g. REG0000001" />
-                                        </div>
-                                        <div class="col-md-4">
-                                            <button type="button" id="btnSearchRegistration" class="btn btn-outline-primary">
-                                                <i class="fas fa-search me-1"></i>Search Registration
-                                            </button>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <span id="registrationSearchMessage" class="text-muted small"></span>
-                                        </div>
-                                    </div>
-                                    <input type="hidden" asp-for="RegID" id="RegID" />
-                                </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="NomineeName" class="form-control" />
                             </div>
-                            <div class="row">
-                                <!-- Personal Information -->
-                                <div class="col-md-6">
-                                    <h6 class="mb-3"><i class="fas fa-user me-2"></i>Personal Information</h6>
-                                    
-                                    <div class="mb-3">
-                                        <label asp-for="FullName" class="form-label">Full Name *</label>
-                                        <input asp-for="FullName" class="form-control" id="FullName" required />
-                                        <span asp-validation-for="FullName" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="FatherName" class="form-label">S/D/W/O</label>
-                                        <input asp-for="FatherName" class="form-control" />
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="CNIC" class="form-label">National ID (CNIC)</label>
-                                        <input asp-for="CNIC" id="CNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
-                                        <small class="text-muted">Required format: 5 digits, hyphen, 7 digits, hyphen, 1 digit (e.g. 11111-1111111-1).</small>
-                                        <span id="cnicValidationError" class="text-danger small d-none"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="PassportNo" class="form-label">Passport Number</label>
-                                        <input asp-for="PassportNo" id="PassportNo" class="form-control" placeholder="Min 5 characters if no CNIC" />
-                                        <small class="text-muted">Provide at least 5 characters if not providing CNIC.</small>
-                                        <span id="passportValidationError" class="text-danger small d-none"></span>
-                                    </div>
-                                    <div id="cnicPassportRuleError" class="alert alert-warning small py-2 d-none" role="alert">
-                                        <i class="fas fa-exclamation-triangle me-1"></i><span id="cnicPassportRuleErrorText"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="DOB" class="form-label">Date of Birth</label>
-                                        <input asp-for="DOB" type="date" id="DOB" class="form-control" lang="en-GB" />
-                                        <small class="text-muted">Select date from calendar (DD-MM-YYYY).</small>
-                                        <span id="dobValidationError" class="text-danger small d-none"></span>
-                                        <span asp-validation-for="DOB" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="Gender" class="form-label">Gender</label>
-                                        <select asp-for="Gender" class="form-select">
-                                            <option value="">Select Gender</option>
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="Nationality" class="form-label">Nationality</label>
-                                        <input asp-for="Nationality" class="form-control" list="nationalityList-customer-create" autocomplete="off" placeholder="Select from list or type a value" />
-                                        <datalist id="nationalityList-customer-create">
-                                            @if (ViewBag.Nationalities != null)
-                                            {
-                                                foreach (var nationality in ViewBag.Nationalities)
-                                                {
-                                                    <option value="@nationality"></option>
-                                                }
-                                            }
-                                        </datalist>
-                                        <small class="text-muted">Suggestions from configuration; you may enter any nationality.</small>
-                                        <span asp-validation-for="Nationality" class="text-danger"></span>
-                                    </div>
-                                </div>
-
-                                <!-- Contact Information -->
-                                <div class="col-md-6">
-                                    <h6 class="mb-3"><i class="fas fa-phone me-2"></i>Contact Information</h6>
-                                    
-                                    <div class="mb-3">
-                                        <label asp-for="FormNo" class="form-label">Form No</label>
-                                        <input asp-for="FormNo" id="FormNo" class="form-control" placeholder="Enter form number (optional)" />
-                                        <span asp-validation-for="FormNo" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="Email" class="form-label">Email Address</label>
-                                        <input asp-for="Email" id="Email" type="email" class="form-control" />
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="Phone" class="form-label">Phone (landline / primary contact) *</label>
-                                        <input asp-for="Phone" id="Phone" class="form-control" required />
-                                        <span asp-validation-for="Phone" class="text-danger"></span>
-                                        <span id="phoneValidationError" class="text-danger small d-none"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="MobileNo" class="form-label">Mobile *</label>
-                                        <input asp-for="MobileNo" id="MobileNo" class="form-control" required />
-                                        <span asp-validation-for="MobileNo" class="text-danger"></span>
-                                        <span id="mobileValidationError" class="text-danger small d-none"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="MobileNo2" class="form-label">Mobile 2</label>
-                                        <input asp-for="MobileNo2" id="MobileNo2" class="form-control" />
-                                        <span asp-validation-for="MobileNo2" class="text-danger"></span>
-                                        <small class="form-text text-muted">Optional. Must differ from Phone and Mobile.</small>
-                                        <span id="mobile2ValidationError" class="text-danger small d-none"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="City" class="form-label">City *</label>
-                                        <input asp-for="City" class="form-control" list="cityOptions" placeholder="Select or type city" required />
-                                        <datalist id="cityOptions">
-                                            @if (ViewBag.Cities != null)
-                                            {
-                                                @foreach (var city in ViewBag.Cities)
-                                                {
-                                                    <option value="@city"></option>
-                                                }
-                                            }
-                                        </datalist>
-                                        <span asp-validation-for="City" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="Country" class="form-label">Country *</label>
-                                        <input asp-for="Country" class="form-control" list="countryOptions" placeholder="Select or type country" required />
-                                        <datalist id="countryOptions">
-                                            @if (ViewBag.Countries != null)
-                                            {
-                                                @foreach (var country in ViewBag.Countries)
-                                                {
-                                                    <option value="@country"></option>
-                                                }
-                                            }
-                                        </datalist>
-                                        <span asp-validation-for="Country" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="MailingAddress" class="form-label">Mailing Address *</label>
-                                        <textarea asp-for="MailingAddress" class="form-control" rows="2" required></textarea>
-                                        <span asp-validation-for="MailingAddress" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="PermanentAddress" class="form-label">Permanent Address</label>
-                                        <textarea asp-for="PermanentAddress" class="form-control" rows="2"></textarea>
-                                    </div>
-                                </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="NomineeID" class="form-label pms-registration-4col-label">Next of Kin ID / National ID</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="NomineeID" class="form-control" />
                             </div>
                         </div>
 
-                        <!-- Step 2: Next of Kin Info -->
-                        <div class="wizard-step" id="step2" data-step="2" style="display: none;">
-                            <h5 class="mb-4" style="color: rgb(104, 167, 226);">
-                                <i class="fas fa-user-shield me-2"></i>Step 2: Next of Kin Information
-                            </h5>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h6 class="mb-3"><i class="fas fa-user-friends me-2"></i>Next of Kin Information</h6>
-                                    
-                                    <div class="mb-3">
-                                        <label asp-for="NomineeName" class="form-label">Next of Kin Name</label>
-                                        <input asp-for="NomineeName" class="form-control" />
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="NomineeID" class="form-label">Next of Kin ID / National ID</label>
-                                        <input asp-for="NomineeID" class="form-control" />
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="NomineeRelation" class="form-label">Relationship</label>
-                                        <select asp-for="NomineeRelation" class="form-select">
-                                            <option value="">Select Relationship</option>
-                                            <option value="Father">Father</option>
-                                            <option value="Mother">Mother</option>
-                                            <option value="Son">Son</option>
-                                            <option value="Daughter">Daughter</option>
-                                            <option value="Spouse">Spouse</option>
-                                            <option value="Brother">Brother</option>
-                                            <option value="Sister">Sister</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Next of Kin NIC Document</label>
-                                        <input type="file" name="nomineeNICUpload" class="form-control" accept="image/*,.pdf" />
-                                        <small class="text-muted">Accepted formats: JPG, PNG, GIF, BMP, PDF. Max size: 8MB.</small>
-                                        <span asp-validation-for="NomineeNICDocumentPath" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Next of Kin Picture</label>
-                                        <input type="file" name="nomineePictureUpload" class="form-control" accept="image/*" />
-                                        <small class="text-muted">Accepted formats: JPG, PNG, GIF, BMP. Max size: 8MB.</small>
-                                        <span asp-validation-for="NomineePicturePath" class="text-danger"></span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        <strong>Next of Kin Information</strong>
-                                        <p class="mb-0 mt-2">Please provide the details of the person who will be the next of kin for this customer. This person will have rights in case of any unforeseen circumstances.</p>
-                                    </div>
-                                </div>
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="NomineeRelation" class="form-label pms-registration-4col-label">Relationship</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="NomineeRelation" class="form-select">
+                                    <option value="">Select Relationship</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Son">Son</option>
+                                    <option value="Daughter">Daughter</option>
+                                    <option value="Spouse">Spouse</option>
+                                    <option value="Brother">Brother</option>
+                                    <option value="Sister">Sister</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label class="form-label pms-registration-4col-label">Next of Kin NIC Document</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="file" name="nomineeNICUpload" class="form-control" accept="image/*,.pdf" />
+                                <small class="text-muted d-block">Accepted formats: JPG, PNG, GIF, BMP, PDF. Max size: 8MB.</small>
+                                <span asp-validation-for="NomineeNICDocumentPath" class="text-danger"></span>
                             </div>
                         </div>
 
-                        <!-- Step 3: Payment Plan Info -->
-                        <div class="wizard-step" id="step3" data-step="3" style="display: none;">
-                            <h5 class="mb-4" style="color: rgb(104, 167, 226);">
-                                <i class="fas fa-file-contract me-2"></i>Step 3: Payment Plan Information
-                            </h5>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label asp-for="ProjectID" class="form-label">Project *</label>
-                                        <select asp-for="ProjectID" id="projectIDSelect" class="form-select" required>
-                                            <option value="">Select Project</option>
-                                            @if (ViewBag.Projects != null)
-                                            {
-                                                @foreach (var project in ViewBag.Projects)
-                                                {
-                                                    <option value="@project.ProjectID" data-project-prefix="@(project.Prefix ?? "")">@project.ProjectName (@project.Prefix)</option>
-                                                }
-                                            }
-                                        </select>
-                                        <span asp-validation-for="ProjectID" class="text-danger"></span>
-                                        <small class="text-muted">Customer ID is generated from the selected subproject prefix.</small>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="PlanID" class="form-label">Payment Plan *</label>
-                                        <select asp-for="PlanID" id="planIDSelect" class="form-select" required>
-                                            <option value="">Select Payment Plan</option>
-                                            @if (ViewBag.PaymentPlans != null)
-                                            {
-                                                @foreach (var plan in ViewBag.PaymentPlans)
-                                                {
-                                                    <option value="@plan.PlanID" data-project-prefix="@(plan.Project?.Prefix ?? "")">@plan.PlanName - PKR @plan.TotalAmount.ToString("N0")</option>
-                                                }
-                                            }
-                                        </select>
-                                        <span asp-validation-for="PlanID" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="SubProject" class="form-label">Sub Project *</label>
-                                        <select asp-for="SubProject" id="SubProject" class="form-select" required disabled>
-                                            @if (!string.IsNullOrWhiteSpace(Model?.SubProject))
-                                            {
-                                                <option value="@Model.SubProject" selected>@Model.SubProject</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="">Select Project first</option>
-                                            }
-                                        </select>
-                                        <span asp-validation-for="SubProject" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="RegisteredSize" class="form-label">Registered Size *</label>
-                                        <input asp-for="RegisteredSize" id="RegisteredSize" class="form-control" type="number" step="0.01" inputmode="decimal" placeholder="Enter size" required disabled />
-                                        <datalist id="RegisteredSizeOptions"></datalist>
-                                        <small class="text-muted">Sizes are suggested from selected project, or type your own value.</small>
-                                        <span asp-validation-for="RegisteredSize" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Is Dealer Registered?</label>
-                                        <div class="d-flex gap-3">
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="IsDealerRegistered" id="dealerRegYes" value="1" @(Model?.IsDealerRegistered != 0 ? "checked" : null)>
-                                                <label class="form-check-label" for="dealerRegYes">Yes</label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="IsDealerRegistered" id="dealerRegNo" value="0" @(Model?.IsDealerRegistered == 0 ? "checked" : null)>
-                                                <label class="form-check-label" for="dealerRegNo">No</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mb-3" id="dealerDropdownWrap">
-                                        <label asp-for="DealerID" class="form-label">Select Dealer *</label>
-                                        <select asp-for="DealerID" id="DealerID" class="form-select">
-                                            <option value="">Select Dealer</option>
-                                            @if (ViewBag.Dealers != null)
-                                            {
-                                                @foreach (var dealer in ViewBag.Dealers)
-                                                {
-                                                    <option value="@dealer.DealerID">@dealer.DealershipName</option>
-                                                }
-                                            }
-                                        </select>
-                                        <span asp-validation-for="DealerID" class="text-danger"></span>
-                                    </div>
-                                    <div class="mb-3" id="dealerNameWrap" style="display:none;">
-                                        <label asp-for="DealerName" class="form-label">Dealer Name *</label>
-                                        <input asp-for="DealerName" id="DealerName" class="form-control" placeholder="Enter dealer name manually" maxlength="200" />
-                                        <span asp-validation-for="DealerName" class="text-danger"></span>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-6">
-                                    <h6 class="mb-3"><i class="fas fa-sticky-note me-2"></i>Additional Information</h6>
-
-                                    <div class="mb-3">
-                                        <label asp-for="AdditionalInfo" class="form-label">Additional Notes</label>
-                                        <textarea asp-for="AdditionalInfo" class="form-control" rows="6" placeholder="Enter any additional information about the customer..."></textarea>
-                                    </div>
-
-                                    <!-- Preview Customer ID -->
-                                    <div class="alert alert-info">
-                                        <h6 class="alert-heading"><i class="fas fa-id-badge me-2"></i>Customer ID Preview</h6>
-                                        <p class="mb-0">
-                                            <strong>Customer ID will be:</strong><br>
-                                            <span id="customerIDPreview" class="badge bg-secondary" style="font-size: 14px;">Select Project to preview</span>
-                                        </p>
-                                        <small class="text-muted">Format: [Subproject Prefix][Sequential Number] (e.g., P100001)</small>
-                                    </div>
-                                </div>
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label class="form-label pms-registration-4col-label">Next of Kin Picture</label>
                             </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="file" name="nomineePictureUpload" class="form-control" accept="image/*" />
+                                <small class="text-muted d-block">Accepted formats: JPG, PNG, GIF, BMP. Max size: 8MB.</small>
+                                <span asp-validation-for="NomineePicturePath" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info small mt-2 mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Next of Kin Information</strong>
+                            <p class="mb-0 mt-2">Please provide the details of the person who will be the next of kin for this customer. This person will have rights in case of any unforeseen circumstances.</p>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Wizard Navigation Buttons -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <hr>
-                            <div class="d-flex justify-content-between">
-                                <button type="button" id="prevBtn" class="btn btn-secondary" style="display: none;" onclick="previousStep()">
-                                    <i class="fas fa-arrow-left me-2"></i>Previous
-                                </button>
-                                <div class="ms-auto">
-                                    <button type="button" id="nextBtn" class="btn text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" onclick="nextStep()">
-                                        Next <i class="fas fa-arrow-right ms-2"></i>
-                                    </button>
-                                    <button type="submit" id="createBtn" class="btn text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%); display: none;">
-                                        <i class="fas fa-save me-2"></i>Create Customer
-                                    </button>
-                                    <a asp-action="Index" class="btn btn-secondary">
-                                        <i class="fas fa-times me-2"></i>Cancel
-                                    </a>
+                <!-- Step 3: Payment Plan Info -->
+                <div class="wizard-step pms-customer-wizard-step" id="step3" data-step="3" style="display: none;">
+                    <h5 class="pms-customer-wizard-step-title">Step 3: Payment Plan Information</h5>
+                    <div class="pms-customer-4col-form pms-registration-4col-form">
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="ProjectID" class="form-label pms-registration-4col-label">Project *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="ProjectID" id="projectIDSelect" class="form-select" required>
+                                    <option value="">Select Project</option>
+                                    @if (ViewBag.Projects != null)
+                                    {
+                                        @foreach (var project in ViewBag.Projects)
+                                        {
+                                            <option value="@project.ProjectID" data-project-prefix="@(project.Prefix ?? "")">@project.ProjectName (@project.Prefix)</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="ProjectID" class="text-danger"></span>
+                                <small class="text-muted d-block">Customer ID is generated from the selected subproject prefix.</small>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="PlanID" class="form-label pms-registration-4col-label">Payment Plan *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="PlanID" id="planIDSelect" class="form-select" required>
+                                    <option value="">Select Payment Plan</option>
+                                    @if (ViewBag.PaymentPlans != null)
+                                    {
+                                        @foreach (var plan in ViewBag.PaymentPlans)
+                                        {
+                                            <option value="@plan.PlanID" data-project-prefix="@(plan.Project?.Prefix ?? "")">@plan.PlanName - PKR @plan.TotalAmount.ToString("N0")</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="PlanID" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="SubProject" class="form-label pms-registration-4col-label">Sub Project *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="SubProject" id="SubProject" class="form-select" required disabled>
+                                    @if (!string.IsNullOrWhiteSpace(Model?.SubProject))
+                                    {
+                                        <option value="@Model.SubProject" selected>@Model.SubProject</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="">Select Project first</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="SubProject" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="RegisteredSize" class="form-label pms-registration-4col-label">Registered Size *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="RegisteredSize" id="RegisteredSize" class="form-control" type="number" step="0.01" inputmode="decimal" placeholder="Enter size" required disabled />
+                                <datalist id="RegisteredSizeOptions"></datalist>
+                                <small class="text-muted d-block">Sizes are suggested from selected project, or type your own value.</small>
+                                <span asp-validation-for="RegisteredSize" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label class="form-label pms-registration-4col-label">Is Dealer Registered?</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="d-flex gap-3 pt-lg-1">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="IsDealerRegistered" id="dealerRegYes" value="1" @(Model?.IsDealerRegistered != 0 ? "checked" : null)>
+                                        <label class="form-check-label" for="dealerRegYes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="IsDealerRegistered" id="dealerRegNo" value="0" @(Model?.IsDealerRegistered == 0 ? "checked" : null)>
+                                        <label class="form-check-label" for="dealerRegNo">No</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start" id="dealerDropdownWrap">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="DealerID" class="form-label pms-registration-4col-label">Select Dealer *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="DealerID" id="DealerID" class="form-select">
+                                    <option value="">Select Dealer</option>
+                                    @if (ViewBag.Dealers != null)
+                                    {
+                                        @foreach (var dealer in ViewBag.Dealers)
+                                        {
+                                            <option value="@dealer.DealerID">@dealer.DealershipName</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="DealerID" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start" id="dealerNameWrap" style="display:none;">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="DealerName" class="form-label pms-registration-4col-label">Dealer Name *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="DealerName" id="DealerName" class="form-control" placeholder="Enter dealer name manually" maxlength="200" />
+                                <span asp-validation-for="DealerName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="AdditionalInfo" class="form-label pms-registration-4col-label">Additional Notes</label>
+                            </div>
+                            <div class="col-12 col-lg-10">
+                                <textarea asp-for="AdditionalInfo" class="form-control" rows="4" placeholder="Enter any additional information about the customer..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info small mt-2 mb-0">
+                            <h6 class="alert-heading mb-1"><i class="fas fa-id-badge me-2"></i>Customer ID Preview</h6>
+                            <p class="mb-0">
+                                <strong>Customer ID will be:</strong>
+                                <span id="customerIDPreview" class="badge bg-secondary ms-1">Select Project to preview</span>
+                            </p>
+                            <small class="text-muted d-block mt-1">Format: [Subproject Prefix][Sequential Number] (e.g., P100001)</small>
+                        </div>
                     </div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-between align-items-center gap-2 pms-customer-create-actions pms-registration-create-actions pms-customer-wizard-nav">
+                <button type="button" id="prevBtn" class="btn btn-sm btn-outline-secondary" style="display: none;" onclick="previousStep()">
+                    <i class="fas fa-arrow-left me-1"></i>Previous
+                </button>
+                <div class="d-flex gap-2 ms-auto">
+                    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Cancel</a>
+                    <button type="button" id="nextBtn" class="btn btn-sm btn-primary" onclick="nextStep()">
+                        Next<i class="fas fa-arrow-right ms-1"></i>
+                    </button>
+                    <button type="submit" id="createBtn" class="btn btn-sm btn-primary" style="display: none;">
+                        <i class="fas fa-save me-1"></i>Create Customer
+                    </button>
                 </div>
             </div>
         </form>
     </div>
 </div>
-
-<style>
-    /* Compact Card Spacing */
-    .card-body {
-        padding: 8px 12px !important;
-    }
-
-    .card-header {
-        padding: 8px 12px !important;
-    }
-
-
-    /* Wizard Step Styling */
-    .wizard-step {
-        min-height: 400px;
-    }
-
-    .wizard-step h5 {
-        font-weight: 700;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid rgba(104, 167, 226, 0.3);
-    }
-
-    /* Progress Bar */
-    .progress {
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .progress-bar {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 600;
-    }
-
-    /* Section Headers within Steps */
-    .wizard-step h6 {
-        color: rgb(104, 167, 226);
-        font-weight: 700;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid rgba(104, 167, 226, 0.2);
-    }
-</style>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
@@ -497,7 +485,8 @@
             // Update progress bar
             var progress = (currentStep / totalSteps) * 100;
             $('#wizardProgress').css('width', progress + '%');
-            
+            $('#wizardProgress').attr('aria-valuenow', progress);
+
             var stepText = '';
             if (currentStep === 1) {
                 stepText = 'Step 1: Personal Info';
@@ -506,10 +495,9 @@
             } else if (currentStep === 3) {
                 stepText = 'Step 3: Payment Plan Info';
             }
-            $('#wizardProgress').html('<strong>' + stepText + '</strong>');
 
             // Update step indicator
-            $('#wizardStepIndicator').text('Step ' + currentStep + ' of ' + totalSteps);
+            $('#wizardStepIndicator').text('Step ' + currentStep + ' of ' + totalSteps + ' — ' + stepText);
 
             // Show/hide navigation buttons
             if (currentStep === 1) {
@@ -572,7 +560,7 @@
                 
                 // Scroll to top
                 $('html, body').animate({
-                    scrollTop: $('.card').offset().top - 100
+                    scrollTop: $('.pms-customer-create').offset().top - 100
                 }, 300);
             }
         }
@@ -584,7 +572,7 @@
                 
                 // Scroll to top
                 $('html, body').animate({
-                    scrollTop: $('.card').offset().top - 100
+                    scrollTop: $('.pms-customer-create').offset().top - 100
                 }, 300);
             }
         }

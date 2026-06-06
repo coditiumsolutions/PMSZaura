@@ -5,20 +5,18 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <!-- <h2>
-        <i class="fas fa-edit me-2"></i>Edit Registration
-    </h2> -->
-    <div>
-        <a asp-action="Details" asp-route-id="@Model.RegID" class="btn btn-outline-info me-2">
-            <i class="fas fa-eye me-2"></i>View Details
+    <h2 class="mb-0 pms-registration-page-title">Edit Registration</h2>
+    <div class="d-flex gap-2">
+        <a asp-action="Details" asp-route-id="@Model.RegID" class="btn btn-outline-info btn-sm">
+            <i class="fas fa-eye me-1"></i>View Details
         </a>
-        <a asp-action="Index" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-2"></i>Back to List
+        <a asp-action="Index" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
         </a>
     </div>
 </div>
 
-<div class="card">
+<div class="card pms-listing-flat pms-registration-create">
     <div class="card-body">
         <form asp-action="Edit" method="post">
             @Html.AntiForgeryToken()
@@ -26,72 +24,57 @@
             <input type="hidden" asp-for="RegID" />
             <input type="hidden" asp-for="CreatedAt" />
             
-            <div class="row">
-                <div class="col-md-6">
-                    <h6 class="mb-3 text-primary">
-                        <i class="fas fa-user me-2"></i>Personal Information
-                    </h6>
-
-                    <div class="mb-3">
-                        <label asp-for="FullName" class="form-label">Full Name *</label>
+            <div class="pms-registration-4col-form">
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="FullName" class="form-label pms-registration-4col-label">Full Name *</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
                         <input asp-for="FullName" id="FullName" class="form-control" required />
                         <span asp-validation-for="FullName" class="text-danger"></span>
                     </div>
-
-                    <div class="mb-3">
-                        <label asp-for="CNIC" class="form-label">CNIC</label>
-                        <input asp-for="CNIC" id="CNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
-                        <small class="text-muted">Format: 5 digits – 7 digits – 1 digit. No letters allowed.</small>
-                        <span asp-validation-for="CNIC" class="text-danger d-block"></span>
-                        <span id="cnicError" class="text-danger small d-none"></span>
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="Phone" class="form-label pms-registration-4col-label">Phone Number *</label>
                     </div>
-
-                    <div class="mb-3">
-                        <label asp-for="PassportNo" class="form-label">Passport Number</label>
-                        <input asp-for="PassportNo" id="PassportNo" class="form-control" placeholder="e.g. AB1234567" />
-                        <small class="text-muted">Alphanumeric only (letters and digits). Provide if no CNIC.</small>
-                        <span asp-validation-for="PassportNo" class="text-danger d-block"></span>
-                        <span id="passportError" class="text-danger small d-none"></span>
-                    </div>
-                    <div id="cnicPassportRuleError" class="alert alert-warning small py-2 d-none" role="alert">
-                        <i class="fas fa-exclamation-triangle me-1"></i>Either CNIC or Passport Number is required.
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Status" class="form-label">Status *</label>
-                        <select asp-for="Status" class="form-select" required>
-                            <option value="Pending">Pending</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Rejected">Rejected</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="col-md-6">
-                    <h6 class="mb-3 text-primary">
-                        <i class="fas fa-phone me-2"></i>Contact Information
-                    </h6>
-
-                    <div class="mb-3">
-                        <label asp-for="Phone" class="form-label">Phone Number *</label>
+                    <div class="col-12 col-lg-4">
                         <input asp-for="Phone" id="Phone" class="form-control" required />
                         <span asp-validation-for="Phone" class="text-danger"></span>
                     </div>
+                </div>
 
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label">Email Address</label>
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="CNIC" class="form-label pms-registration-4col-label">CNIC</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="CNIC" id="CNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+                        <small class="text-muted d-block">Format: 5 digits – 7 digits – 1 digit. No letters allowed.</small>
+                        <span asp-validation-for="CNIC" class="text-danger d-block"></span>
+                        <span id="cnicError" class="text-danger small d-none"></span>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="Email" class="form-label pms-registration-4col-label">Email Address</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
                         <input asp-for="Email" type="email" class="form-control" />
                         <span asp-validation-for="Email" class="text-danger"></span>
                     </div>
+                </div>
 
-                    <div class="mb-3">
-                        <label asp-for="FormNo" class="form-label">Form No</label>
-                        <input asp-for="FormNo" class="form-control" placeholder="Enter form number (optional)" />
-                        <span asp-validation-for="FormNo" class="text-danger"></span>
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="PassportNo" class="form-label pms-registration-4col-label">Passport Number</label>
                     </div>
-
-                    <div class="mb-3">
-                        <label asp-for="ProjectID" class="form-label">Project</label>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="PassportNo" id="PassportNo" class="form-control" placeholder="e.g. AB1234567" />
+                        <small class="text-muted d-block">Alphanumeric only (letters and digits). Provide if no CNIC.</small>
+                        <span asp-validation-for="PassportNo" class="text-danger d-block"></span>
+                        <span id="passportError" class="text-danger small d-none"></span>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="ProjectID" class="form-label pms-registration-4col-label">Project</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
                         <select asp-for="ProjectID" class="form-select" id="projectSelect">
                             <option value="">-- Select Project --</option>
                             @if (ViewBag.Projects != null)
@@ -103,16 +86,47 @@
                             }
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label asp-for="Size" class="form-label">Size</label>
+                </div>
+
+                <div id="cnicPassportRuleError" class="alert alert-warning small py-2 d-none mb-2" role="alert">
+                    <i class="fas fa-exclamation-triangle me-1"></i>Either CNIC or Passport Number is required.
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="FormNo" class="form-label pms-registration-4col-label">Form No</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="FormNo" class="form-control" placeholder="Enter form number (optional)" />
+                        <span asp-validation-for="FormNo" class="text-danger"></span>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="Size" class="form-label pms-registration-4col-label">Size</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
                         <select asp-for="Size" class="form-select" id="sizeSelect">
                             <option value="">-- Select Project first --</option>
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label asp-for="SubProject" class="form-label">SubProject</label>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="SubProject" class="form-label pms-registration-4col-label">SubProject</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
                         <select asp-for="SubProject" class="form-select" id="subProjectSelect">
                             <option value="">-- Select Project first --</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="Status" class="form-label pms-registration-4col-label">Status *</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <select asp-for="Status" class="form-select" required>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
                         </select>
                     </div>
                 </div>
@@ -120,12 +134,10 @@
 
             <hr class="my-4">
 
-            <div class="d-flex justify-content-end gap-2">
-                <a asp-action="Details" asp-route-id="@Model.RegID" class="btn btn-secondary">
-                    <i class="fas fa-times me-2"></i>Cancel
-                </a>
-                <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="fas fa-save me-2"></i>Save Changes
+            <div class="d-flex justify-content-end gap-2 pms-registration-create-actions">
+                <a asp-action="Details" asp-route-id="@Model.RegID" class="btn btn-sm btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <i class="bi bi-check-lg me-1" aria-hidden="true"></i>Save Changes
                 </button>
             </div>
         </form>

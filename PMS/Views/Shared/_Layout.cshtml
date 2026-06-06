@@ -267,18 +267,22 @@
         }
 
         .brand-section {
-            padding: 25px 20px;
-            text-align: center;
+            padding: 0 6px 4px 10px;
+            text-align: left;
             border-bottom: 1px solid var(--border);
-            margin-bottom: 15px;
+            margin: -8px 0 6px;
         }
 
         .brand-logo-img {
+            --pms-brand-logo-h: 126px;
+            display: block;
+            margin: 0;
+            height: var(--pms-brand-logo-h);
+            width: calc(var(--pms-brand-logo-h) * 2);
             max-width: 100%;
-            max-height: 120px;
-            width: auto;
-            height: auto;
+            max-height: none;
             object-fit: contain;
+            object-position: left center;
             filter: drop-shadow(2px 2px 4px rgba(117, 188, 255, 0.3));
             transition: transform 0.2s ease-in-out;
             background: transparent;
@@ -455,10 +459,6 @@
             border-left: 3px solid rgba(201, 162, 39, 0.75);
             border-radius: 0 6px 6px 0;
             box-sizing: border-box;
-        }
-
-        .sidebar .nav-item.sidebar-main-item .nav-link {
-            font-weight: 600;
         }
 
         .sidebar.sidebar--ams {
@@ -1522,7 +1522,7 @@ else
                         <li class="nav-item sidebar-section-label sidebar-section-label--general">
                             <h6 class="sidebar-section-title">General</h6>
                         </li>
-                        <li class="nav-item sidebar-main-item">
+                        <li class="nav-item sidebar-module-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" 
                                asp-controller="Home" asp-action="Index">
                                 <i class="fas fa-tachometer-alt"></i>
@@ -1530,7 +1530,7 @@ else
                             </a>
                         </li>
                         
-                        <li class="nav-item sidebar-main-item">
+                        <li class="nav-item sidebar-module-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Workspace" ? "active" : "")" 
                                asp-controller="Home" asp-action="Workspace">
                                 <i class="fas fa-th-large"></i>

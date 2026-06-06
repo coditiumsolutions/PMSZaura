@@ -2,28 +2,6 @@
     ViewData["Title"] = "Workspace - ZKB Eclipse";
 }
 
-<div class="workspace-section">
-<!-- Workspace Header -->
-<div class="workspace-header mb-0">
-    <div class="workspace-header-row">
-        <div>
-            <h3 class="workspace-title">Workspace</h3>
-            <p class="mb-0">
-                <a href="@Url.Action("Index", "AccountsManagement")" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-calculator me-1"></i>Accounts Management
-                </a>
-            </p>
-        </div>
-        <div class="workspace-search-wrap">
-            <div class="input-group">
-                <span class="input-group-text workspace-search-icon"><i class="fas fa-search"></i></span>
-                <input id="workspaceSearchInput" type="text" class="form-control workspace-search-input" placeholder="Search modules..." />
-            </div>
-        </div>
-    </div>
-</div>
-</div>
-
 <!-- Workspace Tiles Grid -->
 <div class="workspace-grid">
     <!-- Dashboard Tile -->
@@ -264,9 +242,6 @@
         </a>
     </div>
 </div>
-<div id="workspaceNoResults" class="workspace-no-results" style="display:none;">
-    No modules found for your search.
-</div>
 
 <!-- Backup & Sync Panel (hidden intentionally, do not remove) -->
 <div id="backup-sync-panel" class="backup-panel mt-5" style="display:none;" aria-hidden="true">
@@ -473,37 +448,6 @@
 
 @section Scripts {
 <script>
-    // Workspace tile search
-    (function () {
-        var searchInput = document.getElementById('workspaceSearchInput');
-        var tiles = Array.from(document.querySelectorAll('.workspace-grid .workspace-tile'));
-        var noResults = document.getElementById('workspaceNoResults');
-
-        if (!searchInput || tiles.length === 0) return;
-
-        tiles.forEach(function (tile) {
-            var label = tile.querySelector('.tile-label');
-            var text = (label ? label.textContent : tile.textContent || '').trim().toLowerCase();
-            tile.setAttribute('data-search-text', text);
-        });
-
-        searchInput.addEventListener('input', function () {
-            var query = (searchInput.value || '').trim().toLowerCase();
-            var visibleCount = 0;
-
-            tiles.forEach(function (tile) {
-                var searchable = tile.getAttribute('data-search-text') || '';
-                var match = query.length === 0 || searchable.indexOf(query) >= 0;
-                tile.style.display = match ? '' : 'none';
-                if (match) visibleCount++;
-            });
-
-            if (noResults) {
-                noResults.style.display = visibleCount === 0 ? 'block' : 'none';
-            }
-        });
-    })();
-
     // ── Hardcoded seed data (10 rows) ──────────────────────────────────────
     var backupData = [
         { no:"BKP-20260201-001", src:"127.0.0.1", dst:"172.20.228.2", status:"Completed", dt:"Feb 01, 2026 02:00 AM", size:"342 MB", dur:"1m 08s", by:"Scheduler" },
@@ -602,67 +546,10 @@
 }
 
 <style>
-    .workspace-section {
-        border: 1px solid #94a3b8;
-        border-radius: 12px;
-        padding: 1.25rem 1.5rem;
-        background: transparent;
-        margin-bottom: 1.25rem;
-    }
-
-    html[data-theme="dark"] .workspace-section {
-        border-color: var(--border, #334155);
-    }
-
-    .workspace-header {
-        margin-bottom: 0;
-    }
-
-    .workspace-header-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 16px;
-        flex-wrap: wrap;
-    }
-
-    .workspace-search-wrap {
-        width: 100%;
-        max-width: 340px;
-    }
-
-    .workspace-search-icon {
-        background: white;
-        color: var(--text-secondary);
-    }
-
-    .workspace-search-input {
-        border-left: 0;
-    }
-
-    .workspace-no-results {
-        margin-top: 20px;
-        font-size: 14px;
-        color: var(--text-secondary);
-        text-align: center;
-    }
-
-    .workspace-title {
-        font-family: 'Inter', sans-serif;
-        font-size: 28px;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin-bottom: 8px;
-    }
-
-    html[data-theme="dark"] .workspace-title {
-        color: var(--text-primary);
-    }
-
     .workspace-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 20px;
+        grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+        gap: 15px;
         padding: 0;
     }
 
@@ -671,15 +558,15 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 30px 20px;
+        padding: 22px 15px;
         background: white;
         border: 2px solid var(--border);
-        border-radius: 12px;
+        border-radius: 9px;
         text-decoration: none;
         color: var(--text-primary);
         transition: all 0.3s ease-in-out;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-        min-height: 160px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        min-height: 120px;
         position: relative;
         overflow: hidden;
     }
@@ -716,15 +603,15 @@
         top: 0;
         left: 0;
         right: 0;
-        height: 4px;
+        height: 3px;
         background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
         transform: scaleX(0);
         transition: transform 0.3s ease-in-out;
     }
 
     .workspace-tile:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        transform: translateY(-4px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.12);
         border-color: var(--primary);
         text-decoration: none;
         color: var(--text-primary);
@@ -740,15 +627,15 @@
     }
 
     .tile-icon {
-        font-size: 48px;
+        font-size: 36px;
         color: var(--primary-light);
-        margin-bottom: 15px;
+        margin-bottom: 11px;
         transition: all 0.3s ease-in-out;
     }
 
     .tile-label {
         font-family: 'Inter', sans-serif;
-        font-size: 14px;
+        font-size: 11px;
         font-weight: 600;
         text-align: center;
         color: var(--text-primary);
@@ -757,48 +644,44 @@
 
     /* Responsive Design */
     @@media (max-width: 768px) {
-        .workspace-search-wrap {
-            max-width: 100%;
-        }
-
         .workspace-grid {
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+            gap: 11px;
         }
 
         .workspace-tile {
-            padding: 25px 15px;
-            min-height: 140px;
+            padding: 19px 11px;
+            min-height: 105px;
         }
 
         .tile-icon {
-            font-size: 40px;
-            margin-bottom: 12px;
+            font-size: 30px;
+            margin-bottom: 9px;
         }
 
         .tile-label {
-            font-size: 13px;
+            font-size: 10px;
         }
     }
 
     @@media (max-width: 576px) {
         .workspace-grid {
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 9px;
         }
 
         .workspace-tile {
-            padding: 20px 12px;
-            min-height: 120px;
+            padding: 15px 9px;
+            min-height: 90px;
         }
 
         .tile-icon {
-            font-size: 36px;
-            margin-bottom: 10px;
+            font-size: 27px;
+            margin-bottom: 8px;
         }
 
         .tile-label {
-            font-size: 12px;
+            font-size: 9px;
         }
     }
 </style>

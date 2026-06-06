@@ -2,26 +2,10 @@
 
 @{
     ViewData["Title"] = "Search Customers";
-    var recordCount = Model?.Count() ?? 0;
-    ViewData["ListingTitle"] = "Customers";
-    ViewData["ListingDescription"] = "Manage all customer records";
-    ViewData["ListingCountText"] = recordCount + " Record" + (recordCount == 1 ? "" : "s");
-    ViewData["ListingRecordCount"] = recordCount;
     ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
-    ViewData["ListingAddText"] = "Add New";
-    var pendingCount = ViewBag.PendingCustomersCount;
-    ViewData["ListingExtraActions"] =
-        "<a href=\"" + Url.Action("ByProject") + "\" class=\"btn btn-outline-primary btn-sm\">" +
-        "<i class=\"bi bi-layers me-1\" aria-hidden=\"true\"></i>By Project</a>" +
-        "<a href=\"" + Url.Action("Index", new { statusFilter = "Pending" }) + "\" class=\"btn btn-outline-warning btn-sm\">" +
-        "<i class=\"bi bi-clock me-1\" aria-hidden=\"true\"></i>Pending " +
-        "<span class=\"badge bg-warning text-dark ms-1\">" + pendingCount + "</span></a>" +
-        "<a href=\"" + Url.Action("UpdateRequests") + "\" class=\"btn btn-outline-secondary btn-sm\">" +
-        "<i class=\"bi bi-person-lines-fill me-1\" aria-hidden=\"true\"></i>Update Requests</a>" +
-        "<a href=\"" + Url.Action("Reports") + "\" class=\"btn btn-outline-primary btn-sm\">" +
-        "<i class=\"bi bi-bar-chart me-1\" aria-hidden=\"true\"></i>Reports</a>" +
-        "<a href=\"" + Url.Action("CustomerBlocking") + "\" class=\"btn btn-outline-primary btn-sm\">" +
-        "<i class=\"bi bi-slash-circle me-1\" aria-hidden=\"true\"></i>Blocking</a>";
+    ViewData["ListingShowAdd"] = false;
+    ViewData["ListingHideRefresh"] = true;
+    ViewData["ListingHideToolbarActions"] = true;
 
     var showBulkSelection = (ViewBag.StatusFilter as string) == "Pending" && ViewBag.CanEdit == true;
     ViewData["ShowBulkSelection"] = showBulkSelection;
@@ -75,9 +59,9 @@
                     </select>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-4">
+            <div class="col-12 col-lg-3 pms-customer-search-term-field">
                 <div class="pms-compact-field">
-                    <label for="searchTerm" class="form-label">Search by ID, FormNo, Name, National ID, Email</label>
+                    <label for="searchTerm" class="form-label">Search (name, cnic, email etc)</label>
                     <input type="text"
                            name="searchTerm"
                            id="searchTerm"
@@ -85,14 +69,15 @@
                            value="@ViewBag.SearchTerm" />
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="d-flex flex-wrap gap-2 pms-customer-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
-                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
-                    </button>
-                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm flex-grow-1">
-                        <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Clear
-                    </a>
+            <div class="col-12 col-lg-auto">
+                <div class="pms-compact-field pms-customer-search-actions">
+                    <label class="form-label d-none d-lg-block" aria-hidden="true">&nbsp;</label>
+                    <div class="d-flex flex-nowrap gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                        </button>
+                        <partial name="_OperationsDropdown" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -133,9 +118,8 @@
             </div>
         </div>
 
-        <div class="card pms-grid-card pms-saas-grid">
+        <div class="card pms-grid-card pms-saas-grid pms-customer-listing">
             <div class="card-body">
-                <partial name="Listing/_GridToolbar" />
                 <partial name="_CustomerDataGrid" model="Model" />
             </div>
         </div>
@@ -143,9 +127,8 @@
 }
 else
 {
-    <div class="card pms-grid-card pms-saas-grid">
+    <div class="card pms-grid-card pms-saas-grid pms-customer-listing">
         <div class="card-body">
-            <partial name="Listing/_GridToolbar" />
             <partial name="_CustomerDataGrid" model="Model" />
         </div>
     </div>
@@ -160,6 +143,7 @@ else
 
             if ($('#customersTable').length) {
                 $('#customersTable').DataTable({
+                    dom: '<"pms-customer-dt-controls d-flex flex-wrap align-items-center gap-3 mb-2"lf>rtip',
                     "pageLength": 25,
                     "order": [[ createdDateColumnIndex, "desc" ]],
                     "columnDefs": [

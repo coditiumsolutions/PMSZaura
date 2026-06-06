@@ -2,17 +2,13 @@
 
 @{
     ViewData["Title"] = "Registrations";
-    ViewData["ListingTitle"] = "All Registrations";
-    ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
-    ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
-    ViewData["ListingAddText"] = "New Registration";
 }
 
-<!-- Search Filters -->
-<form method="get" asp-action="Index" class="mb-4 pms-registration-listing">
-    <div class="pms-registration-search-wrap pms-listing-search-wrap">
-        <div class="row g-2 align-items-end flex-lg-nowrap">
-            <div class="col-12 col-lg-5">
+<!-- Search, filters, and actions -->
+<form method="get" asp-action="Index" class="mb-2 pms-registration-listing">
+    <div class="pms-registration-search-wrap pms-listing-search-wrap pms-registration-search-panel">
+        <div class="row g-1 align-items-end flex-lg-nowrap pms-registration-search-fields">
+            <div class="col-12 col-lg-3">
                 <div class="pms-compact-field pms-select-dropdown">
                     <label for="statusFilter" class="form-label">Filter by Status</label>
                     <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()">
@@ -23,7 +19,7 @@
                     </select>
                 </div>
             </div>
-            <div class="col-12 col-lg-4">
+            <div class="col-12 col-lg">
                 <div class="pms-compact-field">
                     <label for="searchTerm" class="form-label">Search by ID, Name or Phone No</label>
                     <input type="text"
@@ -33,25 +29,32 @@
                            value="@ViewBag.SearchTerm" />
                 </div>
             </div>
-            <div class="col-12 col-lg-3">
-                <div class="d-flex flex-wrap gap-2 pms-registration-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+            <div class="col-12 col-lg-auto">
+                <div class="pms-compact-field pms-registration-inline-action">
+                    <label class="form-label d-none d-lg-block" aria-hidden="true">&nbsp;</label>
+                    <button type="submit" class="btn btn-primary btn-sm w-100">
                         <i class="bi bi-search me-1" aria-hidden="true"></i>Search
                     </button>
-                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm flex-grow-1">
-                        <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Clear
-                    </a>
                 </div>
             </div>
+            @if (ViewBag.CanCreate == true)
+            {
+                <div class="col-12 col-lg-auto">
+                    <div class="pms-compact-field pms-registration-inline-action">
+                        <label class="form-label d-none d-lg-block" aria-hidden="true">&nbsp;</label>
+                        <a asp-action="Create" class="btn btn-primary btn-sm w-100">
+                            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New Registration
+                        </a>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 </form>
 
 <!-- Data Grid -->
-<div class="card pms-grid-card pms-listing-flat pms-registration-listing">
+<div class="card pms-grid-card pms-listing-flat pms-registration-listing pms-registration-grid-compact">
     <div class="card-body">
-        <partial name="Listing/_GridToolbar" />
-
         @if (Model.Any())
         {
             <div class="table-responsive">
@@ -188,6 +191,27 @@
 </div>
 
 <style>
+    .pms-registration-search-panel {
+        padding: 0.65rem 1rem !important;
+    }
+
+    .pms-registration-search-fields {
+        margin-top: 0 !important;
+    }
+
+    .pms-registration-listing .pms-registration-search-panel .form-label {
+        margin-bottom: 0.2rem;
+    }
+
+    .pms-registration-inline-action .btn {
+        min-height: var(--pms-listing-control-h, 36px);
+        white-space: nowrap;
+    }
+
+    .pms-registration-grid-compact > .card-body {
+        padding-top: 0.25rem !important;
+    }
+
     html[data-theme="dark"] #registrationsTable thead th {
         background-color: #0f172a !important;
         color: var(--text-primary) !important;

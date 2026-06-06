@@ -530,6 +530,78 @@
     }
 }
 
+.pms-customer-listing .pms-customer-search-term-field {
+    flex: 0 0 100%;
+    width: 100%;
+    max-width: 100%;
+}
+
+.pms-customer-listing .pms-customer-dt-controls {
+    width: 100%;
+    padding-top: 0.25rem;
+}
+
+.pms-customer-listing .pms-customer-dt-controls .dataTables_length,
+.pms-customer-listing .pms-customer-dt-controls .dataTables_filter {
+    float: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 0.8125rem;
+    color: #64748b;
+}
+
+.pms-customer-listing .pms-customer-dt-controls .dataTables_filter {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pms-customer-listing .pms-customer-dt-controls .dataTables_filter input {
+    border-radius: 0;
+    border: 1.5px solid #334155;
+    padding: 0.25rem 0.6rem;
+    min-height: 32px;
+    height: 32px;
+    font-size: 0.8125rem;
+    margin-left: 0 !important;
+    width: 220px;
+}
+
+.pms-customer-listing .pms-customer-dt-controls .dataTables_length select {
+    border-radius: 0;
+    border: 1.5px solid #334155;
+    padding: 0.2rem 1.75rem 0.2rem 0.5rem;
+    min-height: 32px;
+    height: 32px;
+    font-size: 0.8125rem;
+    margin: 0 0.35rem;
+}
+
+@media (min-width: 992px) {
+    .pms-customer-listing .pms-customer-search-term-field {
+        flex: 0 0 25%;
+        width: 25%;
+        max-width: 25%;
+    }
+
+    .pms-customer-listing .pms-customer-search-actions .btn-primary {
+        flex: 0 0 auto;
+        min-width: 5.5rem;
+        max-width: none;
+    }
+
+    .pms-customer-listing .pms-customer-search-actions .pms-customer-operations-btn {
+        flex: 0 0 auto;
+        min-width: 9.5rem;
+        max-width: none;
+        justify-content: center;
+    }
+
+    .pms-customer-listing .pms-customer-dt-controls {
+        flex-wrap: nowrap !important;
+    }
+}
+
 [data-theme="dark"] .pms-listing-flat.pms-search-card,
 [data-theme="dark"] .pms-listing-flat.pms-grid-card {
     background: transparent !important;
@@ -540,7 +612,13 @@
     border-color: #334155;
 }
 
-/* ─── Registration Create form ─── */
+/* ─── Enterprise flat form (Registration, Customer, etc.) ─── */
+
+.pms-registration-page-title,
+.pms-enterprise-form-page-title {
+    font-size: 1.35rem;
+    font-weight: 600;
+}
 
 .pms-registration-process-note {
     background: transparent !important;
@@ -553,42 +631,70 @@
     line-height: 1.5;
 }
 
-.pms-registration-process-note strong {
-    color: #000 !important;
-    font-weight: 700;
-}
-
 .pms-registration-process-note .pms-registration-process-detail {
     color: #2563eb !important;
     font-weight: 500;
 }
 
-.pms-registration-create.pms-listing-flat.card {
+.pms-registration-create.pms-listing-flat.card,
+.pms-customer-create.pms-listing-flat.card {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
-.pms-registration-create.pms-listing-flat > .card-body {
+.pms-registration-create.pms-listing-flat > .card-body,
+.pms-customer-create.pms-listing-flat > .card-body {
     padding: 0 !important;
     background: transparent !important;
 }
 
-.pms-registration-create {
-    --pms-listing-control-h: 36px;
+.pms-registration-create,
+.pms-customer-create {
+    --pms-listing-control-h: 32px;
 }
 
 .pms-registration-create .form-control,
 .pms-registration-create .form-select {
     min-height: var(--pms-listing-control-h);
     height: var(--pms-listing-control-h);
-    padding: 0.35rem 0.75rem;
-    font-size: 0.875rem;
-    border-radius: 10px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8125rem;
+    border-radius: 0;
     border-color: #94a3b8;
 }
 
-.pms-registration-create .form-select {
+.pms-customer-create .form-control,
+.pms-customer-create .form-select {
+    min-height: var(--pms-listing-control-h);
+    height: var(--pms-listing-control-h);
+    padding: 0.25rem 0.6rem;
+    font-size: 0.8125rem;
+    border-radius: 0;
+    border: 1.5px solid #334155;
+}
+
+.pms-customer-create .form-control:focus,
+.pms-customer-create .form-select:focus {
+    border-color: #0f172a;
+    box-shadow: 0 0 0 0.15rem rgba(15, 23, 42, 0.12);
+}
+
+.pms-registration-create textarea.form-control,
+.pms-customer-create textarea.form-control {
+    height: auto;
+    min-height: calc(var(--pms-listing-control-h) * 2);
+}
+
+.pms-registration-create input[type="file"].form-control,
+.pms-customer-create input[type="file"].form-control {
+    height: auto;
+    min-height: var(--pms-listing-control-h);
+    padding: 0.2rem 0.6rem;
+}
+
+.pms-registration-create .form-select,
+.pms-customer-create .form-select {
     padding-right: 2.25rem;
     appearance: none;
     -webkit-appearance: none;
@@ -599,49 +705,191 @@
 }
 
 .pms-registration-create .form-label {
-    font-size: 0.8125rem;
+    font-size: 0.78125rem;
+    margin-bottom: 0.3rem;
+}
+
+.pms-registration-create .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .form-label,
+.pms-registration-create .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label {
+    color: #2563eb !important;
+    font-weight: 400 !important;
+}
+
+.pms-customer-create .form-label {
+    font-size: 0.78125rem;
+    margin-bottom: 0.3rem;
+}
+
+.pms-customer-create .pms-customer-4col-form .pms-registration-4col-row > .col-lg-2 .form-label,
+.pms-customer-create .pms-customer-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label {
+    color: #2563eb !important;
+    font-weight: 400 !important;
+}
+
+.pms-customer-create textarea.pms-customer-address-input {
+    min-height: 32px !important;
+    height: 32px;
+    line-height: 1.25;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    resize: vertical;
+}
+
+.pms-registration-4col-form .pms-registration-4col-row {
+    margin-bottom: 0.55rem;
+}
+
+.pms-customer-4col-form .pms-registration-4col-row {
+    margin-bottom: 0;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid #cbd5e1;
+}
+
+.pms-registration-4col-form .pms-registration-4col-label,
+.pms-customer-4col-form .pms-registration-4col-label {
+    margin-bottom: 0;
+    padding-top: 0.35rem;
+    line-height: 1.25;
+    font-size: 0.78125rem;
+}
+
+.pms-registration-4col-form .pms-registration-4col-row .form-control,
+.pms-registration-4col-form .pms-registration-4col-row .form-select,
+.pms-customer-4col-form .pms-registration-4col-row .form-control,
+.pms-customer-4col-form .pms-registration-4col-row .form-select {
+    width: 100%;
+    max-width: 100%;
+}
+
+@media (min-width: 992px) {
+    .pms-customer-4col-form .pms-registration-4col-row > .col-lg-4 {
+        flex: 0 0 25%;
+        width: 25%;
+        max-width: 25%;
+    }
+
+    .pms-customer-4col-form .pms-registration-4col-row > .col-lg-10 {
+        flex: 0 0 62.5%;
+        width: 62.5%;
+        max-width: 62.5%;
+    }
+
+    /* Extra space between first field column and second label column */
+    .pms-customer-4col-form .pms-registration-4col-row > *:nth-child(2) {
+        padding-right: 1.25rem;
+    }
+
+    .pms-customer-4col-form .pms-registration-4col-row > *:nth-child(3) {
+        padding-left: 1.25rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .pms-registration-4col-form .pms-registration-4col-row.align-items-start,
+    .pms-customer-4col-form .pms-registration-4col-row.align-items-start {
+        align-items: center !important;
+    }
+
+    .pms-registration-4col-form .pms-registration-4col-row.align-items-start:has(.text-muted),
+    .pms-registration-4col-form .pms-registration-4col-row.align-items-start:has(.alert),
+    .pms-customer-4col-form .pms-registration-4col-row.align-items-start:has(.text-muted),
+    .pms-customer-4col-form .pms-registration-4col-row.align-items-start:has(.alert) {
+        align-items: start !important;
+    }
+
+    .pms-registration-4col-form .pms-registration-4col-label,
+    .pms-customer-4col-form .pms-registration-4col-label {
+        padding-top: 0;
+        min-height: var(--pms-listing-control-h);
+        display: flex;
+        align-items: center;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .pms-registration-4col-form .pms-registration-4col-label,
+    .pms-customer-4col-form .pms-registration-4col-label {
+        padding-top: 0;
+        margin-bottom: 0.2rem;
+    }
+}
+
+.pms-customer-wizard-progress {
+    margin-bottom: 0.5rem;
+}
+
+.pms-customer-wizard-progress .progress {
+    height: 6px;
+    border-radius: 0;
+    background-color: #e2e8f0;
+}
+
+.pms-customer-wizard-progress .progress-bar {
+    border-radius: 0;
+    background: #2563eb !important;
+}
+
+.pms-customer-wizard-step-title {
+    font-size: 0.9375rem;
     font-weight: 600;
     color: #334155;
-    margin-bottom: 0.35rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-.pms-registration-create-actions .btn {
-    font-size: 0.875rem;
+.pms-customer-wizard-section-title {
+    font-size: 0.8125rem;
     font-weight: 600;
-    padding: 0.4rem 2rem;
-    min-height: 36px;
-    border-radius: 10px;
-    min-width: 140px;
+    color: #475569;
+    margin-bottom: 0.65rem;
 }
 
-.pms-registration-create-actions .btn-primary {
+.pms-customer-wizard-step {
+    min-height: 200px;
+}
+
+.pms-customer-wizard-nav {
+    margin-top: 0.5rem;
+}
+
+.pms-registration-create-actions .btn,
+.pms-customer-create-actions .btn {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    padding: 0.25rem 1rem;
+    min-height: 30px;
+    border-radius: 8px;
+    min-width: 80px;
+}
+
+.pms-registration-create-actions .btn-primary,
+.pms-customer-create-actions .btn-primary {
     background: #2563eb;
     border-color: #2563eb;
     box-shadow: 0 2px 10px rgba(37, 99, 235, 0.35);
 }
 
-.pms-registration-create-actions .btn-primary:hover {
+.pms-registration-create-actions .btn-primary:hover,
+.pms-customer-create-actions .btn-primary:hover {
     background: #1d4ed8;
     border-color: #1d4ed8;
     box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
 }
 
-.pms-registration-create-actions .btn-outline-secondary {
+.pms-registration-create-actions .btn-outline-secondary,
+.pms-customer-create-actions .btn-outline-secondary {
     color: #334155;
     border-color: #64748b;
     border-width: 1.5px;
     background: #fff;
 }
 
-.pms-registration-create-actions .btn-outline-secondary:hover {
+.pms-registration-create-actions .btn-outline-secondary:hover,
+.pms-customer-create-actions .btn-outline-secondary:hover {
     color: #0f172a;
     background: #f1f5f9;
     border-color: #475569;
-}
-
-[data-theme="dark"] .pms-registration-process-note,
-[data-theme="dark"] .pms-registration-process-note strong {
-    color: #f8fafc !important;
 }
 
 [data-theme="dark"] .pms-registration-process-note .pms-registration-process-detail {

@@ -31,19 +31,32 @@
             <span class="badge rounded-pill pms-record-badge">@countText</span>
         }
     </div>
+    @if (ViewData["ListingHideToolbarActions"] as bool? != true)
+    {
     <div class="d-flex flex-wrap gap-2 pms-grid-toolbar-actions">
-        @if (showAdd && !string.IsNullOrEmpty(addUrl))
+        @if (ViewData["ListingExtraActionsPartial"] is string extraPartial)
         {
-            <a href="@addUrl" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>@addText
-            </a>
+            <partial name="@extraPartial" />
         }
-        @if (ViewData["ListingExtraActions"] != null)
+        else
         {
-            @Html.Raw(ViewData["ListingExtraActions"])
+            @if (showAdd && !string.IsNullOrEmpty(addUrl))
+            {
+                <a href="@addUrl" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>@addText
+                </a>
+            }
+            @if (ViewData["ListingExtraActions"] != null)
+            {
+                @Html.Raw(ViewData["ListingExtraActions"])
+            }
         }
-        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.location.reload()" title="Refresh">
-            <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh
-        </button>
+        @if (ViewData["ListingHideRefresh"] as bool? != true)
+        {
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="window.location.reload()" title="Refresh">
+                <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh
+            </button>
+        }
     </div>
+    }
 </div>
