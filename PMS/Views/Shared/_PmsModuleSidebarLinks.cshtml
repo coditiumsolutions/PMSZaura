@@ -1,0 +1,42 @@
+@model PMS.ViewModels.NavigationShellViewModel
+@inject PMS.Services.INavigationService NavigationService
+
+@{
+    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+    var activeModule = Model.ActiveModule;
+}
+
+@if (activeModule != null)
+{
+    <li class="nav-item sidebar-section-label sidebar-section-label--module">
+        <h6 class="sidebar-section-title">@activeModule.Label</h6>
+    </li>
+
+    @foreach (var item in activeModule.Items)
+    {
+        if (item.IsSectionHeader)
+        {
+            <li class="nav-item sidebar-module-item sidebar-subsection-label @item.SectionHeaderClass">
+                <h6 class="sidebar-subsection-title">@item.Label</h6>
+            </li>
+            continue;
+        }
+
+        if (item.RequiresAdminRole && !User.IsInRole("Admin"))
+        {
+            continue;
+        }
+
+        var isActive = NavigationService.IsMenuItemActive(item, currentController, currentAction, Context);
+        <li class="nav-item sidebar-module-item">
+            <a class="nav-link @(isActive ? "active" : "")"
+               asp-controller="@item.Controller"
+               asp-action="@item.Action"
+               asp-route-id="@item.RouteId"
+               asp-route-title="@item.RouteTitle">
+                <i class="@item.IconClass"></i>@item.Label
+            </a>
+        </li>
+    }
+}

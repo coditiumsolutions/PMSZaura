@@ -321,8 +321,13 @@
 /* ─── Top navigation bar ─── */
 
 .pms-topbar-stack {
-    --pms-topbar-main-height: 52px;
+    --pms-topbar-modules-height: 46px;
+    --pms-topbar-account-height: 40px;
     --pms-topbar-separator-height: 6px;
+    --pms-topbar-main-height: calc(var(--pms-topbar-modules-height) + var(--pms-topbar-account-height));
+    --pms-topbar-height: calc(var(--pms-topbar-main-height) + var(--pms-topbar-separator-height));
+    --pms-topbar-row1-bg: var(--pms-slate-900);
+    --pms-topbar-row2-bg: #074A8D;
     position: fixed;
     top: 0;
     left: 0;
@@ -331,16 +336,51 @@
     width: 100%;
 }
 
+.pms-topbar-stack--with-modules {
+    --pms-topbar-modules-height: 46px;
+}
+
 .pms-topbar {
     position: relative;
     top: auto;
     left: auto;
     right: auto;
     width: 100%;
-    background: var(--pms-slate-900);
+    background: transparent;
     border-bottom: none;
     box-shadow: none;
     color: #fff;
+}
+
+.pms-topbar-row {
+    width: 100%;
+}
+
+.pms-topbar-row--modules {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: var(--pms-topbar-modules-height);
+    padding: 0.35rem 0.85rem;
+    background: var(--pms-topbar-row1-bg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+}
+
+.pms-topbar-row--account {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: var(--pms-topbar-account-height);
+    padding: 0.3rem 1.25rem;
+    background: var(--pms-topbar-row2-bg);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pms-topbar-modules-spacer {
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .pms-topbar-separator {
@@ -350,14 +390,58 @@
     flex-shrink: 0;
 }
 
-.pms-topbar-inner {
+.pms-topbar-modules {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    min-height: var(--pms-topbar-main-height, 52px);
-    padding: 0.5rem 1.25rem;
-    gap: 1rem;
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15);
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 0.25rem 1.35rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
+}
+
+.pms-topbar-modules::-webkit-scrollbar {
+    height: 4px;
+}
+
+.pms-topbar-modules::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+}
+
+.pms-topbar-module-link {
+    display: inline-block;
+    padding: 0.35rem 0.15rem;
+    color: rgba(255, 255, 255, 0.82);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.25;
+    background: none;
+    border: none;
+    border-radius: 0;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+    flex: 0 0 auto;
+}
+
+.pms-topbar-module-link:hover {
+    color: #fff;
+    text-decoration: none;
+    border-bottom-color: rgba(255, 255, 255, 0.45);
+    background: none;
+}
+
+.pms-topbar-module-link.active {
+    color: #fff;
+    font-weight: 600;
+    border-bottom-color: #c9a227;
+    background: none;
+    box-shadow: none;
 }
 
 .pms-topbar-nav {
@@ -367,6 +451,7 @@
     justify-content: flex-end;
     gap: 0.65rem 1rem;
     font-size: 0.875rem;
+    width: 100%;
 }
 
 .pms-topbar-item {
@@ -392,14 +477,25 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.4rem 0.85rem;
+    padding: 0.32rem 0.75rem;
     border-radius: 10px;
     color: #fff;
     text-decoration: none;
     font-weight: 600;
+    font-size: 0.8125rem;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     transition: background 0.15s ease, border-color 0.15s ease;
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.pms-topbar-row--account .pms-topbar-item {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.pms-topbar-row--account .pms-topbar-divider {
+    background: rgba(255, 255, 255, 0.35);
 }
 
 .pms-topbar-link:hover {
@@ -419,8 +515,10 @@
 }
 
 body:has(.pms-topbar-stack) {
-    --pms-topbar-main-height: 52px;
+    --pms-topbar-modules-height: 46px;
+    --pms-topbar-account-height: 40px;
     --pms-topbar-separator-height: 6px;
+    --pms-topbar-main-height: calc(var(--pms-topbar-modules-height) + var(--pms-topbar-account-height));
     --pms-topbar-height: calc(var(--pms-topbar-main-height) + var(--pms-topbar-separator-height));
     display: flex;
     flex-direction: column;
@@ -441,14 +539,37 @@ body:has(.pms-topbar-stack) #appSidebar .sidebar-sticky-inner {
     top: auto !important;
 }
 
-@media (max-width: 768px) {
-    body:has(.pms-topbar-stack) {
-        --pms-topbar-main-height: 72px;
+@media (min-width: 1200px) {
+    .pms-topbar-stack--with-modules .pms-topbar-modules {
+        justify-content: flex-start;
+        overflow-x: visible;
+        gap: 0.25rem 1.75rem;
     }
 
-    .pms-topbar-inner {
-        padding: 0.5rem 0.75rem;
-        min-height: auto;
+    .pms-topbar-stack--with-modules .pms-topbar-module-link {
+        font-size: 0.9rem;
+        padding: 0.35rem 0.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    body:has(.pms-topbar-stack) {
+        --pms-topbar-modules-height: 44px;
+        --pms-topbar-account-height: 64px;
+        --pms-topbar-main-height: calc(var(--pms-topbar-modules-height) + var(--pms-topbar-account-height));
+    }
+
+    .pms-topbar-row--modules {
+        padding: 0.3rem 0.55rem;
+    }
+
+    .pms-topbar-row--account {
+        padding: 0.35rem 0.75rem;
+    }
+
+    .pms-topbar-module-link {
+        font-size: 0.8125rem;
+        padding: 0.3rem 0.1rem;
     }
 
     .pms-topbar-nav {

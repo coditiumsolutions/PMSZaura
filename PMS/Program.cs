@@ -16,7 +16,11 @@ PMSDbContextAccCompat.MapVoucherBankAccountColumn =
     builder.Configuration.GetValue<bool>("AmsAccCompat:MapVoucherBankAccountColumn", defaultValue: true);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews(options => options.Filters.Add<AmsViewBagFilter>());
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<AmsViewBagFilter>();
+    options.Filters.Add<NavigationModuleFilter>();
+});
 builder.Services.AddScoped<AmsAccessService>();
 
 // Add Entity Framework
@@ -27,7 +31,8 @@ builder.Services.AddDbContext<PMSDbContext>(options =>
 builder.Services.AddScoped<SeedDataService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<PMS.Services.IModulePermissionService, PMS.Services.ModulePermissionService>();
-builder.Services.AddScoped<ISiteConfigService, SiteConfigService>();
+builder.Services.AddScoped<PMS.Services.ISiteConfigService, PMS.Services.SiteConfigService>();
+builder.Services.AddSingleton<PMS.Services.INavigationService, PMS.Services.NavigationService>();
 builder.Services.AddSingleton<PMS.Services.TotpSecretProtector>();
 builder.Services.AddSingleton<PMS.Services.ITotpAuthenticatorService, PMS.Services.TotpAuthenticatorService>();
 builder.Services.AddScoped<PMS.Services.ITwoFactorConfigService, PMS.Services.TwoFactorConfigService>();
