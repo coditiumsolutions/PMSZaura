@@ -327,7 +327,7 @@
     --pms-topbar-main-height: calc(var(--pms-topbar-modules-height) + var(--pms-topbar-account-height));
     --pms-topbar-height: calc(var(--pms-topbar-main-height) + var(--pms-topbar-separator-height));
     --pms-topbar-row1-bg: var(--pms-slate-900);
-    --pms-topbar-row2-bg: #074A8D;
+    --pms-topbar-row2-bg: #ffffff;
     position: fixed;
     top: 0;
     left: 0;
@@ -375,7 +375,7 @@
     min-height: var(--pms-topbar-account-height);
     padding: 0.3rem 1.25rem;
     background: var(--pms-topbar-row2-bg);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--pms-slate-200);
 }
 
 .pms-topbar-modules-spacer {
@@ -491,11 +491,15 @@
 }
 
 .pms-topbar-row--account .pms-topbar-item {
-    color: rgba(255, 255, 255, 0.95);
+    color: var(--pms-slate-600);
+}
+
+.pms-topbar-row--account .pms-topbar-item strong {
+    color: var(--pms-slate-800);
 }
 
 .pms-topbar-row--account .pms-topbar-divider {
-    background: rgba(255, 255, 255, 0.35);
+    background: var(--pms-slate-200);
 }
 
 .pms-topbar-link:hover {

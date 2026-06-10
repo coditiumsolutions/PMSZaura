@@ -54,19 +54,29 @@
             <table class="table pms-saas-table" id="rentalsTable">
                 <thead>
                     <tr>
+                        <th class="pms-saas-th-actions">Actions</th>
                         <th>Rental ID</th>
                         <th>Property</th>
                         <th>Tenant</th>
                         <th>Start</th>
                         <th>Monthly Rent</th>
                         <th>Status</th>
-                        <th class="pms-saas-th-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var r in Model)
                     {
                         <tr>
+                            <td class="pms-saas-td-actions" data-label="Actions">
+                                <div class="pms-row-actions" role="group">
+                                    <a asp-action="Details" asp-route-id="@r.RentalID" class="btn btn-sm btn-outline-secondary" title="Details">
+                                        <i class="bi bi-eye" aria-hidden="true"></i>
+                                    </a>
+                                    <a asp-action="Create" asp-route-propertyId="@r.PropertyID" class="btn btn-sm btn-outline-primary" title="New Rental (Same Property)">
+                                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                                    </a>
+                                </div>
+                            </td>
                             <td data-label="Rental ID"><span class="badge bg-secondary">@r.RentalID</span></td>
                             <td data-label="Property">
                                 <div>
@@ -101,16 +111,6 @@
                                 else
                                 { <span class="pms-pill pms-pill--warning">@r.Status</span> }
                             </td>
-                            <td class="pms-saas-td-actions" data-label="Actions">
-                                <div class="pms-row-actions" role="group">
-                                    <a asp-action="Details" asp-route-id="@r.RentalID" class="btn btn-sm btn-outline-secondary" title="Details">
-                                        <i class="bi bi-eye" aria-hidden="true"></i>
-                                    </a>
-                                    <a asp-action="Create" asp-route-propertyId="@r.PropertyID" class="btn btn-sm btn-outline-primary" title="New Rental (Same Property)">
-                                        <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                                    </a>
-                                </div>
-                            </td>
                         </tr>
                     }
                 </tbody>
@@ -124,8 +124,8 @@
         $(document).ready(function () {
             $('#rentalsTable').DataTable({
                 pageLength: 25,
-                order: [[0, 'desc']],
-                columnDefs: [{ orderable: false, targets: 6 }]
+                order: [[1, 'desc']],
+                columnDefs: [{ orderable: false, targets: 0 }]
             });
         });
     </script>

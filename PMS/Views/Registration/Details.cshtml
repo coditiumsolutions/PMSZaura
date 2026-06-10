@@ -17,119 +17,130 @@
             </div>
         </div>
     </div>
-    <div>
-        <a asp-action="Edit" asp-route-id="@Model.RegID" class="btn btn-primary me-2">
-            <i class="fas fa-edit me-2"></i>Edit
+    <div class="d-flex gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.RegID" class="btn btn-primary btn-sm">
+            <i class="fas fa-edit me-1"></i>Edit
         </a>
-        <a asp-action="Index" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-2"></i>Back to List
+        <a asp-action="Index" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
         </a>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-8">
-        <div class="card">
+        <div class="card pms-listing-flat pms-registration-details">
             <div class="card-header">
                 <h5 class="mb-0">
                     <i class="fas fa-info-circle me-2"></i>Registration Information
                 </h5>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-id-badge me-2"></i>Registration ID</label>
-                            <p><code>@Model.RegID</code></p>
+                <div class="pms-registration-4col-form">
+                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Registration ID</div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-toggle-on me-2"></i>Status</label>
-                            <p>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value"><code>@Model.RegID</code></div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Status</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">
                                 @if (Model.Status == "Pending")
                                 {
-                                    <span class="badge bg-warning">
-                                        <i class="fas fa-clock me-1"></i>Pending
-                                    </span>
+                                    <span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Pending</span>
                                 }
                                 else if (Model.Status == "Approved")
                                 {
-                                    <span class="badge bg-success">
-                                        <i class="fas fa-check-circle me-1"></i>Approved
-                                    </span>
+                                    <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Approved</span>
                                 }
                                 else if (Model.Status == "Rejected")
                                 {
-                                    <span class="badge bg-danger">
-                                        <i class="fas fa-times-circle me-1"></i>Rejected
-                                    </span>
+                                    <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Rejected</span>
                                 }
                                 else
                                 {
                                     <span class="badge bg-secondary">@Model.Status</span>
                                 }
-                            </p>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-user me-2"></i>Full Name</label>
-                            <p>@Model.FullName</p>
+
+                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Full Name</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@Model.FullName</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">CNIC</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.CNIC ?? "N/A")</div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-id-card me-2"></i>CNIC</label>
-                            <p>@(Model.CNIC ?? "N/A")</p>
+
+                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Passport Number</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.PassportNo ?? "N/A")</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Phone</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@Model.Phone</div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-passport me-2"></i>Passport Number</label>
-                            <p>@(Model.PassportNo ?? "N/A")</p>
+
+                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Email</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.Email ?? "N/A")</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Form No</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.FormNo ?? "N/A")</div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-phone me-2"></i>Phone</label>
-                            <p>@Model.Phone</p>
+
+                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Project</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.Project?.ProjectName ?? "N/A")</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Size</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.Size ?? "N/A")</div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-envelope me-2"></i>Email</label>
-                            <p>@(Model.Email ?? "N/A")</p>
+
+                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">SubProject</div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-hashtag me-2"></i>Form No</label>
-                            <p>@(Model.FormNo ?? "N/A")</p>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.SubProject ?? "N/A")</div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-building me-2"></i>Project</label>
-                            <p>@(Model.Project?.ProjectName ?? "N/A")</p>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Registration Date</div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-ruler-combined me-2"></i>Size</label>
-                            <p>@(Model.Size ?? "N/A")</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-layer-group me-2"></i>SubProject</label>
-                            <p>@(Model.SubProject ?? "N/A")</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-calendar me-2"></i>Registration Date</label>
-                            <p>@Model.CreatedAt.ToString("MMMM dd, yyyy hh:mm tt")</p>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@Model.CreatedAt.ToString("MMMM dd, yyyy hh:mm tt")</div>
                         </div>
                     </div>
                 </div>
@@ -137,7 +148,7 @@
         </div>
     </div>
 
-    <div class="col-md-4">
+    <div class="col-md-4 pms-registration-details-sidebar">
         <!-- Status Update Card -->
         <div class="card mb-3">
             <div class="card-header bg-primary text-white">
@@ -230,13 +241,13 @@
 </div>
 
 <style>
-    .detail-field {
-        padding: 8px 10px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #f3f0ff 100%);
-        border-radius: 6px;
+    .pms-registration-details-sidebar .detail-field {
+        padding: 4px 0;
+        background: transparent;
+        border-radius: 0;
     }
 
-    .detail-field label {
+    .pms-registration-details-sidebar .detail-field label {
         display: block;
         margin-bottom: 3px;
         font-size: 10px;
@@ -246,14 +257,14 @@
         font-weight: 600;
     }
 
-    .detail-field p {
+    .pms-registration-details-sidebar .detail-field p {
         font-size: 14px;
         color: var(--text-dark);
         margin-bottom: 0;
         font-weight: 500;
     }
 
-    code {
+    .pms-registration-details-sidebar code {
         background: rgba(156, 106, 222, 0.1);
         color: #9C6ADE;
         padding: 4px 8px;

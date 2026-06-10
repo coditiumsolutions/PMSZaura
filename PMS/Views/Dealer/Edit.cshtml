@@ -4,152 +4,135 @@
     ViewData["Title"] = "Edit Dealer";
 }
 
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-edit me-2"></i></h2>
-            <a asp-action="Index" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Back to List
-            </a>
-        </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0 pms-registration-page-title">Edit Dealer</h2>
+    <div class="d-flex gap-2">
+        <a asp-action="Details" asp-route-id="@Model.DealerID" class="btn btn-outline-info btn-sm">
+            <i class="fas fa-eye me-1"></i>View Details
+        </a>
+        <a asp-action="Index" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
+        </a>
+    </div>
+</div>
 
-        <div class="card">
-            <div class="card-body">
-                <form asp-action="Edit" method="post">
-                    <input type="hidden" asp-for="DealerID" />
+<div class="card pms-listing-flat pms-registration-create">
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="DealerID" />
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5 class="text-primary mb-3">
-                                <i class="fas fa-store me-2"></i>Dealership Information
-                            </h5>
-
-                            <div class="mb-3">
-                                <label asp-for="DealershipName" class="form-label">Dealership Name *</label>
-                                <input asp-for="DealershipName" class="form-control" required />
-                                <span asp-validation-for="DealershipName" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="RegisterationDate" class="form-label">Registration Date *</label>
-                                <input asp-for="RegisterationDate" type="date" class="form-control" required />
-                                <span asp-validation-for="RegisterationDate" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Status" class="form-label">Status *</label>
-                                <select asp-for="Status" class="form-select" required>
-                                    <option value="">Select Status</option>
-                                    <option value="Active">Active</option>
-                                    <option value="Inactive">Inactive</option>
-                                    <option value="Suspended">Suspended</option>
-                                </select>
-                                <span asp-validation-for="Status" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="MembershipType" class="form-label">Membership Type *</label>
-                                <select asp-for="MembershipType" class="form-select" required>
-                                    <option value="">Select Membership Type</option>
-                                    <option value="Gold">Gold</option>
-                                    <option value="Silver">Silver</option>
-                                    <option value="Bronze">Bronze</option>
-                                    <option value="Standard">Standard</option>
-                                </select>
-                                <span asp-validation-for="MembershipType" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <h5 class="text-primary mb-3">
-                                <i class="fas fa-user me-2"></i>Owner Information
-                            </h5>
-
-                            <div class="mb-3">
-                                <label asp-for="OwnerName" class="form-label">Owner Name *</label>
-                                <input asp-for="OwnerName" class="form-control" required />
-                                <span asp-validation-for="OwnerName" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="OwnerCNIC" class="form-label">Owner National Id Card *</label>
-                                <input asp-for="OwnerCNIC" class="form-control" required />
-                                <span asp-validation-for="OwnerCNIC" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="MobileNo" class="form-label">Mobile Number *</label>
-                                <input asp-for="MobileNo" class="form-control" required />
-                                <span asp-validation-for="MobileNo" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="PhoneNumber" class="form-label">Phone Number *</label>
-                                <input asp-for="PhoneNumber" class="form-control" required />
-                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Email" class="form-label">Email *</label>
-                                <input asp-for="Email" type="email" class="form-control" required />
-                                <span asp-validation-for="Email" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Address" class="form-label">Address *</label>
-                                <input asp-for="Address" class="form-control" required />
-                                <span asp-validation-for="Address" class="text-danger"></span>
-                            </div>
-                        </div>
+            <div class="pms-registration-4col-form">
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2"><label asp-for="DealershipName" class="form-label pms-registration-4col-label">Dealership Name *</label></div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="DealershipName" class="form-control" required />
+                        <span asp-validation-for="DealershipName" class="text-danger"></span>
                     </div>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <h5 class="text-primary mb-3">
-                                <i class="fas fa-info-circle me-2"></i>Additional Information
-                            </h5>
-
-                            <div class="mb-3">
-                                <label asp-for="OwnerDetails" class="form-label">Owner Details *</label>
-                                <textarea asp-for="OwnerDetails" class="form-control" rows="4" required></textarea>
-                                <span asp-validation-for="OwnerDetails" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Details" class="form-label">Details</label>
-                                <textarea asp-for="Details" class="form-control" rows="3"></textarea>
-                                <span asp-validation-for="Details" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="IncentivePercentage" class="form-label">Incentive Percentage (%)</label>
-                                <input asp-for="IncentivePercentage" type="number" step="0.01" min="0" max="100" class="form-control" />
-                                <small class="text-muted">Default: 5%</small>
-                                <span asp-validation-for="IncentivePercentage" class="text-danger"></span>
-                            </div>
-                        </div>
+                    <div class="col-12 col-lg-2"><label asp-for="RegisterationDate" class="form-label pms-registration-4col-label">Registration Date *</label></div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="RegisterationDate" type="date" class="form-control" required />
+                        <span asp-validation-for="RegisterationDate" class="text-danger"></span>
                     </div>
+                </div>
 
-                    <div class="row">
-                        <div class="col-12">
-                            <hr>
-                            <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary me-2">
-                                    <i class="fas fa-save me-2"></i>Update Dealer
-                                </button>
-                                <a asp-action="Index" class="btn btn-secondary">
-                                    <i class="fas fa-times me-2"></i>Cancel
-                                </a>
-                            </div>
-                        </div>
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2"><label asp-for="Status" class="form-label pms-registration-4col-label">Status *</label></div>
+                    <div class="col-12 col-lg-4">
+                        <select asp-for="Status" class="form-select" required>
+                            <option value="">Select Status</option>
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                            <option value="Suspended">Suspended</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
                     </div>
-                </form>
+                    <div class="col-12 col-lg-2"><label asp-for="MembershipType" class="form-label pms-registration-4col-label">Membership Type *</label></div>
+                    <div class="col-12 col-lg-4">
+                        <select asp-for="MembershipType" class="form-select" required>
+                            <option value="">Select Membership Type</option>
+                            <option value="Gold">Gold</option>
+                            <option value="Silver">Silver</option>
+                            <option value="Bronze">Bronze</option>
+                            <option value="Standard">Standard</option>
+                        </select>
+                        <span asp-validation-for="MembershipType" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2"><label asp-for="OwnerName" class="form-label pms-registration-4col-label">Owner Name *</label></div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="OwnerName" class="form-control" required />
+                        <span asp-validation-for="OwnerName" class="text-danger"></span>
+                    </div>
+                    <div class="col-12 col-lg-2"><label asp-for="OwnerCNIC" class="form-label pms-registration-4col-label">Owner CNIC *</label></div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="OwnerCNIC" class="form-control" required />
+                        <span asp-validation-for="OwnerCNIC" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2"><label asp-for="MobileNo" class="form-label pms-registration-4col-label">Mobile Number *</label></div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="MobileNo" class="form-control" required />
+                        <span asp-validation-for="MobileNo" class="text-danger"></span>
+                    </div>
+                    <div class="col-12 col-lg-2"><label asp-for="PhoneNumber" class="form-label pms-registration-4col-label">Phone Number *</label></div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="PhoneNumber" class="form-control" required />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2"><label asp-for="Email" class="form-label pms-registration-4col-label">Email *</label></div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="Email" type="email" class="form-control" required />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="col-12 col-lg-2"><label asp-for="IncentivePercentage" class="form-label pms-registration-4col-label">Incentive %</label></div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="IncentivePercentage" type="number" step="0.01" min="0" max="100" class="form-control" />
+                        <span asp-validation-for="IncentivePercentage" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2"><label asp-for="Address" class="form-label pms-registration-4col-label">Address *</label></div>
+                    <div class="col-12 col-lg-10">
+                        <input asp-for="Address" class="form-control" required />
+                        <span asp-validation-for="Address" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2"><label asp-for="OwnerDetails" class="form-label pms-registration-4col-label">Owner Details *</label></div>
+                    <div class="col-12 col-lg-10">
+                        <textarea asp-for="OwnerDetails" class="form-control" rows="2" required></textarea>
+                        <span asp-validation-for="OwnerDetails" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2"><label asp-for="Details" class="form-label pms-registration-4col-label">Details</label></div>
+                    <div class="col-12 col-lg-10">
+                        <textarea asp-for="Details" class="form-control" rows="2"></textarea>
+                        <span asp-validation-for="Details" class="text-danger"></span>
+                    </div>
+                </div>
             </div>
-        </div>
+
+            <div class="d-flex justify-content-end gap-2 pms-registration-create-actions mt-3">
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-sm btn-primary">
+                    <i class="fas fa-save me-1"></i>Update Dealer
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
-

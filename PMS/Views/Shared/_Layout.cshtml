@@ -334,44 +334,45 @@
 
         .sidebar-section-label {
             padding: 0 !important;
-            margin: 0 0 6px;
+            margin: 0 0 4px;
             overflow: visible;
         }
 
         .sidebar-section-label--general {
-            margin-top: 0.25rem;
+            margin-top: 1.1rem;
+            margin-bottom: 6px;
+            padding-top: 0.85rem !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .sidebar-section-label--module {
-            margin-top: 10px;
-            margin-bottom: 8px;
+            margin-top: 0.25rem;
+            margin-bottom: 4px;
         }
 
         .sidebar-section-title {
             display: block;
             width: 100%;
             margin: 0;
-            padding: 0.5rem 15px;
+            padding: 0.2rem 15px 0.35rem;
             font-size: 0.68rem;
             font-weight: 700;
             letter-spacing: 0.08em;
             text-transform: uppercase;
             line-height: 1.2;
             box-sizing: border-box;
+            background: none;
+            border: none;
+            box-shadow: none;
+            color: rgba(255, 255, 255, 0.55);
         }
 
-        .sidebar-section-label--general .sidebar-section-title {
-            background: rgba(5, 66, 102, 0.92);
-            color: rgba(255, 255, 255, 0.95);
-            border-left: 4px solid rgba(255, 255, 255, 0.45);
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-        }
-
+        .sidebar-section-label--general .sidebar-section-title,
         .sidebar-section-label--module .sidebar-section-title {
-            background: #074A8D;
-            color: #fff;
-            border-left: 4px solid #c9a227;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            background: none;
+            color: rgba(255, 255, 255, 0.55);
+            border: none;
+            box-shadow: none;
         }
 
         .sidebar-section-divider {
@@ -1519,6 +1520,8 @@
 }
 else
 {
+                        <partial name="_PmsModuleSidebarLinks" model="navigationShell" />
+
                         <li class="nav-item sidebar-section-label sidebar-section-label--general">
                             <h6 class="sidebar-section-title">General</h6>
                         </li>
@@ -1537,8 +1540,6 @@ else
                                 Workspace
                             </a>
                         </li>
-                        
-                        <partial name="_PmsModuleSidebarLinks" model="navigationShell" />
 }
                     </ul>
                 </div>

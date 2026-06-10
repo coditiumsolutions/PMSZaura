@@ -138,8 +138,8 @@ else
     <script>
         $(document).ready(function() {
             var showBulkSelection = @showBulkSelection.ToString().ToLowerInvariant();
-            var customerIdColumnIndex = showBulkSelection ? 1 : 0;
-            var actionsColumnIndex = showBulkSelection ? 7 : 6;
+            var customerIdColumnIndex = showBulkSelection ? 2 : 1;
+            var actionsColumnIndex = showBulkSelection ? 1 : 0;
 
             if ($('#customersTable').length) {
                 $('#customersTable').DataTable({

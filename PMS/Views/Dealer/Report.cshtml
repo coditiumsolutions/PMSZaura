@@ -2,166 +2,116 @@
 
 @{
     ViewData["Title"] = "Dealers Report";
+    var totalCustomers = Model.Sum(d => d.Customers?.Count ?? 0);
+    var totalProperties = Model.Sum(d => d.Properties?.Count ?? 0);
+    var maxAssets = Model.Any() ? Model.Max(d => (d.Customers?.Count ?? 0) + (d.Properties?.Count ?? 0)) : 1;
+    var orderedDealers = Model.OrderByDescending(d => (d.Customers?.Count ?? 0) + (d.Properties?.Count ?? 0)).ToList();
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-chart-bar me-2"></i>Dealers Report</h2>
-    <a asp-action="Index" class="btn btn-premium">
-        <i class="fas fa-arrow-left me-2"></i>Back to Dealers
-    </a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center gap-3 ms-4">
+        <div class="badge bg-light text-dark px-3 py-2" style="font-size: 14px;">
+            <i class="fas fa-chart-bar me-2" style="color: #2563eb;"></i>
+            <strong>Report generated:</strong> @DateTime.Now.ToString("MMMM dd, yyyy")
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
+        </a>
+    </div>
 </div>
 
-<!-- Statistics Overview -->
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card card-premium" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border: none;">
-            <div class="card-body text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-white-50 mb-1" style="opacity: 0.9;">Total Dealers</h6>
-                        <h3 class="mb-0">@Model.Count()</h3>
-                    </div>
-                    <div class="fs-1 opacity-50">
-                        <i class="fas fa-store"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="card pms-listing-flat pms-registration-details mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Summary</h5>
     </div>
-    <div class="col-md-4">
-        <div class="card card-premium" style="background: linear-gradient(135deg, var(--success) 0%, #34d399 100%); border: none;">
-            <div class="card-body text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-white-50 mb-1" style="opacity: 0.9;">Total Customers</h6>
-                        <h3 class="mb-0">@Model.Sum(d => d.Customers?.Count ?? 0)</h3>
-                    </div>
-                    <div class="fs-1 opacity-50">
-                        <i class="fas fa-users"></i>
-                    </div>
-                </div>
+    <div class="card-body">
+        <div class="pms-registration-4col-form">
+            <div class="row g-2 pms-registration-4col-row align-items-start">
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Total Dealers</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.Count()</div></div>
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Total Customers</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@totalCustomers</div></div>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card card-premium" style="background: linear-gradient(135deg, var(--accent) 0%, #f48fb1 100%); border: none;">
-            <div class="card-body text-white">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="text-white-50 mb-1" style="opacity: 0.9;">Total Properties</h6>
-                        <h3 class="mb-0">@Model.Sum(d => d.Properties?.Count ?? 0)</h3>
-                    </div>
-                    <div class="fs-1 opacity-50">
-                        <i class="fas fa-home"></i>
-                    </div>
-                </div>
+            <div class="row g-2 pms-registration-4col-row align-items-start">
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Total Properties</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@totalProperties</div></div>
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Combined Assets</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(totalCustomers + totalProperties)</div></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Dealer Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card card-premium">
-            <div class="card-header card-header-premium" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: white; border: none;">
-                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Dealer Performance Overview</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    @foreach (var dealer in Model.OrderByDescending(d => (d.Customers?.Count ?? 0) + (d.Properties?.Count ?? 0)))
+<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-store me-2"></i>Dealer Performance</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive pms-saas-table-wrap">
+            <table class="table pms-saas-table table-sm mb-0" id="dealerReportTable">
+                <thead>
+                    <tr>
+                        <th class="pms-saas-th-actions">Actions</th>
+                        <th>Dealer ID</th>
+                        <th>Dealership Name</th>
+                        <th>Status</th>
+                        <th>Customers</th>
+                        <th>Properties</th>
+                        <th>Total Assets</th>
+                        <th>Performance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var dealer in orderedDealers)
                     {
-                        var totalCustomers = dealer.Customers?.Count ?? 0;
-                        var totalProperties = dealer.Properties?.Count ?? 0;
-                        var totalAssets = totalCustomers + totalProperties;
-                        var maxAssets = Model.Any() ? Model.Max(d => (d.Customers?.Count ?? 0) + (d.Properties?.Count ?? 0)) : 1;
+                        var dealerCustomers = dealer.Customers?.Count ?? 0;
+                        var dealerProperties = dealer.Properties?.Count ?? 0;
+                        var totalAssets = dealerCustomers + dealerProperties;
                         var percentage = maxAssets > 0 ? (totalAssets * 100 / maxAssets) : 0;
-                        
-                        <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card card-premium h-100">
-                                <div class="card-header card-header-premium">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="mb-0">
-                                            <span class="badge me-2" style="background-color: var(--primary);">@dealer.DealerID</span>
-                                            <strong>@dealer.DealershipName</strong>
-                                        </h6>
-                                        <span class="badge @(dealer.Status == "Active" ? "bg-success" : "bg-secondary")">
-                                            @dealer.Status
-                                        </span>
-                                    </div>
+                        var statusPill = dealer.Status == "Active" ? "pms-pill--success"
+                            : dealer.Status == "Inactive" ? "pms-pill--danger" : "pms-pill--warning";
+
+                        <tr>
+                            <td class="pms-saas-td-actions" data-label="Actions">
+                                <div class="pms-row-actions" role="group">
+                                    <a asp-action="Details" asp-route-id="@dealer.DealerID" class="btn btn-sm btn-outline-secondary" title="Details">
+                                        <i class="bi bi-eye" aria-hidden="true"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@dealer.DealerID" class="btn btn-sm btn-outline-primary" title="Edit">
+                                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                    </a>
                                 </div>
-                                <div class="card-body">
-                                    <div class="mb-3">
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <small class="text-muted">Customers</small>
-                                            <strong>@totalCustomers</strong>
-                                        </div>
-                                        <div class="progress" style="height: 8px; border-radius: 12px;">
-                                            <div class="progress-bar" role="progressbar" 
-                                                 style="width: @(maxAssets > 0 ? (totalCustomers * 100 / maxAssets) : 0)%; background-color: var(--primary);" 
-                                                 aria-valuenow="@totalCustomers" 
-                                                 aria-valuemin="0" 
-                                                 aria-valuemax="@maxAssets"></div>
-                                        </div>
+                            </td>
+                            <td data-label="Dealer ID"><code>@dealer.DealerID</code></td>
+                            <td data-label="Dealership Name"><strong class="pms-cell-truncate" title="@dealer.DealershipName">@dealer.DealershipName</strong></td>
+                            <td data-label="Status"><span class="pms-pill @statusPill">@dealer.Status</span></td>
+                            <td data-label="Customers"><span class="pms-registration-details-value">@dealerCustomers</span></td>
+                            <td data-label="Properties"><span class="pms-registration-details-value">@dealerProperties</span></td>
+                            <td data-label="Total Assets"><strong>@totalAssets</strong></td>
+                            <td data-label="Performance">
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height: 6px;">
+                                        <div class="progress-bar" role="progressbar" style="width: @percentage%; background-color: #2563eb;" aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100"></div>
                                     </div>
-                                    
-                                    <div class="mb-3">
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <small class="text-muted">Properties</small>
-                                            <strong>@totalProperties</strong>
-                                        </div>
-                                        <div class="progress" style="height: 8px; border-radius: 12px;">
-                                            <div class="progress-bar bg-success" role="progressbar" 
-                                                 style="width: @(maxAssets > 0 ? (totalProperties * 100 / maxAssets) : 0)%" 
-                                                 aria-valuenow="@totalProperties" 
-                                                 aria-valuemin="0" 
-                                                 aria-valuemax="@maxAssets"></div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                                        <div>
-                                            <small class="text-muted">Total Assets</small>
-                                            <h5 class="mb-0" style="color: var(--primary);">@totalAssets</h5>
-                                        </div>
-                                        <div class="text-end">
-                                            <small class="text-muted d-block">Performance</small>
-                                            <span class="badge" style="background-color: var(--accent);">@percentage%</span>
-                                        </div>
-                                    </div>
+                                    <small class="text-muted text-nowrap">@percentage%</small>
                                 </div>
-                                <div class="card-footer card-header-premium">
-                                    <div class="btn-group w-100" role="group">
-                                        <a asp-action="Details" asp-route-id="@dealer.DealerID" 
-                                           class="btn btn-sm btn-outline-info" title="View Details">
-                                            <i class="fas fa-eye"></i> View
-                                        </a>
-                                        <a asp-action="Edit" asp-route-id="@dealer.DealerID" 
-                                           class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="fas fa-edit"></i> Edit
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            </td>
+                        </tr>
                     }
-                </div>
-            </div>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
-<!-- Chart Section -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card card-premium">
-            <div class="card-header card-header-premium" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: white; border: none;">
-                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Dealer Distribution Chart</h5>
-            </div>
-            <div class="card-body">
-                <canvas id="dealerChart" height="100"></canvas>
-            </div>
-        </div>
+<div class="card pms-listing-flat pms-registration-details">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Dealer Distribution Chart</h5>
+    </div>
+    <div class="card-body">
+        <canvas id="dealerChart" height="100"></canvas>
     </div>
 </div>
 
@@ -169,9 +119,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Prepare chart data
             var dealerData = [
-                @foreach (var dealer in Model.OrderByDescending(d => (d.Customers?.Count ?? 0) + (d.Properties?.Count ?? 0)).Take(10))
+                @foreach (var dealer in orderedDealers.Take(10))
                 {
                     <text>{
                         label: '@Html.Raw(dealer.DealershipName.Replace("'", "\\'"))',
@@ -181,10 +130,9 @@
                 }
             ];
 
-            // Create Chart with theme colors
             var ctx = document.getElementById('dealerChart');
             if (ctx) {
-                var dealerChart = new Chart(ctx, {
+                new Chart(ctx, {
                     type: 'bar',
                     data: {
                         labels: dealerData.map(d => d.label.length > 20 ? d.label.substring(0, 20) + '...' : d.label),
@@ -192,18 +140,18 @@
                             {
                                 label: 'Customers',
                                 data: dealerData.map(d => d.customers),
-                                backgroundColor: 'rgba(156, 106, 222, 0.8)',
-                                borderColor: '#9C6ADE',
-                                borderWidth: 2,
-                                borderRadius: 8
+                                backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                                borderColor: '#2563eb',
+                                borderWidth: 1,
+                                borderRadius: 4
                             },
                             {
                                 label: 'Properties',
                                 data: dealerData.map(d => d.properties),
-                                backgroundColor: 'rgba(232, 121, 249, 0.8)',
-                                borderColor: '#E879F9',
-                                borderWidth: 2,
-                                borderRadius: 8
+                                backgroundColor: 'rgba(71, 85, 105, 0.5)',
+                                borderColor: '#475569',
+                                borderWidth: 1,
+                                borderRadius: 4
                             }
                         ]
                     },
@@ -213,60 +161,17 @@
                         plugins: {
                             legend: {
                                 display: true,
-                                position: 'top',
-                                labels: {
-                                    font: {
-                                        family: 'Inter, sans-serif',
-                                        size: 12
-                                    },
-                                    padding: 15,
-                                    usePointStyle: true
-                                }
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(30, 30, 45, 0.9)',
-                                padding: 12,
-                                titleFont: {
-                                    family: 'Inter, sans-serif',
-                                    size: 13,
-                                    weight: '600'
-                                },
-                                bodyFont: {
-                                    family: 'Inter, sans-serif',
-                                    size: 12
-                                },
-                                cornerRadius: 8,
-                                callbacks: {
-                                    label: function(context) {
-                                        return context.dataset.label + ': ' + context.parsed.y;
-                                    }
-                                }
+                                position: 'top'
                             }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                ticks: {
-                                    stepSize: 1,
-                                    font: {
-                                        family: 'Inter, sans-serif',
-                                        size: 11
-                                    }
-                                },
-                                grid: {
-                                    color: 'rgba(229, 231, 235, 0.5)'
-                                }
+                                ticks: { stepSize: 1 },
+                                grid: { color: 'rgba(203, 213, 225, 0.5)' }
                             },
                             x: {
-                                ticks: {
-                                    font: {
-                                        family: 'Inter, sans-serif',
-                                        size: 11
-                                    }
-                                },
-                                grid: {
-                                    display: false
-                                }
+                                grid: { display: false }
                             }
                         }
                     }
@@ -275,4 +180,3 @@
         });
     </script>
 }
-

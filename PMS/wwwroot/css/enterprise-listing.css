@@ -630,10 +630,21 @@
     }
 }
 
-/* Customer grid: keep row action buttons visible (no hover reveal) */
-.pms-customer-listing.pms-saas-grid .pms-row-actions {
+/* Listing grids: actions first column, always visible (no hover reveal) */
+.pms-customer-listing.pms-saas-grid .pms-row-actions,
+.pms-listing-page.pms-saas-grid .pms-row-actions,
+.pms-transfer-listing.pms-saas-grid .pms-row-actions {
     opacity: 1;
     transform: translateX(0);
+}
+
+.pms-customer-listing.pms-saas-grid .pms-saas-th-actions,
+.pms-customer-listing.pms-saas-grid .pms-saas-td-actions,
+.pms-listing-page.pms-saas-grid .pms-saas-th-actions,
+.pms-listing-page.pms-saas-grid .pms-saas-td-actions,
+.pms-transfer-listing.pms-saas-grid .pms-saas-th-actions,
+.pms-transfer-listing.pms-saas-grid .pms-saas-td-actions {
+    text-align: left;
 }
 
 /* Customer grid: compact title + data cells */
@@ -711,16 +722,89 @@
 }
 
 .pms-registration-create.pms-listing-flat.card,
-.pms-customer-create.pms-listing-flat.card {
+.pms-customer-create.pms-listing-flat.card,
+.pms-registration-details.pms-listing-flat.card,
+.pms-customer-details.pms-listing-flat.card,
+.pms-customer-edit.pms-listing-flat.card {
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
 }
 
 .pms-registration-create.pms-listing-flat > .card-body,
-.pms-customer-create.pms-listing-flat > .card-body {
+.pms-customer-create.pms-listing-flat > .card-body,
+.pms-registration-details.pms-listing-flat > .card-body,
+.pms-customer-details.pms-listing-flat > .card-body,
+.pms-customer-edit.pms-listing-flat > .card-body {
     padding: 0 !important;
     background: transparent !important;
+}
+
+.pms-customer-edit.pms-listing-flat > .card-header {
+    background: transparent !important;
+    border-bottom: 1px solid #e5e7eb;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.pms-customer-edit .customer-tabs .nav-link {
+    color: #64748b;
+    font-weight: 600;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.75rem 1rem;
+    background: transparent;
+}
+
+.pms-customer-edit .customer-tabs .nav-link.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+.pms-registration-details.pms-listing-flat > .card-header {
+    background: transparent !important;
+    border-bottom: 1px solid #e5e7eb;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.pms-registration-details.pms-listing-flat:hover,
+.pms-customer-details.pms-listing-flat:hover {
+    box-shadow: none !important;
+}
+
+.pms-registration-details .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label,
+.pms-customer-details .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label {
+    color: #475569;
+    font-weight: 500;
+}
+
+.pms-registration-details .pms-registration-details-value,
+.pms-customer-details .pms-registration-details-value {
+    color: #2563eb;
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding-top: 0.35rem;
+    line-height: 1.35;
+    margin-bottom: 0;
+    min-height: 1.35rem;
+}
+
+.pms-registration-details .pms-registration-details-value code,
+.pms-customer-details .pms-registration-details-value code {
+    background: transparent;
+    color: #2563eb;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+    font-weight: 500;
+}
+
+.pms-registration-details .pms-registration-4col-form .pms-registration-4col-row,
+.pms-customer-details .pms-registration-4col-form .pms-registration-4col-row {
+    margin-bottom: 0;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid #cbd5e1;
 }
 
 .pms-registration-create,

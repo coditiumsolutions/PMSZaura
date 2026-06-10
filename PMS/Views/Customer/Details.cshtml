@@ -17,21 +17,21 @@
             </div>
         </div>
     </div>
-    <div>
-        <a asp-action="Edit" asp-route-id="@Model.CustomerID" class="btn btn-primary me-2">
-            <i class="fas fa-edit me-2"></i>Edit
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-action="Edit" asp-route-id="@Model.CustomerID" class="btn btn-primary btn-sm">
+            <i class="fas fa-edit me-1"></i>Edit
         </a>
-        <a asp-action="AccountStatement" asp-route-id="@Model.CustomerID" target="_blank" class="btn btn-outline-info me-2">
-            <i class="fas fa-file-invoice-dollar me-2"></i>Account Statement
+        <a asp-action="AccountStatement" asp-route-id="@Model.CustomerID" target="_blank" class="btn btn-outline-info btn-sm">
+            <i class="fas fa-file-invoice-dollar me-1"></i>Account Statement
         </a>
         @if (Model.Allotments != null && Model.Allotments.Any())
         {
-            <a asp-action="AllotmentLetter" asp-route-id="@Model.CustomerID" target="_blank" class="btn btn-outline-info me-2">
-                <i class="fas fa-file-signature me-2"></i>Allotment Letter
+            <a asp-action="AllotmentLetter" asp-route-id="@Model.CustomerID" target="_blank" class="btn btn-outline-info btn-sm">
+                <i class="fas fa-file-signature me-1"></i>Allotment Letter
             </a>
         }
-        <a asp-action="Index" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-2"></i>Back to List
+        <a asp-action="Index" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
         </a>
     </div>
 </div>
@@ -39,7 +39,7 @@
 <div class="row">
     <!-- Main Content with Tabs -->
     <div class="col-12">
-        <div class="card pms-customer-details">
+        <div class="card pms-listing-flat pms-customer-details">
             <div class="card-header p-0">
                 <ul class="nav nav-tabs customer-tabs" id="customerTabs" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -97,281 +97,185 @@
                 <div class="tab-content" id="customerTabContent">
                     <!-- Personal Information Tab -->
                     <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
-                <div class="row">
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-id-badge me-2"></i>Customer ID</label>
-                            <p><code>@Model.CustomerID</code></p>
+                        <div class="pms-registration-4col-form">
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Customer ID</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><code>@Model.CustomerID</code></div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Status</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-warning")">@Model.Status</span></div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Full Name</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.FullName</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">S/D/W/O</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.FatherName</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">National ID</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.CNIC</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Passport No</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.PassportNo ?? "N/A")</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Date of Birth</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.DOB?.ToString("dd-MM-yyyy") ?? "N/A")</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Gender</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.Gender</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Nationality</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.Nationality ?? "N/A")</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Form No</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.FormNo ?? "N/A")</div></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-toggle-on me-2"></i>Status</label>
-                            <p>
-                                <span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-warning")">
-                                    @Model.Status
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-user me-2"></i>Full Name</label>
-                            <p>@Model.FullName</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-user-friends me-2"></i>Father Name</label>
-                            <p>@Model.FatherName</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-id-card me-2"></i>National ID</label>
-                            <p>@Model.CNIC</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-passport me-2"></i>Passport No</label>
-                            <p>@(Model.PassportNo ?? "N/A")</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-birthday-cake me-2"></i>Date of Birth</label>
-                            <p>@(Model.DOB?.ToString("dd-MM-yyyy") ?? "N/A")</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-venus-mars me-2"></i>Gender</label>
-                            <p>@Model.Gender</p>
-                        </div>
-                    </div>
-                </div>
                     </div>
 
                     <!-- Contact Information Tab -->
                     <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
-                <div class="row">
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-phone me-2"></i>Phone</label>
-                            <p>@Model.Phone</p>
+                        <div class="pms-registration-4col-form">
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Phone</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.Phone</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Mobile</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.MobileNo</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Mobile 2</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(string.IsNullOrWhiteSpace(Model.MobileNo2) ? "—" : Model.MobileNo2)</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Email</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.Email</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">City</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.City</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Country</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.Country</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Mailing Address</div></div>
+                                <div class="col-12 col-lg-10"><div class="pms-registration-details-value">@Model.MailingAddress</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Permanent Address</div></div>
+                                <div class="col-12 col-lg-10"><div class="pms-registration-details-value">@Model.PermanentAddress</div></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-mobile-alt me-2"></i>Mobile</label>
-                            <p>@Model.MobileNo</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-mobile-alt me-2"></i>Mobile 2</label>
-                            <p>@(string.IsNullOrWhiteSpace(Model.MobileNo2) ? "—" : Model.MobileNo2)</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-envelope me-2"></i>Email</label>
-                            <p>@Model.Email</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-city me-2"></i>City</label>
-                            <p>@Model.City</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-globe me-2"></i>Country</label>
-                            <p>@Model.Country</p>
-                        </div>
-                    </div>
-                    <div class="col-md-12 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-map-marker-alt me-2"></i>Mailing Address</label>
-                            <p>@Model.MailingAddress</p>
-                        </div>
-                    </div>
-                    <div class="col-md-12 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-home me-2"></i>Permanent Address</label>
-                            <p>@Model.PermanentAddress</p>
-                        </div>
-                    </div>
-                </div>
                     </div>
 
                     <!-- Next of Kin Information Tab -->
                     <div class="tab-pane fade" id="nominee" role="tabpanel" aria-labelledby="nominee-tab">
-                <div class="row">
-                    <div class="col-md-4 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-user me-2"></i>Next of Kin Name</label>
-                            <p>@(Model.NomineeName ?? "N/A")</p>
+                        <div class="pms-registration-4col-form">
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Next of Kin Name</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.NomineeName ?? "N/A")</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Next of Kin ID</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.NomineeID ?? "N/A")</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Relationship</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.NomineeRelation ?? "N/A")</div></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-4 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-id-card me-2"></i>Next of Kin ID</label>
-                            <p>@(Model.NomineeID ?? "N/A")</p>
-                        </div>
-                    </div>
-                    <div class="col-md-4 mb-2">
-                        <div class="detail-field">
-                            <label><i class="fas fa-heart me-2"></i>Relation</label>
-                            <p>@(Model.NomineeRelation ?? "N/A")</p>
-                        </div>
-                    </div>
-                </div>
                     </div>
 
                     <!-- Registration & Plan Tab -->
                     <div class="tab-pane fade" id="registration" role="tabpanel" aria-labelledby="registration-tab">
-                        <div class="row">
-                            <!-- Registration Information -->
-                            @if (Model.Registration != null)
-                            {
-                                <div class="col-md-12 mb-3">
-                                    <h6 class="mb-3"><i class="fas fa-file-alt me-2"></i>Registration Information</h6>
-                                    <div class="row">
-                                        <div class="col-md-4 mb-2">
-                                            <div class="detail-field">
-                                                <label><i class="fas fa-tag me-2"></i>Registration ID</label>
-                                                <p><code>@Model.Registration.RegID</code></p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-2">
-                                            <div class="detail-field">
-                                                <label><i class="fas fa-calendar me-2"></i>Registered On</label>
-                                                <p>@Model.Registration.CreatedAt.ToString("MMM dd, yyyy")</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-2">
-                                            <div class="detail-field">
-                                                <label><i class="fas fa-info-circle me-2"></i>Status</label>
-                                                <p>
-                                                    <span class="badge bg-success">@Model.Registration.Status</span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
+                        @if (Model.Registration != null)
+                        {
+                            <h6 class="mb-3"><i class="fas fa-file-alt me-2"></i>Registration Information</h6>
+                            <div class="pms-registration-4col-form mb-4">
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Registration ID</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><code>@Model.Registration.RegID</code></div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Registered On</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.Registration.CreatedAt.ToString("MMM dd, yyyy")</div></div>
                                 </div>
-                            }
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Status</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><span class="badge bg-success">@Model.Registration.Status</span></div></div>
+                                </div>
+                            </div>
+                        }
 
-                            <!-- Payment Plan Information -->
-                            @if (Model.PaymentPlan != null)
-                            {
-                                <div class="col-md-12 mb-3">
-                                    <h6 class="mb-3"><i class="fas fa-credit-card me-2"></i>Payment Plan</h6>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <div class="detail-field">
-                                                <label><i class="fas fa-tag me-2"></i>Plan Name</label>
-                                                <p>@Model.PaymentPlan.PlanName</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <div class="detail-field">
-                                                <label><i class="fas fa-money-bill-wave me-2"></i>Total Amount</label>
-                                                <p><strong style="color: var(--primary-green); font-size: 1.3rem;">@Model.PaymentPlan.TotalAmount.ToString("N2") PKR</strong></p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-2">
-                                            <div class="detail-field">
-                                                <label><i class="fas fa-clock me-2"></i>Duration</label>
-                                                <p>@(Model.PaymentPlan.DurationMonths?.ToString() ?? "N/A") Months</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4 mb-2">
-                                            <div class="detail-field">
-                                                <label><i class="fas fa-calendar-alt me-2"></i>Frequency</label>
-                                                <p>@Model.PaymentPlan.Frequency</p>
-                                            </div>
-                                        </div>
-                                        @if (Model.PaymentPlan.PaymentSchedules != null && Model.PaymentPlan.PaymentSchedules.Any())
-                                        {
-                                            var totalPaid = Model.PaymentPlan.PaymentSchedules
-                                                .SelectMany(ps => ps.Payments ?? new List<PMS.Models.Payment>())
-                                                .Where(p => p.Status == "Completed")
-                                                .Sum(p => p.Amount);
-                                            var totalDue = Model.PaymentPlan.TotalAmount;
-                                            var percentage = totalDue > 0 ? (totalPaid / totalDue) * 100 : 0;
+                        @if (Model.PaymentPlan != null)
+                        {
+                            <h6 class="mb-3"><i class="fas fa-credit-card me-2"></i>Payment Plan</h6>
+                            <div class="pms-registration-4col-form mb-4">
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Plan Name</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.PaymentPlan.PlanName</div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Total Amount</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.PaymentPlan.TotalAmount.ToString("N2") PKR</div></div>
+                                </div>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Duration</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.PaymentPlan.DurationMonths?.ToString() ?? "N/A") Months</div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Frequency</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.PaymentPlan.Frequency</div></div>
+                                </div>
+                                @if (Model.PaymentPlan.PaymentSchedules != null && Model.PaymentPlan.PaymentSchedules.Any())
+                                {
+                                    var totalPaid = Model.PaymentPlan.PaymentSchedules
+                                        .SelectMany(ps => ps.Payments ?? new List<PMS.Models.Payment>())
+                                        .Where(p => p.Status == "Completed")
+                                        .Sum(p => p.Amount);
+                                    var totalDue = Model.PaymentPlan.TotalAmount;
+                                    var percentage = totalDue > 0 ? (totalPaid / totalDue) * 100 : 0;
 
-                                            <div class="col-md-4 mb-2">
-                                                <div class="detail-field">
-                                                    <label><i class="fas fa-chart-line me-2"></i>Payment Progress</label>
-                                                    <div class="progress" style="height: 20px;">
-                                                        <div class="progress-bar" role="progressbar" 
-                                                             style="width: @percentage%; background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-gold) 100%);"
-                                                             aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
-                                                            @percentage.ToString("N1")%
-                                                        </div>
-                                                    </div>
-                                                    <small class="text-muted mt-1 d-block">
-                                                        @totalPaid.ToString("N2") / @totalDue.ToString("N2") PKR
-                                                    </small>
+                                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                                        <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Payment Progress</div></div>
+                                        <div class="col-12 col-lg-10">
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar" role="progressbar"
+                                                     style="width: @percentage%; background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-gold) 100%);"
+                                                     aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
+                                                    @percentage.ToString("N1")%
                                                 </div>
                                             </div>
+                                            <small class="pms-registration-details-value mt-1 d-block">
+                                                @totalPaid.ToString("N2") / @totalDue.ToString("N2") PKR
+                                            </small>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <h6 class="mb-3"><i class="fas fa-project-diagram me-2"></i>Project Details</h6>
+                        <div class="pms-registration-4col-form @(!string.IsNullOrEmpty(Model.AdditionalInfo) ? "mb-4" : "")">
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Sub Project</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.SubProject ?? "N/A")</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Registered Size</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.RegisteredSize ?? "N/A")</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Dealer</div></div>
+                                <div class="col-12 col-lg-10">
+                                    <div class="pms-registration-details-value">
+                                        @if (Model.IsDealerRegistered == 0 && !string.IsNullOrWhiteSpace(Model.DealerName))
+                                        {
+                                            @Model.DealerName <span class="badge bg-secondary ms-1">Not Registered</span>
+                                        }
+                                        else if (Model.Dealer != null)
+                                        {
+                                            @Model.Dealer.DealershipName <span class="badge bg-success ms-1">Registered</span>
+                                        }
+                                        else
+                                        {
+                                            <span>N/A</span>
                                         }
                                     </div>
                                 </div>
-                            }
-
-                            <!-- Project Information -->
-                            <div class="col-md-12 @(!string.IsNullOrEmpty(Model.AdditionalInfo) ? "mb-3" : "")">
-                                <h6 class="mb-3"><i class="fas fa-project-diagram me-2"></i>Project Details</h6>
-                                <div class="row">
-                                    <div class="col-md-6 mb-2">
-                                        <div class="detail-field">
-                                            <label><i class="fas fa-building me-2"></i>Sub Project</label>
-                                            <p>@(Model.SubProject ?? "N/A")</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-2">
-                                        <div class="detail-field">
-                                            <label><i class="fas fa-ruler-combined me-2"></i>Registered Size</label>
-                                            <p>@(Model.RegisteredSize ?? "N/A")</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 mb-2">
-                                        <div class="detail-field">
-                                            <label><i class="fas fa-store me-2"></i>Dealer</label>
-                                            <p>
-                                                @if (Model.IsDealerRegistered == 0 && !string.IsNullOrWhiteSpace(Model.DealerName))
-                                                {
-                                                    @Model.DealerName <span class="badge bg-secondary ms-1">Not Registered</span>
-                                                }
-                                                else if (Model.Dealer != null)
-                                                {
-                                                    @Model.Dealer.DealershipName <span class="badge bg-success ms-1">Registered</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted">N/A</span>
-                                                }
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
-
-                            <!-- Additional Information -->
-                            @if (!string.IsNullOrEmpty(Model.AdditionalInfo))
-                            {
-                                <div class="col-md-12">
-                                    <h6 class="mb-3"><i class="fas fa-sticky-note me-2"></i>Additional Notes</h6>
-                                    <div class="alert alert-info mb-0">
-                                        <p class="mb-0">@Model.AdditionalInfo</p>
-                                    </div>
-                                </div>
-                            }
                         </div>
+
+                        @if (!string.IsNullOrEmpty(Model.AdditionalInfo))
+                        {
+                            <h6 class="mb-3"><i class="fas fa-sticky-note me-2"></i>Additional Notes</h6>
+                            <div class="pms-registration-details-value">@Model.AdditionalInfo</div>
+                        }
                     </div>
 
                     <!-- Property Allotments Tab -->

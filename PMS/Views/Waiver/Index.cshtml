@@ -101,13 +101,13 @@
             <table class="table pms-saas-table" id="waiverTable">
                 <thead>
                     <tr>
+                        <th class="pms-saas-th-actions">Actions</th>
                         <th>Waiver ID</th>
                         <th>Customer</th>
                         <th>Type</th>
                         <th class="text-end">Total Surcharge</th>
                         <th class="text-end">Waived</th>
                         <th>Status</th>
-                        <th class="pms-saas-th-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -121,15 +121,6 @@
                                 ? "pms-pill--danger"
                                 : "pms-pill--warning";
                         <tr>
-                            <td data-label="Waiver ID"><code>@w.WaiverID</code></td>
-                            <td data-label="Customer">
-                                <div><code>@w.CustomerID</code></div>
-                                <div class="small text-muted">@(w.Customer?.FullName ?? "—")</div>
-                            </td>
-                            <td data-label="Type">@(w.WaiverType ?? "—")</td>
-                            <td class="text-end" data-label="Total Surcharge">@w.TotalAmount.ToString("N0")</td>
-                            <td class="text-end fw-bold text-success" data-label="Waived">@w.WaivedAmount.ToString("N0")</td>
-                            <td data-label="Status"><span class="pms-pill @pillClass">@status</span></td>
                             <td class="pms-saas-td-actions" data-label="Actions">
                                 <div class="pms-row-actions" role="group">
                                     <a asp-action="Details" asp-route-id="@w.WaiverID" class="btn btn-sm btn-outline-secondary" title="Details">
@@ -152,6 +143,15 @@
                                     }
                                 </div>
                             </td>
+                            <td data-label="Waiver ID"><code>@w.WaiverID</code></td>
+                            <td data-label="Customer">
+                                <div><code>@w.CustomerID</code></div>
+                                <div class="small text-muted">@(w.Customer?.FullName ?? "—")</div>
+                            </td>
+                            <td data-label="Type">@(w.WaiverType ?? "—")</td>
+                            <td class="text-end" data-label="Total Surcharge">@w.TotalAmount.ToString("N0")</td>
+                            <td class="text-end fw-bold text-success" data-label="Waived">@w.WaivedAmount.ToString("N0")</td>
+                            <td data-label="Status"><span class="pms-pill @pillClass">@status</span></td>
                         </tr>
                     }
                 </tbody>
@@ -165,8 +165,8 @@
     $(function () {
         $('#waiverTable').DataTable({
             pageLength: 25,
-            order: [[0, 'desc']],
-            columnDefs: [{ orderable: false, targets: 6 }]
+            order: [[1, 'desc']],
+            columnDefs: [{ orderable: false, targets: 0 }]
         });
     });
 </script>

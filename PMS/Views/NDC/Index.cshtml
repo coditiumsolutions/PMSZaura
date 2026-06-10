@@ -71,6 +71,7 @@
                 <table class="table pms-saas-table">
                     <thead>
                         <tr>
+                            <th class="pms-saas-th-actions">Actions</th>
                             <th>NDC ID</th>
                             <th>Customer ID</th>
                             <th>Customer / Project</th>
@@ -84,7 +85,6 @@
                             <th>All Clear</th>
                             <th>Expiry</th>
                             <th>Workflow</th>
-                            <th class="pms-saas-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -92,6 +92,31 @@
                         {
                             var isApproved = string.Equals(n.WorkFlowStatus?.Trim(), "Approved", StringComparison.OrdinalIgnoreCase);
                             <tr>
+                                <td class="pms-saas-td-actions" data-label="Actions">
+                                    <div class="pms-row-actions" role="group">
+                                        <a asp-action="Print" asp-route-id="@n.NDCID" target="_blank" class="btn btn-sm btn-outline-secondary" title="Print">
+                                            <i class="bi bi-printer" aria-hidden="true"></i>
+                                        </a>
+                                        <a asp-action="Details" asp-route-id="@n.NDCID" class="btn btn-sm btn-outline-secondary" title="Details">
+                                            <i class="bi bi-eye" aria-hidden="true"></i>
+                                        </a>
+                                        @if (ViewBag.CanEdit == true && !isApproved)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@n.NDCID" class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                            </a>
+                                        }
+                                        @if (ViewBag.CanDelete == true)
+                                        {
+                                            <form asp-action="Delete" asp-route-id="@n.NDCID" method="post" class="d-inline" onsubmit="return confirm('Delete this NDC record?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                    <i class="bi bi-trash" aria-hidden="true"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
                                 <td data-label="NDC ID"><span class="badge bg-secondary">@n.NDCID</span></td>
                                 <td data-label="Customer ID"><code>@n.CustomerID</code></td>
                                 <td data-label="Customer / Project">
@@ -129,31 +154,6 @@
                                 </td>
                                 <td data-label="Expiry">@(n.NDCExpiryDate?.ToString("MMM dd, yyyy") ?? "—")</td>
                                 <td data-label="Workflow"><span class="pms-pill pms-pill--info">@(n.WorkFlowStatus ?? "—")</span></td>
-                                <td class="pms-saas-td-actions" data-label="Actions">
-                                    <div class="pms-row-actions" role="group">
-                                        <a asp-action="Print" asp-route-id="@n.NDCID" target="_blank" class="btn btn-sm btn-outline-secondary" title="Print">
-                                            <i class="bi bi-printer" aria-hidden="true"></i>
-                                        </a>
-                                        <a asp-action="Details" asp-route-id="@n.NDCID" class="btn btn-sm btn-outline-secondary" title="Details">
-                                            <i class="bi bi-eye" aria-hidden="true"></i>
-                                        </a>
-                                        @if (ViewBag.CanEdit == true && !isApproved)
-                                        {
-                                            <a asp-action="Edit" asp-route-id="@n.NDCID" class="btn btn-sm btn-outline-primary" title="Edit">
-                                                <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                            </a>
-                                        }
-                                        @if (ViewBag.CanDelete == true)
-                                        {
-                                            <form asp-action="Delete" asp-route-id="@n.NDCID" method="post" class="d-inline" onsubmit="return confirm('Delete this NDC record?');">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                                    <i class="bi bi-trash" aria-hidden="true"></i>
-                                                </button>
-                                            </form>
-                                        }
-                                    </div>
-                                </td>
                             </tr>
                         }
                     </tbody>

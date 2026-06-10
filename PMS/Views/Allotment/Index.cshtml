@@ -151,6 +151,7 @@
                 <table class="table pms-saas-table" id="allotmentsTable">
                     <thead>
                         <tr>
+                            <th class="pms-saas-th-actions">Actions</th>
                             <th>Allotment ID</th>
                             <th>Property</th>
                             <th>Customer</th>
@@ -158,7 +159,6 @@
                             <th>Type</th>
                             <th>Status</th>
                             <th>Date</th>
-                            <th class="pms-saas-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -173,6 +173,39 @@
                                         ? "pms-pill--info"
                                         : "pms-pill--warning";
                             <tr>
+                                <td class="pms-saas-td-actions" data-label="Actions">
+                                    <div class="pms-row-actions" role="group">
+                                        <a asp-action="Details"
+                                           asp-route-id="@allotment.AllotmentID"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="View allotment (full page)">
+                                            <i class="bi bi-eye" aria-hidden="true"></i>
+                                        </a>
+                                        @if (ViewBag.CanEdit == true && !string.Equals((allotment.WorkFlowStatus ?? ""), approvedStatus, StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <a asp-action="Edit"
+                                               asp-route-id="@allotment.AllotmentID"
+                                               class="btn btn-sm btn-outline-primary"
+                                               title="Workflow">
+                                                <i class="bi bi-signpost-split" aria-hidden="true"></i>
+                                            </a>
+                                        }
+                                        <a asp-controller="Property"
+                                           asp-action="Details"
+                                           asp-route-id="@allotment.PropertyID"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="View Property">
+                                            <i class="bi bi-house" aria-hidden="true"></i>
+                                        </a>
+                                        <a asp-controller="Customer"
+                                           asp-action="Details"
+                                           asp-route-id="@allotment.CustomerID"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="View Customer">
+                                            <i class="bi bi-person" aria-hidden="true"></i>
+                                        </a>
+                                    </div>
+                                </td>
                                 <td data-label="Allotment ID">
                                     <code>@allotment.AllotmentID</code>
                                 </td>
@@ -220,39 +253,6 @@
                                     @allotment.AllotmentDate.ToString("MMM dd, yyyy")
                                     <br>
                                     <small class="text-muted">@allotment.AllotmentDate.ToString("hh:mm tt")</small>
-                                </td>
-                                <td class="pms-saas-td-actions" data-label="Actions">
-                                    <div class="pms-row-actions" role="group">
-                                        <a asp-action="Details"
-                                           asp-route-id="@allotment.AllotmentID"
-                                           class="btn btn-sm btn-outline-secondary"
-                                           title="View allotment (full page)">
-                                            <i class="bi bi-eye" aria-hidden="true"></i>
-                                        </a>
-                                        @if (ViewBag.CanEdit == true && !string.Equals((allotment.WorkFlowStatus ?? ""), approvedStatus, StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            <a asp-action="Edit"
-                                               asp-route-id="@allotment.AllotmentID"
-                                               class="btn btn-sm btn-outline-primary"
-                                               title="Workflow">
-                                                <i class="bi bi-signpost-split" aria-hidden="true"></i>
-                                            </a>
-                                        }
-                                        <a asp-controller="Property"
-                                           asp-action="Details"
-                                           asp-route-id="@allotment.PropertyID"
-                                           class="btn btn-sm btn-outline-secondary"
-                                           title="View Property">
-                                            <i class="bi bi-house" aria-hidden="true"></i>
-                                        </a>
-                                        <a asp-controller="Customer"
-                                           asp-action="Details"
-                                           asp-route-id="@allotment.CustomerID"
-                                           class="btn btn-sm btn-outline-primary"
-                                           title="View Customer">
-                                            <i class="bi bi-person" aria-hidden="true"></i>
-                                        </a>
-                                    </div>
                                 </td>
                             </tr>
                         }

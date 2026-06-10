@@ -54,6 +54,7 @@
             <table class="table pms-saas-table" id="propertiesTable">
                 <thead>
                     <tr>
+                        <th class="pms-saas-th-actions">Actions</th>
                         <th>Property ID</th>
                         <th>Project</th>
                         <th>SubProject</th>
@@ -63,7 +64,6 @@
                         <th>Size</th>
                         <th>Unit Type (Category)</th>
                         <th>Status</th>
-                        <th class="pms-saas-th-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -78,24 +78,6 @@
                             _ => "pms-pill--danger"
                         };
                         <tr>
-                            <td data-label="Property ID"><span class="badge bg-secondary">@property.PropertyID</span></td>
-                            <td data-label="Project">
-                                @if (property.Project != null)
-                                {
-                                    <span class="pms-pill pms-pill--info">@property.Project.ProjectName</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">No Project</span>
-                                }
-                            </td>
-                            <td data-label="SubProject"><span class="pms-cell-truncate" title="@property.SubProject">@(string.IsNullOrWhiteSpace(property.SubProject) ? "—" : property.SubProject)</span></td>
-                            <td data-label="Tower">@property.Block</td>
-                            <td data-label="Floor">@(property.Floor ?? "—")</td>
-                            <td data-label="Unit No"><strong>@property.PlotNo</strong></td>
-                            <td data-label="Size">@property.Size</td>
-                            <td data-label="Unit Type">@(string.IsNullOrWhiteSpace(property.PlotType) ? "—" : property.PlotType)</td>
-                            <td data-label="Status"><span class="pms-pill @statusPill">@property.Status</span></td>
                             <td class="pms-saas-td-actions" data-label="Actions">
                                 <div class="pms-row-actions" role="group">
                                     <a asp-action="Edit" asp-route-id="@property.PropertyID" class="btn btn-sm btn-outline-primary" title="Edit">
@@ -117,6 +99,24 @@
                                     </a>
                                 </div>
                             </td>
+                            <td data-label="Property ID"><span class="badge bg-secondary">@property.PropertyID</span></td>
+                            <td data-label="Project">
+                                @if (property.Project != null)
+                                {
+                                    <span class="pms-pill pms-pill--info">@property.Project.ProjectName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No Project</span>
+                                }
+                            </td>
+                            <td data-label="SubProject"><span class="pms-cell-truncate" title="@property.SubProject">@(string.IsNullOrWhiteSpace(property.SubProject) ? "—" : property.SubProject)</span></td>
+                            <td data-label="Tower">@property.Block</td>
+                            <td data-label="Floor">@(property.Floor ?? "—")</td>
+                            <td data-label="Unit No"><strong>@property.PlotNo</strong></td>
+                            <td data-label="Size">@property.Size</td>
+                            <td data-label="Unit Type">@(string.IsNullOrWhiteSpace(property.PlotType) ? "—" : property.PlotType)</td>
+                            <td data-label="Status"><span class="pms-pill @statusPill">@property.Status</span></td>
                         </tr>
                     }
                 </tbody>
@@ -130,8 +130,8 @@
         $(document).ready(function() {
             $('#propertiesTable').DataTable({
                 pageLength: 25,
-                order: [[5, 'asc']],
-                columnDefs: [{ orderable: false, targets: 9 }]
+                order: [[6, 'asc']],
+                columnDefs: [{ orderable: false, targets: 0 }]
             });
         });
     </script>

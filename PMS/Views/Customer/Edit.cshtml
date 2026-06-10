@@ -4,29 +4,24 @@
     ViewData["Title"] = "Edit Customer";
 }
 
-<div class="pms-form-page">
-    <div class="pms-form-header">
-        <div class="pms-form-header-text">
-            <h1>Edit Customer</h1>
-            <p>Manage customer information, next of kin, allotments, joint owners, and document attachments.</p>
-            <div class="pms-form-header-meta">Customer ID: <code>@Model.CustomerID</code></div>
-        </div>
-        <div class="pms-form-header-actions">
-            <button type="submit" form="customerEditForm" class="btn btn-primary">
-                <i class="bi bi-check-lg me-1" aria-hidden="true"></i>Save Changes
-            </button>
-            <a asp-action="Details" asp-route-id="@Model.CustomerID" class="btn btn-outline-secondary">
-                <i class="bi bi-eye me-1" aria-hidden="true"></i>View Details
-            </a>
-            <a asp-action="Index" class="btn btn-outline-secondary">
-                <i class="bi bi-x-lg me-1" aria-hidden="true"></i>Cancel
-            </a>
-        </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0 pms-registration-page-title">Edit Customer</h2>
+    <div class="d-flex flex-wrap gap-2">
+        <button type="submit" form="customerEditForm" class="btn btn-primary btn-sm">
+            <i class="fas fa-save me-1"></i>Save Changes
+        </button>
+        <a asp-action="Details" asp-route-id="@Model.CustomerID" class="btn btn-outline-info btn-sm">
+            <i class="fas fa-eye me-1"></i>View Details
+        </a>
+        <a asp-action="Index" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
+        </a>
     </div>
+</div>
 
-    <div class="card pms-saas-form-card pms-saas-form">
-        <div class="card-header border-0">
-            <ul class="nav pms-form-tabs customer-tabs" id="customerTabs" role="tablist">
+<div class="card pms-listing-flat pms-customer-create pms-customer-edit">
+    <div class="card-header border-0 px-0">
+        <ul class="nav customer-tabs" id="customerTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">
                         <i class="bi bi-person-vcard" aria-hidden="true"></i>Personal Info
@@ -54,7 +49,7 @@
                 </li>
             </ul>
         </div>
-        <div class="card-body pms-saas-form-body">
+        <div class="card-body px-0 pt-3">
                 @if (TempData["ErrorMessage"] != null)
                 {
                     <div class="alert alert-warning alert-dismissible fade show" role="alert">
@@ -72,50 +67,44 @@
                     <div class="tab-content" id="customerTabContent">
                         <!-- Personal Info Tab (Personal + Contact) -->
                         <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
-                            <div class="row g-3 pms-form-fields-row">
-                                <!-- Personal Information -->
-                                <div class="col-12 col-lg-6 pms-form-section">
-                                    <h6 class="pms-form-section-title"><i class="fas fa-user me-2"></i>Personal Information</h6>
-                                    
-                                    <div class="mb-3">
-                                        <label asp-for="FullName" class="form-label">Full Name *</label>
+                            <div class="pms-customer-4col-form pms-registration-4col-form">
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="FullName" class="form-label pms-registration-4col-label">Full Name *</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <input asp-for="FullName" id="FullName" class="form-control" required />
                                         <span asp-validation-for="FullName" class="text-danger"></span>
                                     </div>
+                                    <div class="col-12 col-lg-2"><label asp-for="FatherName" class="form-label pms-registration-4col-label">S/D/W/O</label></div>
+                                    <div class="col-12 col-lg-4"><input asp-for="FatherName" class="form-control" /></div>
+                                </div>
 
-                                    <div class="mb-3">
-                                        <label asp-for="FatherName" class="form-label">S/D/W/O</label>
-                                        <input asp-for="FatherName" class="form-control" />
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="CNIC" class="form-label">National ID (CNIC)</label>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="CNIC" class="form-label pms-registration-4col-label">National ID (CNIC)</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <input asp-for="CNIC" id="CNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
-                                        <small class="text-muted">Format: 5 digits, hyphen, 7 digits, hyphen, 1 digit. Required if no Passport.</small>
                                         <span id="cnicValidationError" class="text-danger small d-none"></span>
                                     </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="PassportNo" class="form-label">Passport Number</label>
+                                    <div class="col-12 col-lg-2"><label asp-for="PassportNo" class="form-label pms-registration-4col-label">Passport Number</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <input asp-for="PassportNo" id="PassportNo" class="form-control" placeholder="Min 5 characters if no CNIC" />
-                                        <small class="text-muted">Provide at least 5 characters if not providing CNIC.</small>
                                         <span id="passportValidationError" class="text-danger small d-none"></span>
                                     </div>
-                                    <div id="cnicPassportRuleError" class="alert alert-warning small py-2 d-none" role="alert">
-                                        <i class="fas fa-exclamation-triangle me-1"></i><span id="cnicPassportRuleErrorText"></span>
-                                    </div>
+                                </div>
 
-                                    <div class="mb-3">
-                                        <label asp-for="DOB" class="form-label">Date of Birth</label>
+                                <div id="cnicPassportRuleError" class="alert alert-warning small py-2 d-none mb-2" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-1"></i><span id="cnicPassportRuleErrorText"></span>
+                                </div>
+
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="DOB" class="form-label pms-registration-4col-label">Date of Birth</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <input type="text" id="DOBDisplay" class="form-control" value="@(Model.DOB?.ToString("dd-MM-yyyy") ?? "01-01-1990")" placeholder="DD-MM-YYYY" />
                                         <input asp-for="DOB" type="hidden" id="DOB" value="@(Model.DOB?.ToString("yyyy-MM-dd") ?? "")" />
-                                        <small class="text-muted">Format: DD-MM-YYYY (e.g. 31-12-1990).</small>
                                         <span id="dobValidationError" class="text-danger small d-none"></span>
                                         <span asp-validation-for="DOB" class="text-danger"></span>
                                     </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="Gender" class="form-label">Gender</label>
+                                    <div class="col-12 col-lg-2"><label asp-for="Gender" class="form-label pms-registration-4col-label">Gender</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <select asp-for="Gender" class="form-select">
                                             <option value="">Select Gender</option>
                                             <option value="Male">Male</option>
@@ -123,9 +112,11 @@
                                             <option value="Other">Other</option>
                                         </select>
                                     </div>
+                                </div>
 
-                                    <div class="mb-3">
-                                        <label asp-for="Nationality" class="form-label">Nationality</label>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="Nationality" class="form-label pms-registration-4col-label">Nationality</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <input asp-for="Nationality" class="form-control" list="nationalityList-customer-edit" autocomplete="off" placeholder="Select from list or type a value" />
                                         <datalist id="nationalityList-customer-edit">
                                             @if (ViewBag.Nationalities != null)
@@ -136,12 +127,10 @@
                                                 }
                                             }
                                         </datalist>
-                                        <small class="text-muted">Suggestions from configuration; you may enter any nationality.</small>
                                         <span asp-validation-for="Nationality" class="text-danger"></span>
                                     </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="Status" class="form-label">Status</label>
+                                    <div class="col-12 col-lg-2"><label asp-for="Status" class="form-label pms-registration-4col-label">Status</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <select asp-for="Status" class="form-select">
                                             <option value="Pending">Pending</option>
                                             <option value="Active">Active</option>
@@ -152,40 +141,35 @@
                                             <option value="Cancelled">Cancelled</option>
                                             <option value="Refunded">Refunded</option>
                                         </select>
-                                        <small class="text-muted">New customers start as Pending; use the customer list to activate when ready.</small>
                                     </div>
                                 </div>
 
-                                <!-- Contact Information -->
-                                <div class="col-12 col-lg-6 pms-form-section">
-                                    <h6 class="pms-form-section-title"><i class="fas fa-phone me-2"></i>Contact Information</h6>
-                                    
-                                    <div class="mb-3">
-                                        <label asp-for="Email" class="form-label">Email Address</label>
-                                        <input asp-for="Email" type="email" class="form-control" />
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="Phone" class="form-label">Phone (landline / primary contact) *</label>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="Email" class="form-label pms-registration-4col-label">Email Address</label></div>
+                                    <div class="col-12 col-lg-4"><input asp-for="Email" type="email" class="form-control" /></div>
+                                    <div class="col-12 col-lg-2"><label asp-for="Phone" class="form-label pms-registration-4col-label">Phone *</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <input asp-for="Phone" id="Phone" class="form-control" required />
                                         <span asp-validation-for="Phone" class="text-danger"></span>
                                     </div>
+                                </div>
 
-                                    <div class="mb-3">
-                                        <label asp-for="MobileNo" class="form-label">Mobile *</label>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="MobileNo" class="form-label pms-registration-4col-label">Mobile *</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <input asp-for="MobileNo" id="MobileNo" class="form-control" required />
                                         <span asp-validation-for="MobileNo" class="text-danger"></span>
                                     </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="MobileNo2" class="form-label">Mobile 2</label>
+                                    <div class="col-12 col-lg-2"><label asp-for="MobileNo2" class="form-label pms-registration-4col-label">Mobile 2</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <input asp-for="MobileNo2" id="MobileNo2" class="form-control" />
                                         <span asp-validation-for="MobileNo2" class="text-danger"></span>
-                                        <small class="form-text text-muted">Optional. Must differ from Phone and Mobile.</small>
                                     </div>
+                                </div>
 
-                                    <div class="mb-3">
-                                        <label asp-for="City" class="form-label">City *</label>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="City" class="form-label pms-registration-4col-label">City *</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <input asp-for="City" class="form-control" list="cityOptions" placeholder="Select or type city" required />
                                         <datalist id="cityOptions">
                                             @if (ViewBag.Cities != null)
@@ -198,9 +182,8 @@
                                         </datalist>
                                         <span asp-validation-for="City" class="text-danger"></span>
                                     </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="Country" class="form-label">Country *</label>
+                                    <div class="col-12 col-lg-2"><label asp-for="Country" class="form-label pms-registration-4col-label">Country *</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <input asp-for="Country" class="form-control" list="countryOptions" placeholder="Select or type country" required />
                                         <datalist id="countryOptions">
                                             @if (ViewBag.Countries != null)
@@ -213,16 +196,20 @@
                                         </datalist>
                                         <span asp-validation-for="Country" class="text-danger"></span>
                                     </div>
+                                </div>
 
-                                    <div class="mb-3">
-                                        <label asp-for="MailingAddress" class="form-label">Mailing Address *</label>
-                                        <textarea asp-for="MailingAddress" class="form-control" rows="2" required></textarea>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="MailingAddress" class="form-label pms-registration-4col-label">Mailing Address *</label></div>
+                                    <div class="col-12 col-lg-10">
+                                        <textarea asp-for="MailingAddress" class="form-control pms-customer-address-input" rows="1" required></textarea>
                                         <span asp-validation-for="MailingAddress" class="text-danger"></span>
                                     </div>
+                                </div>
 
-                                    <div class="mb-3">
-                                        <label asp-for="PermanentAddress" class="form-label">Permanent Address</label>
-                                        <textarea asp-for="PermanentAddress" class="form-control" rows="2"></textarea>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="PermanentAddress" class="form-label pms-registration-4col-label">Permanent Address</label></div>
+                                    <div class="col-12 col-lg-10">
+                                        <textarea asp-for="PermanentAddress" class="form-control pms-customer-address-input" rows="1"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -230,22 +217,17 @@
 
                         <!-- Next of Kin Info Tab -->
                         <div class="tab-pane fade" id="nominee" role="tabpanel" aria-labelledby="nominee-tab">
-                            <div class="row g-3 pms-form-fields-row">
-                                <div class="col-12 col-lg-6 pms-form-section">
-                                    <h6 class="pms-form-section-title"><i class="fas fa-user-friends me-2"></i>Next of Kin Information</h6>
-                                    
-                                    <div class="mb-3">
-                                        <label asp-for="NomineeName" class="form-label">Next of Kin Name</label>
-                                        <input asp-for="NomineeName" class="form-control" />
-                                    </div>
+                            <div class="pms-customer-4col-form pms-registration-4col-form">
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="NomineeName" class="form-label pms-registration-4col-label">Next of Kin Name</label></div>
+                                    <div class="col-12 col-lg-4"><input asp-for="NomineeName" class="form-control" /></div>
+                                    <div class="col-12 col-lg-2"><label asp-for="NomineeID" class="form-label pms-registration-4col-label">Next of Kin ID / National ID</label></div>
+                                    <div class="col-12 col-lg-4"><input asp-for="NomineeID" class="form-control" /></div>
+                                </div>
 
-                                    <div class="mb-3">
-                                        <label asp-for="NomineeID" class="form-label">Next of Kin ID / National ID</label>
-                                        <input asp-for="NomineeID" class="form-control" />
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="NomineeRelation" class="form-label">Relationship</label>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="NomineeRelation" class="form-label pms-registration-4col-label">Relationship</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <select asp-for="NomineeRelation" class="form-select">
                                             <option value="">Select Relationship</option>
                                             <option value="Father">Father</option>
@@ -258,9 +240,8 @@
                                             <option value="Other">Other</option>
                                         </select>
                                     </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label">Next of Kin NIC Document</label>
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label">Next of Kin NIC Document</label></div>
+                                    <div class="col-12 col-lg-4">
                                         @if (!string.IsNullOrEmpty(Model.NomineeNICDocumentPath))
                                         {
                                             <div class="mb-2">
@@ -270,12 +251,13 @@
                                             </div>
                                         }
                                         <input type="file" name="nomineeNICUpload" class="form-control" accept="image/*,.pdf" />
-                                        <small class="text-muted">Uploading a file will replace the current document. Accepted formats: JPG, PNG, GIF, BMP, PDF. Max size: 8MB.</small>
                                         <span asp-validation-for="NomineeNICDocumentPath" class="text-danger"></span>
                                     </div>
+                                </div>
 
-                                    <div class="mb-3">
-                                        <label class="form-label">Next of Kin Picture</label>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label">Next of Kin Picture</label></div>
+                                    <div class="col-12 col-lg-4">
                                         @if (!string.IsNullOrEmpty(Model.NomineePicturePath))
                                         {
                                             <div class="mb-2">
@@ -285,16 +267,14 @@
                                             </div>
                                         }
                                         <input type="file" name="nomineePictureUpload" class="form-control" accept="image/*" />
-                                        <small class="text-muted">Uploading a file will replace the current picture. Accepted formats: JPG, PNG, GIF, BMP. Max size: 8MB.</small>
                                         <span asp-validation-for="NomineePicturePath" class="text-danger"></span>
                                     </div>
                                 </div>
-                                <div class="col-12 col-lg-6 pms-form-section">
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        <strong>Next of Kin Information</strong>
-                                        <p class="mb-0 mt-2">The next of kin is the person who will have rights in case of any unforeseen circumstances.</p>
-                                    </div>
+
+                                <div class="alert alert-info small mt-2 mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Next of Kin Information</strong>
+                                    <p class="mb-0 mt-2">The next of kin is the person who will have rights in case of any unforeseen circumstances.</p>
                                 </div>
                             </div>
                         </div>
@@ -644,34 +624,8 @@
                         </div>
                     </div>
 
-                    <div class="pms-form-actions-inline d-none d-md-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg me-1" aria-hidden="true"></i>Save Changes
-                        </button>
-                        <a asp-action="Details" asp-route-id="@Model.CustomerID" class="btn btn-outline-secondary">
-                            <i class="bi bi-eye me-1" aria-hidden="true"></i>View Details
-                        </a>
-                        <a asp-action="Index" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-lg me-1" aria-hidden="true"></i>Cancel
-                        </a>
-                    </div>
                 </form>
         </div>
-    </div>
-
-    <div class="pms-form-footer-sticky">
-        <div class="pms-form-footer-inner">
-            <button type="submit" form="customerEditForm" class="btn btn-primary">
-                <i class="bi bi-check-lg me-1" aria-hidden="true"></i>Save Changes
-            </button>
-            <a asp-action="Details" asp-route-id="@Model.CustomerID" class="btn btn-outline-secondary d-none d-sm-inline-flex">
-                <i class="bi bi-eye me-1" aria-hidden="true"></i>View Details
-            </a>
-            <a asp-action="Index" class="btn btn-outline-secondary">
-                <i class="bi bi-x-lg me-1" aria-hidden="true"></i>Cancel
-            </a>
-        </div>
-    </div>
 </div>
 
 @section Scripts {

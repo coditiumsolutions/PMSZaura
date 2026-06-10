@@ -64,6 +64,7 @@
                 <table class="table pms-saas-table">
                     <thead>
                         <tr>
+                            <th class="pms-saas-th-actions">Actions</th>
                             <th>ID</th>
                             <th>Project</th>
                             <th>SubProject</th>
@@ -72,21 +73,12 @@
                             <th>Amount/Unit</th>
                             <th>Created By</th>
                             <th>Modified By</th>
-                            <th class="pms-saas-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var row in Model)
                         {
                             <tr>
-                                <td data-label="ID"><code>@row.Id</code></td>
-                                <td data-label="Project">@(row.Project?.ProjectName ?? row.ProjectID)</td>
-                                <td data-label="SubProject">@(row.SubProject ?? "—")</td>
-                                <td data-label="Transfer Type">@(row.TransferType ?? "—")</td>
-                                <td data-label="Priority"><span class="pms-pill pms-pill--info">@(row.TransferPriority ?? "—")</span></td>
-                                <td data-label="Amount/Unit">@row.AmountPerUnit.ToString("N2")</td>
-                                <td data-label="Created By">@(row.CreatedBy ?? "—")</td>
-                                <td data-label="Modified By">@(row.ModifiedBy ?? "—")</td>
                                 <td class="pms-saas-td-actions" data-label="Actions">
                                     <div class="pms-row-actions" role="group">
                                         @if (ViewBag.CanEdit == true)
@@ -106,6 +98,14 @@
                                         }
                                     </div>
                                 </td>
+                                <td data-label="ID"><code>@row.Id</code></td>
+                                <td data-label="Project">@(row.Project?.ProjectName ?? row.ProjectID)</td>
+                                <td data-label="SubProject">@(row.SubProject ?? "—")</td>
+                                <td data-label="Transfer Type">@(row.TransferType ?? "—")</td>
+                                <td data-label="Priority"><span class="pms-pill pms-pill--info">@(row.TransferPriority ?? "—")</span></td>
+                                <td data-label="Amount/Unit">@row.AmountPerUnit.ToString("N2")</td>
+                                <td data-label="Created By">@(row.CreatedBy ?? "—")</td>
+                                <td data-label="Modified By">@(row.ModifiedBy ?? "—")</td>
                             </tr>
                         }
                     </tbody>

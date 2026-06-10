@@ -21,6 +21,7 @@
             <table class="table pms-saas-table" id="projectsTable">
                 <thead>
                     <tr>
+                        <th class="pms-saas-th-actions">Actions</th>
                         <th>Project ID</th>
                         <th>Project Name</th>
                         <th>Type</th>
@@ -28,7 +29,6 @@
                         <th>Properties</th>
                         <th>Customers</th>
                         <th>Created Date</th>
-                        <th class="pms-saas-th-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -38,19 +38,6 @@
                             ? ViewBag.CustomerCounts[project.ProjectID]
                             : 0;
                         <tr>
-                            <td data-label="Project ID"><span class="badge bg-secondary">@project.ProjectID</span></td>
-                            <td data-label="Project Name">
-                                <strong class="pms-cell-truncate" title="@project.ProjectName">@project.ProjectName</strong>
-                                @if (!string.IsNullOrEmpty(project.Description))
-                                {
-                                    <br><small class="text-muted pms-cell-truncate d-block" title="@project.Description">@project.Description</small>
-                                }
-                            </td>
-                            <td data-label="Type"><span class="pms-pill pms-pill--info">@project.Type</span></td>
-                            <td data-label="Location"><span class="pms-cell-truncate" title="@project.Location">@project.Location</span></td>
-                            <td data-label="Properties"><span class="pms-pill pms-pill--success">@(project.Properties?.Count ?? 0) Properties</span></td>
-                            <td data-label="Customers"><span class="pms-pill pms-pill--info">@customerCount Customers</span></td>
-                            <td data-label="Created"><span class="text-nowrap">@project.CreatedAt.ToString("MMM dd, yyyy")</span></td>
                             <td class="pms-saas-td-actions" data-label="Actions">
                                 <div class="pms-row-actions" role="group">
                                     <a asp-action="Edit" asp-route-id="@project.ProjectID" class="btn btn-sm btn-outline-primary" title="Edit">
@@ -65,6 +52,19 @@
                                     </a>
                                 </div>
                             </td>
+                            <td data-label="Project ID"><span class="badge bg-secondary">@project.ProjectID</span></td>
+                            <td data-label="Project Name">
+                                <strong class="pms-cell-truncate" title="@project.ProjectName">@project.ProjectName</strong>
+                                @if (!string.IsNullOrEmpty(project.Description))
+                                {
+                                    <br><small class="text-muted pms-cell-truncate d-block" title="@project.Description">@project.Description</small>
+                                }
+                            </td>
+                            <td data-label="Type"><span class="pms-pill pms-pill--info">@project.Type</span></td>
+                            <td data-label="Location"><span class="pms-cell-truncate" title="@project.Location">@project.Location</span></td>
+                            <td data-label="Properties"><span class="pms-pill pms-pill--success">@(project.Properties?.Count ?? 0) Properties</span></td>
+                            <td data-label="Customers"><span class="pms-pill pms-pill--info">@customerCount Customers</span></td>
+                            <td data-label="Created"><span class="text-nowrap">@project.CreatedAt.ToString("MMM dd, yyyy")</span></td>
                         </tr>
                     }
                 </tbody>
@@ -78,8 +78,8 @@
         $(document).ready(function() {
             $('#projectsTable').DataTable({
                 pageLength: 25,
-                order: [[6, 'desc']],
-                columnDefs: [{ orderable: false, targets: 7 }]
+                order: [[7, 'desc']],
+                columnDefs: [{ orderable: false, targets: 0 }]
             });
         });
     </script>

@@ -73,13 +73,13 @@
             <table class="table pms-saas-table" id="transfersTable">
                 <thead>
                     <tr>
+                        <th class="pms-saas-th-actions">Actions</th>
                         <th>Transfer ID</th>
                         <th>Customer ID</th>
                         <th>Customer / Project</th>
                         <th>Seller</th>
                         <th>Buyer</th>
                         <th>Workflow</th>
-                        <th class="pms-saas-th-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,30 +88,6 @@
                         var isInitiated = string.Equals(t.WorkFlowStatus?.Trim(), "Created", StringComparison.OrdinalIgnoreCase)
                             || string.Equals(t.WorkFlowStatus?.Trim(), "Initiated", StringComparison.OrdinalIgnoreCase);
                         <tr>
-                            <td data-label="Transfer ID"><span class="badge bg-secondary">@t.TransferID</span></td>
-                            <td data-label="Customer ID"><code>@t.CustomerID</code></td>
-                            <td data-label="Customer / Project">
-                                @if (t.Customer?.PaymentPlan?.Project != null)
-                                {
-                                    <span class="pms-pill pms-pill--info">@t.Customer.PaymentPlan.Project.ProjectName</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">—</span>
-                                }
-                            </td>
-                            <td data-label="Seller"><span class="pms-cell-truncate" title="@t.SellerName">@(t.SellerName ?? "—")</span></td>
-                            <td data-label="Buyer"><span class="pms-cell-truncate" title="@t.BuyerName">@(t.BuyerName ?? "—")</span></td>
-                            <td data-label="Workflow">
-                                @if (t.WorkFlowStatus == "Approved")
-                                { <span class="pms-pill pms-pill--success">@t.WorkFlowStatus</span> }
-                                else if (t.WorkFlowStatus == "Created")
-                                { <span class="pms-pill pms-pill--info">@t.WorkFlowStatus</span> }
-                                else if (t.WorkFlowStatus == "Pending")
-                                { <span class="pms-pill pms-pill--warning">@t.WorkFlowStatus</span> }
-                                else
-                                { <span class="pms-pill pms-pill--warning">@(t.WorkFlowStatus ?? "—")</span> }
-                            </td>
                             <td class="pms-saas-td-actions" data-label="Actions">
                                 <div class="pms-row-actions" role="group">
                                     <a asp-action="Details" asp-route-id="@t.TransferID" class="btn btn-sm btn-outline-secondary" title="Details">
@@ -146,6 +122,30 @@
                                     }
                                 </div>
                             </td>
+                            <td data-label="Transfer ID"><span class="badge bg-secondary">@t.TransferID</span></td>
+                            <td data-label="Customer ID"><code>@t.CustomerID</code></td>
+                            <td data-label="Customer / Project">
+                                @if (t.Customer?.PaymentPlan?.Project != null)
+                                {
+                                    <span class="pms-pill pms-pill--info">@t.Customer.PaymentPlan.Project.ProjectName</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </td>
+                            <td data-label="Seller"><span class="pms-cell-truncate" title="@t.SellerName">@(t.SellerName ?? "—")</span></td>
+                            <td data-label="Buyer"><span class="pms-cell-truncate" title="@t.BuyerName">@(t.BuyerName ?? "—")</span></td>
+                            <td data-label="Workflow">
+                                @if (t.WorkFlowStatus == "Approved")
+                                { <span class="pms-pill pms-pill--success">@t.WorkFlowStatus</span> }
+                                else if (t.WorkFlowStatus == "Created")
+                                { <span class="pms-pill pms-pill--info">@t.WorkFlowStatus</span> }
+                                else if (t.WorkFlowStatus == "Pending")
+                                { <span class="pms-pill pms-pill--warning">@t.WorkFlowStatus</span> }
+                                else
+                                { <span class="pms-pill pms-pill--warning">@(t.WorkFlowStatus ?? "—")</span> }
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -159,8 +159,8 @@
         $(document).ready(function() {
             $('#transfersTable').DataTable({
                 pageLength: 25,
-                order: [[0, 'desc']],
-                columnDefs: [{ orderable: false, targets: 6 }]
+                order: [[1, 'desc']],
+                columnDefs: [{ orderable: false, targets: 0 }]
             });
         });
     </script>
