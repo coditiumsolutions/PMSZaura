@@ -97,7 +97,7 @@ namespace PMS.Controllers
             return s;
         }
 
-        public async Task<IActionResult> Index(string projectFilter = "All")
+        public async Task<IActionResult> Index(string projectFilter = "All", string statusFilter = "", string searchTerm = "")
         {
             var denied = await EnsurePermissionAsync("Read");
             if (denied != null) return denied;
@@ -113,6 +113,20 @@ namespace PMS.Controllers
                 query = query.Where(p => p.ProjectID == projectFilter);
             }
 
+            if (!string.IsNullOrWhiteSpace(statusFilter))
+            {
+                query = query.Where(p => p.Status == statusFilter);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim();
+                query = query.Where(p =>
+                    p.PropertyID.Contains(term) ||
+                    (p.PlotNo != null && p.PlotNo.Contains(term)) ||
+                    (p.Block != null && p.Block.Contains(term)));
+            }
+
             var properties = await query.ToListAsync();
             ViewBag.Projects = await _context.Projects
                 .AsNoTracking()
@@ -120,6 +134,12 @@ namespace PMS.Controllers
                 .Select(p => new { p.ProjectID, p.ProjectName })
                 .ToListAsync();
             ViewBag.ProjectFilter = projectFilter;
+            ViewBag.StatusFilter = statusFilter;
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.AvailableCount = await _context.Properties.CountAsync(p => p.Status == "Available");
+            ViewBag.AllottedCount = await _context.Properties.CountAsync(p => p.Status == "Allotted");
+            ViewBag.VacantCount = await _context.Properties.CountAsync(p => p.Status == "Vacant");
+            ViewBag.OccupiedCount = await _context.Properties.CountAsync(p => p.Status == "Occupied");
             return View(properties);
         }
 

@@ -1,0 +1,32 @@
+<div class="dropdown pms-listing-operations-dropdown">
+    <button class="btn btn-outline-primary btn-sm dropdown-toggle pms-listing-operations-btn"
+            type="button"
+            id="propertyOperationsDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+        Operations
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="propertyOperationsDropdown">
+        <li>
+            <a class="dropdown-item" asp-action="Reserve">
+                <i class="bi bi-hand-index me-2" aria-hidden="true"></i>Reserve Properties
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-action="Import">
+                <i class="bi bi-upload me-2" aria-hidden="true"></i>Import Properties
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" asp-action="Create">
+                <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>Add New Property
+            </a>
+        </li>
+        <li><hr class="dropdown-divider" /></li>
+        <li>
+            <button type="button" class="dropdown-item" onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>Refresh
+            </button>
+        </li>
+    </ul>
+</div>

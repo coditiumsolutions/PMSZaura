@@ -1,0 +1,25 @@
+<div class="dropdown pms-listing-operations-dropdown">
+    <button class="btn btn-outline-primary btn-sm dropdown-toggle pms-listing-operations-btn"
+            type="button"
+            id="paymentPlansOperationsDropdown"
+            data-bs-toggle="dropdown"
+            aria-expanded="false">
+        Operations
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="paymentPlansOperationsDropdown">
+        @if (ViewBag.CanCreate == true)
+        {
+            <li>
+                <a class="dropdown-item" asp-action="CreatePaymentPlan">
+                    <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>Create New Plan
+                </a>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+        }
+        <li>
+            <button type="button" class="dropdown-item" onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>Refresh
+            </button>
+        </li>
+    </ul>
+</div>

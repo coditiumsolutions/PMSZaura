@@ -4,39 +4,34 @@
     ViewData["Title"] = "Property Details";
 }
 
+<div class="pms-property-details">
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <div class="d-flex align-items-center gap-4">
-        <h2 class="mb-0">
-            <i class="fas fa-home me-2"></i>Property Details
-        </h2>
-        <div class="d-flex align-items-center gap-3 ms-4">
-            <div class="badge bg-light text-dark px-3 py-2" style="font-size: 14px;">
-                <i class="fas fa-calendar-check me-2" style="color: #6f42c1;"></i>
-                <strong>Created:</strong> @Model.CreatedAt.ToString("MMMM dd, yyyy")
-                <span class="text-muted ms-2">(@((DateTime.Now - Model.CreatedAt).Days) days ago)</span>
-            </div>
+    <div class="d-flex align-items-center gap-3 ms-2">
+        <div class="badge bg-light text-dark px-3 py-2 pms-property-details-header-badge">
+            <i class="fas fa-home me-1" style="color: #2563eb;"></i>
+            <strong>Property:</strong> <code class="pms-property-details-code">@Model.PropertyID</code>
+            <span class="text-muted ms-2">| Created @Model.CreatedAt.ToString("MMM dd, yyyy")</span>
         </div>
     </div>
-    <div>
+    <div class="d-flex gap-2">
         @if (Model.Status == "Available")
         {
-            <a asp-action="Allot" asp-route-id="@Model.PropertyID" class="btn btn-success me-2">
-                <i class="fas fa-hand-holding me-2"></i>Allot Property
+            <a asp-action="Allot" asp-route-id="@Model.PropertyID" class="btn btn-success btn-sm">
+                <i class="fas fa-hand-holding me-1"></i>Allot Property
             </a>
         }
-        <a asp-action="Edit" asp-route-id="@Model.PropertyID" class="btn btn-primary me-2">
-            <i class="fas fa-edit me-2"></i>Edit
+        <a asp-action="Edit" asp-route-id="@Model.PropertyID" class="btn btn-primary btn-sm">
+            <i class="fas fa-edit me-1"></i>Edit
         </a>
-        <a asp-action="Index" class="btn btn-outline-primary">
-            <i class="fas fa-arrow-left me-2"></i>Back to List
+        <a asp-action="Index" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
         </a>
     </div>
 </div>
 
 <div class="row">
-    <!-- Main Content with Tabs -->
     <div class="col-12">
-        <div class="card">
+        <div class="card pms-listing-flat pms-property-details-card">
             <div class="card-header p-0">
                 <ul class="nav nav-tabs property-tabs" id="propertyTabs" role="tablist">
                     <li class="nav-item" role="presentation">
@@ -195,7 +190,7 @@
                                         <h6 class="mb-3 mt-4"><i class="fas fa-user me-2"></i>Current Owner</h6>
                                         <div class="owner-card p-3 border rounded">
                                             <div class="text-center mb-3">
-                                                <i class="fas fa-user-circle fa-3x" style="color: #6f42c1;"></i>
+                                                <i class="fas fa-user-circle fa-2x" style="color: #2563eb;"></i>
                                             </div>
                                             <div class="detail-field mb-2">
                                                 <label><i class="fas fa-user me-2"></i>Name</label>
@@ -296,10 +291,10 @@
                                         @if (allotment.Customer != null)
                                         {
                                             <h6 class="mb-3"><i class="fas fa-user me-2"></i>Customer Information</h6>
-                                            <div class="card border-primary">
+                                            <div class="card pms-property-details-panel">
                                                 <div class="card-body">
                                                     <div class="text-center mb-3">
-                                                        <i class="fas fa-user-circle fa-3x" style="color: #6f42c1;"></i>
+                                                        <i class="fas fa-user-circle fa-2x" style="color: #2563eb;"></i>
                                                     </div>
                                                     <div class="detail-field mb-2">
                                                         <label><i class="fas fa-user me-2"></i>Full Name</label>
@@ -322,8 +317,8 @@
                                                         <p>@(allotment.Customer.CNIC ?? "N/A")</p>
                                                     </div>
                                                     <a asp-controller="Customer" asp-action="Details" asp-route-id="@allotment.Customer.CustomerID" 
-                                                       class="btn btn-primary w-100">
-                                                        <i class="fas fa-eye me-2"></i>View Full Customer Details
+                                                       class="btn btn-primary btn-sm w-100">
+                                                        <i class="fas fa-eye me-1"></i>View Full Customer Details
                                                     </a>
                                                 </div>
                                             </div>
@@ -346,8 +341,8 @@
                                 <p class="mb-2">This property has not been allotted yet.</p>
                                 @if (Model.Status == "Available")
                                 {
-                                    <a asp-action="Allot" asp-route-id="@Model.PropertyID" class="btn btn-success">
-                                        <i class="fas fa-hand-holding me-2"></i>Allot Property
+                                    <a asp-action="Allot" asp-route-id="@Model.PropertyID" class="btn btn-success btn-sm">
+                                        <i class="fas fa-hand-holding me-1"></i>Allot Property
                                     </a>
                                 }
                             </div>
@@ -358,8 +353,8 @@
                     <div class="tab-pane fade" id="possessions" role="tabpanel" aria-labelledby="possessions-tab">
                         @if (Model.Possessions != null && Model.Possessions.Any())
                         {
-                            <div class="table-responsive">
-                                <table class="table table-hover">
+                            <div class="table-responsive pms-property-details-panel p-2">
+                                <table class="table table-sm table-hover mb-0">
                                     <thead>
                                         <tr>
                                             <th>Possession ID</th>
@@ -409,145 +404,170 @@
         </div>
     </div>
 </div>
+</div>
 
 <style>
-    /* Tab Styling */
-    .property-tabs {
-        border-bottom: 2px solid #6f42c1;
-        background: linear-gradient(135deg, #f8f9fa 0%, #f3f0ff 100%);
-        padding: 0.5rem 1rem 0;
+    .pms-property-details .pms-property-details-header-badge {
+        font-size: 1rem;
+        font-weight: 500;
     }
 
-    .property-tabs .nav-link {
-        color: #666;
+    .pms-property-details .pms-property-details-header-badge .pms-property-details-code {
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+
+    .pms-property-details-card {
+        background: #fff !important;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: none !important;
+    }
+
+    .pms-property-details-card > .card-body {
+        background: #fff;
+    }
+
+    .pms-property-details .property-tabs {
+        border-bottom: 1px solid #e5e7eb;
+        background: #fff;
+        padding: 0.35rem 0.75rem 0;
+    }
+
+    .pms-property-details .property-tabs .nav-link {
+        color: #64748b;
         font-weight: 600;
         border: none;
-        border-bottom: 3px solid transparent;
-        padding: 0.75rem 1.25rem;
-        transition: all 0.3s ease;
-        font-size: 14px;
+        border-bottom: 2px solid transparent;
+        padding: 0.45rem 0.85rem;
+        font-size: 0.8125rem;
+        background: #fff;
     }
 
-    .property-tabs .nav-link:hover {
-        color: #6f42c1;
-        background: rgba(111, 66, 193, 0.05);
-        border-bottom-color: #9370db;
+    .pms-property-details .property-tabs .nav-link:hover {
+        color: #2563eb;
+        background: #fff;
+        border-bottom-color: #cbd5e1;
     }
 
-    .property-tabs .nav-link.active {
-        color: #6f42c1;
-        background: white;
-        border-bottom-color: #6f42c1;
-        font-weight: 700;
+    .pms-property-details .property-tabs .nav-link.active {
+        color: #2563eb;
+        background: #fff;
+        border-bottom-color: #2563eb;
     }
 
-    .property-tabs .nav-link i {
-        font-size: 13px;
+    .pms-property-details .property-tabs .nav-link i {
+        font-size: 0.75rem;
     }
 
-    .property-tabs .badge {
-        font-size: 10px;
-        padding: 3px 6px;
+    .pms-property-details .property-tabs .badge {
+        font-size: 0.625rem;
+        padding: 0.15rem 0.35rem;
     }
 
-    /* Tab Content */
-    .tab-content {
-        padding-top: 1rem;
+    .pms-property-details .tab-content {
+        padding-top: 0.75rem;
+        background: #fff;
     }
 
-    /* Section Headers within Tabs */
-    .tab-pane h6 {
-        color: #6f42c1;
-        font-weight: 700;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e8dcff;
+    .pms-property-details .tab-pane {
+        background: #fff;
     }
 
-    /* Detail Fields */
-    .detail-field {
-        padding: 8px 10px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #f3f0ff 100%);
-        border-radius: 6px;
-        transition: all 0.3s ease;
+    .pms-property-details .tab-pane h6 {
+        color: #334155;
+        font-weight: 600;
+        font-size: 0.8125rem;
+        padding-bottom: 0.35rem;
+        border-bottom: 1px solid #e5e7eb;
     }
 
-    .detail-field:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(111, 66, 193, 0.1);
+    .pms-property-details .detail-field {
+        padding: 6px 8px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
     }
 
-    .detail-field label {
+    .pms-property-details .detail-field label {
         display: block;
-        margin-bottom: 3px;
-        font-size: 10px;
+        margin-bottom: 2px;
+        font-size: 0.6875rem;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #666;
+        letter-spacing: 0.03em;
+        color: #64748b;
         font-weight: 600;
     }
 
-    .detail-field p {
-        font-size: 14px;
-        color: var(--text-dark);
+    .pms-property-details .detail-field label i {
+        font-size: 0.625rem;
+    }
+
+    .pms-property-details .detail-field p {
+        font-size: 0.8125rem;
+        color: #1e293b;
         margin-bottom: 0;
         font-weight: 500;
     }
 
-    code {
-        background: #e8dcff;
-        color: #6f42c1;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 13px;
+    .pms-property-details .pms-property-details-code,
+    .pms-property-details code {
+        background: transparent;
+        color: #2563eb;
+        padding: 0;
+        font-size: 0.75rem;
         font-weight: 600;
     }
 
-    /* Stat Items */
-    .stat-item {
-        padding: 10px 12px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #f3f0ff 100%);
-        border-radius: 8px;
+    .pms-property-details .stat-item {
+        padding: 6px 10px;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
         display: flex;
         align-items: center;
-        gap: 10px;
-        border-left: 3px solid #6f42c1;
+        gap: 8px;
+        border-left: 3px solid #2563eb;
     }
 
-    .stat-item i {
-        font-size: 18px;
+    .pms-property-details .stat-item i {
+        font-size: 0.875rem;
     }
 
-    .stat-label {
+    .pms-property-details .stat-label {
         flex: 1;
-        font-size: 13px;
-        color: var(--text-dark);
+        font-size: 0.75rem;
+        color: #475569;
     }
 
-    .stat-item strong {
-        color: #6f42c1;
-        font-size: 16px;
+    .pms-property-details .stat-item strong {
+        color: #2563eb;
+        font-size: 0.8125rem;
     }
 
-    /* Owner Card */
-    .owner-card {
-        background: linear-gradient(135deg, #f8f9fa 0%, #f3f0ff 100%);
-        border: 2px solid #e8dcff !important;
+    .pms-property-details .owner-card,
+    .pms-property-details .pms-property-details-panel {
+        background: #fff !important;
+        border: 1px solid #e5e7eb !important;
+        box-shadow: none !important;
     }
 
-    /* Responsive Tabs */
-    @@media (max-width: 768px) {
-        .property-tabs .nav-link {
-            padding: 0.5rem 0.75rem;
-            font-size: 12px;
+    .pms-property-details .alert {
+        font-size: 0.8125rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .pms-property-details .table {
+        font-size: 0.8125rem;
+    }
+
+  @@media (max-width: 768px) {
+        .pms-property-details .property-tabs .nav-link {
+            padding: 0.4rem 0.55rem;
+            font-size: 0.75rem;
         }
 
-        .property-tabs .nav-link i {
+        .pms-property-details .property-tabs .nav-link i {
             display: none;
-        }
-
-        .property-tabs .badge {
-            font-size: 9px;
-            padding: 2px 4px;
         }
     }
 </style>

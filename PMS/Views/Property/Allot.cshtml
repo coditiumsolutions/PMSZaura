@@ -3,189 +3,218 @@
     var property = ViewBag.Property as PMS.Models.Property;
 }
 
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>
-                <i class="fas fa-hand-holding me-2"></i>Allot Property
-            </h2>
-            <a asp-action="Details" asp-route-id="@property?.PropertyID" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Back to Property
-            </a>
+<div class="pms-property-allot">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="mb-0 pms-registration-page-title">Property</h2>
+        <a asp-action="Details" asp-route-id="@property?.PropertyID" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Back to Property
+        </a>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show py-1 px-2 mb-2 small" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show py-1 px-2 mb-2 small" role="alert">
+            @TempData["Warning"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
 
-        @if (TempData["Error"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                @TempData["Error"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-        @if (TempData["Warning"] != null)
-        {
-            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                @TempData["Warning"]
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-
-        <!-- Property Info -->
-        @if (property != null)
-        {
-            <div class="card mb-4">
-                <div class="card-header" style="background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-gold) 100%);">
-                    <h5 class="mb-0 text-white">
-                        <i class="fas fa-home me-2"></i>Property Details
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <small class="text-muted">Property ID</small>
-                            <p><code>@property.PropertyID</code></p>
+    <div class="card pms-listing-flat pms-registration-details pms-registration-create">
+        <div class="card-body">
+            @if (property != null)
+            {
+                <div class="pms-registration-4col-form pms-property-allot-summary">
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Property ID</div>
                         </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Unit No</small>
-                            <p class="fw-bold">@property.PlotNo</p>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value"><code>@property.PropertyID</code></div>
                         </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Tower</small>
-                            <p class="fw-bold">@property.Block</p>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Unit No</div>
                         </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Subproject</small>
-                            <p class="fw-bold">@(string.IsNullOrWhiteSpace(property.SubProject) ? "—" : property.SubProject)</p>
-                        </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Size</small>
-                            <p class="fw-bold">@property.Size</p>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@property.PlotNo</div>
                         </div>
                     </div>
-                    @if (property.Project != null)
-                    {
-                        <hr>
-                        <small class="text-muted">Project</small>
-                        <p class="mb-0">
-                            <i class="fas fa-building me-2"></i>
-                            <strong>@property.Project.ProjectName</strong> - @property.Project.Location
-                        </p>
-                    }
-                </div>
-            </div>
-        }
-
-        <!-- Allotment Form -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-user-plus me-2"></i>Allotment Information
-                </h5>
-            </div>
-            <div class="card-body">
-                <form asp-action="Allot" method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="propertyId" value="@property?.PropertyID" />
-
-                    <div class="mb-3">
-                        <label for="customerId" class="form-label">Select Customer *</label>
-                        <p class="small text-muted mb-2">Only customers with the same <strong>project</strong>, <strong>subproject</strong>, and <strong>registered size</strong> as this unit are listed.</p>
-                        @if (ViewBag.MatchingCustomerCount is int mc && mc == 0)
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Tower</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@property.Block</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Subproject</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(string.IsNullOrWhiteSpace(property.SubProject) ? "—" : property.SubProject)</div>
+                        </div>
+                    </div>
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Size</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@property.Size</div>
+                        </div>
+                        @if (property.Project != null)
                         {
-                            <div class="alert alert-warning py-2 mb-2">No matching customers found. Adjust customer records or this property so Project ID, Subproject, and Size (customer &ldquo;Registered size&rdquo;) align.</div>
+                            <div class="col-12 col-lg-2">
+                                <div class="pms-registration-4col-label">Project</div>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="pms-registration-details-value">@property.Project.ProjectName — @property.Project.Location</div>
+                            </div>
                         }
-                        <select name="customerId" id="customerId" class="form-select" required @(ViewBag.MatchingCustomerCount is int mco && mco == 0 ? "disabled" : null)>
-                            <option value="">Select Customer</option>
-                            @if (ViewBag.Customers != null)
-                            {
-                                @foreach (var customer in ViewBag.Customers)
-                                {
-                                    <option value="@customer.CustomerID" 
-                                            data-name="@customer.FullName"
-                                            data-email="@customer.Email"
-                                            data-phone="@customer.Phone">
-                                        @customer.FullName - @customer.CustomerID
-                                    </option>
-                                }
-                            }
-                        </select>
                     </div>
+                </div>
+            }
 
-                    <!-- Customer Preview -->
-                    <div id="customerPreview" class="mb-3" style="display: none;">
-                        <div class="alert alert-info">
-                            <strong id="customerName"></strong>
-                            <br>
-                            <small><i class="fas fa-envelope me-2"></i><span id="customerEmail"></span></small>
-                            <br>
-                            <small><i class="fas fa-phone me-2"></i><span id="customerPhone"></span></small>
+            <form asp-action="Allot" method="post" enctype="multipart/form-data" class="pms-property-allot-form">
+                <input type="hidden" name="propertyId" value="@property?.PropertyID" />
+
+                <div class="pms-registration-4col-form">
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label for="customerId" class="form-label pms-registration-4col-label mb-0">Customer *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            @if (ViewBag.MatchingCustomerCount is int mc && mc == 0)
+                            {
+                                <div class="alert alert-warning py-1 px-2 mb-1 small">No matching customers found. Align Project ID, Subproject, and Registered size.</div>
+                            }
+                            <select name="customerId" id="customerId" class="form-select" required @(ViewBag.MatchingCustomerCount is int mco && mco == 0 ? "disabled" : null)>
+                                <option value="">Select Customer</option>
+                                @if (ViewBag.Customers != null)
+                                {
+                                    @foreach (var customer in ViewBag.Customers)
+                                    {
+                                        <option value="@customer.CustomerID"
+                                                data-name="@customer.FullName"
+                                                data-email="@customer.Email"
+                                                data-phone="@customer.Phone">
+                                            @customer.FullName - @customer.CustomerID
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <div class="form-text mb-0">Matching project, subproject, and registered size only.</div>
+                            <div id="customerPreview" class="mt-1 small text-muted" style="display: none;">
+                                <div class="fw-semibold text-dark" id="customerName"></div>
+                                <div><i class="fas fa-envelope me-1"></i><span id="customerEmail"></span></div>
+                                <div><i class="fas fa-phone me-1"></i><span id="customerPhone"></span></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label for="allotmentType" class="form-label pms-registration-4col-label mb-0">Allotment Type *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select name="allotmentType" id="allotmentType" class="form-select" required>
+                                <option value="">Select Type</option>
+                                <option value="Direct">Direct Allotment</option>
+                                <option value="Balloting">Balloting</option>
+                                <option value="Transfer">Transfer</option>
+                                <option value="Special">Special Allotment</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="allotmentType" class="form-label">Allotment Type *</label>
-                        <select name="allotmentType" id="allotmentType" class="form-select" required>
-                            <option value="">Select Type</option>
-                            <option value="Direct">Direct Allotment</option>
-                            <option value="Balloting">Balloting</option>
-                            <option value="Transfer">Transfer</option>
-                            <option value="Special">Special Allotment</option>
-                        </select>
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label for="comments" class="form-label pms-registration-4col-label mb-0">Comments</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <textarea name="comments" id="comments" class="form-control" rows="2"
+                                      placeholder="Enter any comments or notes about this allotment"></textarea>
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <label for="comments" class="form-label">Comments</label>
-                        <textarea name="comments" id="comments" class="form-control" rows="4" 
-                                  placeholder="Enter any comments or notes about this allotment"></textarea>
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label mb-0">Attachments</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <input type="file" name="attachmentFiles" id="attachmentFiles" class="form-control" multiple
+                                   accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,application/pdf" @(ViewBag.MatchingCustomerCount is int ma && ma == 0 ? "disabled" : null) />
+                            <div class="form-text mb-0">Optional. Images or PDF, max 8 MB per file.</div>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Attachments <span class="text-muted fw-normal">(optional)</span></label>
-                        <input type="file" name="attachmentFiles" id="attachmentFiles" class="form-control" multiple
-                               accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,application/pdf" @(ViewBag.MatchingCustomerCount is int ma && ma == 0 ? "disabled" : null) />
-                        <div class="form-text">Upload supporting documents (images or PDF). Maximum 8 MB per file.</div>
-                    </div>
+                <p class="small text-muted mt-1 mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Once allotted, property status becomes &ldquo;Allotted&rdquo; and workflow is set to &ldquo;Pending&rdquo; approval.
+                </p>
 
-                    <div class="alert alert-success">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Note:</strong> Once allotted, the property status will be changed to "Allotted" and the workflow will be set to "Pending" approval.
-                    </div>
-
-                    <hr>
-
-                    <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-success me-2" @(ViewBag.MatchingCustomerCount is int ms && ms == 0 ? "disabled" : null)>
-                            <i class="fas fa-check me-2"></i>Allot Property
-                        </button>
-                        <a asp-action="Details" asp-route-id="@property?.PropertyID" class="btn btn-secondary">
-                            <i class="fas fa-times me-2"></i>Cancel
-                        </a>
-                    </div>
-                </form>
-            </div>
+                <div class="d-flex justify-content-end gap-2 pms-registration-create-actions mt-2">
+                    <a asp-action="Details" asp-route-id="@property?.PropertyID" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-sm btn-success" @(ViewBag.MatchingCustomerCount is int ms && ms == 0 ? "disabled" : null)>
+                        <i class="fas fa-check me-1"></i>Allot Property
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 <style>
-    code {
-        background: var(--light-green);
-        color: var(--primary-green);
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 600;
+    .pms-property-allot .pms-registration-4col-label,
+    .pms-property-allot .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .form-label,
+    .pms-property-allot .pms-registration-create .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label {
+        color: #000 !important;
+        font-weight: 500 !important;
+    }
+
+    .pms-property-allot .pms-registration-4col-form .pms-registration-4col-row {
+        padding-bottom: 0.35rem;
+        margin-bottom: 0;
+    }
+
+    .pms-property-allot .pms-property-allot-summary {
+        margin-bottom: 0.25rem;
+    }
+
+    .pms-property-allot .pms-property-allot-summary .pms-registration-4col-row:last-child {
+        border-bottom: 1px solid #cbd5e1;
+        padding-bottom: 0.45rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .pms-property-allot .pms-property-allot-form .pms-registration-4col-form .pms-registration-4col-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .pms-property-allot .form-text {
+        font-size: 0.7rem;
+        margin-top: 0.15rem;
+    }
+
+    .pms-property-allot textarea.form-control {
+        min-height: calc(var(--pms-listing-control-h) * 1.5);
     }
 </style>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Show customer preview when selected
             $('#customerId').on('change', function() {
                 var selectedOption = $(this).find('option:selected');
                 var name = selectedOption.data('name');
                 var email = selectedOption.data('email');
                 var phone = selectedOption.data('phone');
-                
+
                 if (name) {
                     $('#customerName').text(name);
                     $('#customerEmail').text(email || 'N/A');
@@ -196,20 +225,18 @@
                 }
             });
 
-            // Form validation
             $('form').on('submit', function(e) {
                 var customerId = $('#customerId').val();
                 var allotmentType = $('#allotmentType').val();
-                
+
                 if (!customerId || !allotmentType) {
                     e.preventDefault();
                     alert('Please select both customer and allotment type.');
                     return false;
                 }
-                
+
                 return confirm('Are you sure you want to allot this property to the selected customer?');
             });
         });
     </script>
 }
-

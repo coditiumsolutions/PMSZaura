@@ -81,6 +81,9 @@
                             <tr>
                                 <td class="pms-saas-td-actions" data-label="Actions">
                                     <div class="pms-row-actions" role="group">
+                                        <a asp-action="Details" asp-route-id="@row.Id" class="btn btn-sm btn-outline-secondary" title="View">
+                                            <i class="bi bi-eye" aria-hidden="true"></i>
+                                        </a>
                                         @if (ViewBag.CanEdit == true)
                                         {
                                             <a asp-action="Edit" asp-route-id="@row.Id" class="btn btn-sm btn-outline-primary" title="Edit">
@@ -98,7 +101,11 @@
                                         }
                                     </div>
                                 </td>
-                                <td data-label="ID"><code>@row.Id</code></td>
+                                <td data-label="ID">
+                                    <a asp-action="Details" asp-route-id="@row.Id" class="text-decoration-none">
+                                        <code>@row.Id</code>
+                                    </a>
+                                </td>
                                 <td data-label="Project">@(row.Project?.ProjectName ?? row.ProjectID)</td>
                                 <td data-label="SubProject">@(row.SubProject ?? "—")</td>
                                 <td data-label="Transfer Type">@(row.TransferType ?? "—")</td>

@@ -5,207 +5,211 @@
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-        <h2 class="mb-0"><i class="fas fa-file-certificate me-2"></i>NDC Details</h2>
-        <div class="text-muted small">NDC ID: <span class="badge bg-secondary">@Model.NDCID</span></div>
+    <div class="d-flex align-items-center gap-3 ms-4">
+        <div class="badge bg-light text-dark px-3 py-2" style="font-size: 14px;">
+            <i class="fas fa-file-certificate me-2" style="color: #2563eb;"></i>
+            <strong>NDC ID:</strong> @Model.NDCID
+        </div>
     </div>
     <div class="d-flex gap-2">
-        <a asp-action="Print" asp-route-id="@Model.NDCID" target="_blank" class="btn btn-outline-secondary" title="Print NDC">
-            <i class="fas fa-print me-2"></i>Print NDC
+        <a asp-action="Print" asp-route-id="@Model.NDCID" target="_blank" class="btn btn-outline-secondary btn-sm" title="Print NDC">
+            <i class="fas fa-print me-1"></i>Print NDC
         </a>
         @if (ViewBag.CanEdit == true && !string.Equals(Model.WorkFlowStatus?.Trim(), "Approved", StringComparison.OrdinalIgnoreCase))
         {
-            <a asp-action="Edit" asp-route-id="@Model.NDCID" class="btn btn-outline-warning" title="Edit NDC">
-                <i class="fas fa-edit me-2"></i>Edit
+            <a asp-action="Edit" asp-route-id="@Model.NDCID" class="btn btn-outline-warning btn-sm" title="Edit NDC">
+                <i class="fas fa-edit me-1"></i>Edit
             </a>
         }
         @if (ViewBag.CanDelete == true)
         {
             <form asp-action="Delete" asp-route-id="@Model.NDCID" method="post" class="d-inline" onsubmit="return confirm('Delete this NDC record?');">
                 @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-outline-danger" title="Delete NDC">
-                    <i class="fas fa-trash me-2"></i>Delete
+                <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete NDC">
+                    <i class="fas fa-trash me-1"></i>Delete
                 </button>
             </form>
         }
-        <a asp-action="Index" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-2"></i>Back to List</a>
+        <a asp-action="Index" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-left me-1"></i>Back to List</a>
     </div>
 </div>
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <div class="alert alert-success alert-dismissible fade show py-2 small" role="alert">
         @TempData["Success"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <div class="alert alert-danger alert-dismissible fade show py-2 small" role="alert">
         @TempData["Error"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
-<div class="row g-3">
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-                <h5 class="mb-0 text-white"><i class="fas fa-user me-2"></i>Customer</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-2">
-                    <div class="text-muted small">Customer ID</div>
-                    <div class="fw-bold"><code>@(Model.CustomerID ?? "—")</code></div>
+<div class="pms-ndc-details">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card pms-listing-flat pms-registration-details">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-user me-1"></i>Customer</h6>
                 </div>
-                @if (Model.Customer != null)
-                {
+                <div class="card-body">
+                    <div class="mb-2">
+                        <div class="pms-registration-4col-label">Customer ID</div>
+                        <div class="pms-registration-details-value"><code>@(Model.CustomerID ?? "—")</code></div>
+                    </div>
+                    @if (Model.Customer != null)
+                    {
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <div class="pms-registration-4col-label">Name</div>
+                                <div class="pms-registration-details-value">@(Model.Customer.FullName ?? "—")</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="pms-registration-4col-label">CNIC</div>
+                                <div class="pms-registration-details-value">@(Model.Customer.CNIC ?? "—")</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="pms-registration-4col-label">Phone</div>
+                                <div class="pms-registration-details-value">@(Model.Customer.Phone ?? "—")</div>
+                            </div>
+                            <div class="col-12">
+                                <div class="pms-registration-4col-label">Plan / Project</div>
+                                <div class="pms-registration-details-value">@(Model.Customer.PaymentPlan?.PlanName ?? "—") / @(Model.Customer.PaymentPlan?.Project?.ProjectName ?? "—")</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card pms-listing-flat pms-registration-details">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-coins me-1"></i>Payment Summary</h6>
+                </div>
+                <div class="card-body">
                     <div class="row g-2">
-                        <div class="col-12">
-                            <div class="text-muted small">Name</div>
-                            <div class="fw-bold">@(Model.Customer.FullName ?? "—")</div>
+                        <div class="col-6">
+                            <div class="pms-registration-4col-label">Total Due (at creation)</div>
+                            <div class="pms-registration-details-value">@(Model.TotalDueAmount?.ToString("N0") ?? "—")</div>
                         </div>
                         <div class="col-6">
-                            <div class="text-muted small">CNIC</div>
-                            <div>@(Model.Customer.CNIC ?? "—")</div>
-                        </div>
-                        <div class="col-6">
-                            <div class="text-muted small">Phone</div>
-                            <div>@(Model.Customer.Phone ?? "—")</div>
+                            <div class="pms-registration-4col-label">Total Paid (at creation)</div>
+                            <div class="pms-registration-details-value">@(Model.TotalDueInstallments?.ToString("N0") ?? "—")</div>
                         </div>
                         <div class="col-12">
-                            <div class="text-muted small">Plan / Project</div>
-                            <div>@(Model.Customer.PaymentPlan?.PlanName ?? "—") / @(Model.Customer.PaymentPlan?.Project?.ProjectName ?? "—")</div>
+                            <div class="pms-registration-4col-label">Remaining Dues (at creation)</div>
+                            <div class="pms-registration-details-value">@(Model.RemainingDues?.ToString("N0") ?? "—")</div>
                         </div>
-                    </div>
-                }
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-                <h5 class="mb-0 text-white"><i class="fas fa-coins me-2"></i>Payment Summary</h5>
-            </div>
-            <div class="card-body">
-                <div class="row g-2">
-                    <div class="col-6">
-                        <div class="text-muted small">Total Due (at creation)</div>
-                        <div class="fw-bold">@(Model.TotalDueAmount?.ToString("N0") ?? "—")</div>
-                    </div>
-                    <div class="col-6">
-                        <div class="text-muted small">Total Paid (at creation)</div>
-                        <div class="fw-bold">@(Model.TotalDueInstallments?.ToString("N0") ?? "—")</div>
-                    </div>
-                    <div class="col-12">
-                        <div class="text-muted small">Remaining Dues (at creation)</div>
-                        <div class="fw-bold">@(Model.RemainingDues?.ToString("N0") ?? "—")</div>
-                    </div>
-                    <div class="col-12">
-                        <div class="text-muted small">All Payment Clear</div>
-                        <div>
-                            @if (Model.AllPaymentClear)
-                            { <span class="badge bg-success">Yes</span> }
-                            else
-                            { <span class="badge bg-warning">No</span> }
+                        <div class="col-12">
+                            <div class="pms-registration-4col-label">All Payment Clear</div>
+                            <div class="pms-registration-details-value">
+                                @if (Model.AllPaymentClear)
+                                { <span class="badge bg-success">Yes</span> }
+                                else
+                                { <span class="badge bg-warning">No</span> }
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="text-muted small">Amount Per Unit</div>
-                        <div class="fw-bold">@(Model.AmountPerUnit?.ToString("N2") ?? "—")</div>
-                    </div>
-                    <div class="col-4">
-                        <div class="text-muted small">Property Size</div>
-                        <div class="fw-bold">@(Model.PropertySize?.ToString("N2") ?? "—")</div>
-                    </div>
-                    <div class="col-4">
-                        <div class="text-muted small">Transfer Fee Amount</div>
-                        <div class="fw-bold">@(Model.TransferFeeAmount?.ToString("N0") ?? "—")</div>
+                        <div class="col-4">
+                            <div class="pms-registration-4col-label">Amount Per Unit</div>
+                            <div class="pms-registration-details-value">@(Model.AmountPerUnit?.ToString("N2") ?? "—")</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="pms-registration-4col-label">Property Size</div>
+                            <div class="pms-registration-details-value">@(Model.PropertySize?.ToString("N2") ?? "—")</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="pms-registration-4col-label">Transfer Fee Amount</div>
+                            <div class="pms-registration-details-value">@(Model.TransferFeeAmount?.ToString("N0") ?? "—")</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-@{
-    var ndcAttachments = ViewBag.NdcAttachments as List<PMS.Models.Attachment> ?? new List<PMS.Models.Attachment>();
-}
-<div class="card border-0 shadow-sm mt-3">
-    <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-        <h5 class="mb-0 text-white"><i class="fas fa-paperclip me-2"></i>Attachments</h5>
+    @{
+        var ndcAttachments = ViewBag.NdcAttachments as List<PMS.Models.Attachment> ?? new List<PMS.Models.Attachment>();
+    }
+    <div class="card pms-listing-flat pms-registration-details mt-3">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-paperclip me-1"></i>Attachments</h6>
+        </div>
+        <div class="card-body">
+            @if (ndcAttachments.Count == 0)
+            {
+                <div class="text-muted small">No attachments uploaded.</div>
+            }
+            else
+            {
+                <ul class="mb-0 ps-3 small">
+                    @foreach (var att in ndcAttachments)
+                    {
+                        <li class="mb-1">
+                            <a href="@att.FilePath" target="_blank" rel="noopener" class="small">@att.FileName</a>
+                            @if (!string.IsNullOrWhiteSpace(att.Description))
+                            {
+                                <span class="text-muted"> - @att.Description</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
     </div>
-    <div class="card-body">
-        @if (ndcAttachments.Count == 0)
-        {
-            <div class="text-muted">No attachments uploaded.</div>
-        }
-        else
-        {
-            <ul class="mb-0 ps-3">
-                @foreach (var att in ndcAttachments)
+
+    <div class="card pms-listing-flat pms-registration-details mt-3">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-info-circle me-1"></i>NDC Info</h6>
+        </div>
+        <div class="card-body">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <div class="pms-registration-4col-label">NDC Type</div>
+                    <div class="pms-registration-details-value">@(Model.NDCType ?? "—")</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="pms-registration-4col-label">Title</div>
+                    <div class="pms-registration-details-value">@(Model.Title ?? "—")</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="pms-registration-4col-label">Workflow Status</div>
+                    <div class="pms-registration-details-value"><span class="badge bg-primary">@(Model.WorkFlowStatus ?? "—")</span></div>
+                </div>
+                <div class="col-md-4">
+                    <div class="pms-registration-4col-label">Created At</div>
+                    <div class="pms-registration-details-value">@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="pms-registration-4col-label">Created By</div>
+                    <div class="pms-registration-details-value">@(Model.CreatedBy ?? "—")</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="pms-registration-4col-label">Issued Date</div>
+                    <div class="pms-registration-details-value">@(Model.IssuedDate.ToString("MMM dd, yyyy"))</div>
+                </div>
+                <div class="col-md-4">
+                    <div class="pms-registration-4col-label">NDC Expiry Date</div>
+                    <div class="pms-registration-details-value">@(Model.NDCExpiryDate?.ToString("MMM dd, yyyy") ?? "—")</div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Comments))
                 {
-                    <li class="mb-1">
-                        <a href="@att.FilePath" target="_blank" rel="noopener">@att.FileName</a>
-                        @if (!string.IsNullOrWhiteSpace(att.Description))
-                        {
-                            <span class="text-muted"> - @att.Description</span>
-                        }
-                    </li>
+                    <div class="col-12">
+                        <div class="pms-registration-4col-label">Comments</div>
+                        <div class="pms-registration-details-value">@Model.Comments</div>
+                    </div>
                 }
-            </ul>
-        }
-    </div>
-</div>
-
-<div class="card border-0 shadow-sm mt-3">
-    <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-        <h5 class="mb-0 text-white"><i class="fas fa-info-circle me-2"></i>NDC Info</h5>
-    </div>
-    <div class="card-body">
-        <div class="row g-2">
-            <div class="col-md-4">
-                <div class="text-muted small">NDC Type</div>
-                <div>@(Model.NDCType ?? "—")</div>
+                @if (!string.IsNullOrWhiteSpace(Model.Remarks))
+                {
+                    <div class="col-12">
+                        <div class="pms-registration-4col-label">Remarks</div>
+                        <div class="pms-registration-details-value">@Model.Remarks</div>
+                    </div>
+                }
             </div>
-            <div class="col-md-4">
-                <div class="text-muted small">Title</div>
-                <div>@(Model.Title ?? "—")</div>
-            </div>
-            <div class="col-md-4">
-                <div class="text-muted small">Workflow Status</div>
-                <div><span class="badge bg-primary">@(Model.WorkFlowStatus ?? "—")</span></div>
-            </div>
-            <div class="col-md-4">
-                <div class="text-muted small">Created At</div>
-                <div>@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</div>
-            </div>
-            <div class="col-md-4">
-                <div class="text-muted small">Created By</div>
-                <div>@(Model.CreatedBy ?? "—")</div>
-            </div>
-            <div class="col-md-4">
-                <div class="text-muted small">Issued Date</div>
-                <div>@(Model.IssuedDate.ToString("MMM dd, yyyy"))</div>
-            </div>
-            <div class="col-md-4">
-                <div class="text-muted small">NDC Expiry Date</div>
-                <div>@(Model.NDCExpiryDate?.ToString("MMM dd, yyyy") ?? "—")</div>
-            </div>
-            @if (!string.IsNullOrWhiteSpace(Model.Comments))
-            {
-                <div class="col-12">
-                    <div class="text-muted small">Comments</div>
-                    <div>@Model.Comments</div>
-                </div>
-            }
-            @if (!string.IsNullOrWhiteSpace(Model.Remarks))
-            {
-                <div class="col-12">
-                    <div class="text-muted small">Remarks</div>
-                    <div>@Model.Remarks</div>
-                </div>
-            }
         </div>
     </div>
 </div>

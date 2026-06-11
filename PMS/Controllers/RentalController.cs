@@ -59,6 +59,9 @@ namespace PMS.Controllers
             ViewBag.PropertyIdFilter = propertyIdFilter ?? "";
             ViewBag.StatusFilter = statusFilter ?? "";
             ViewBag.Statuses = new[] { Rental.StatusActive, Rental.StatusCompleted, Rental.StatusCancelled };
+            ViewBag.ActiveCount = await _context.Rentals.CountAsync(r => r.Status == Rental.StatusActive);
+            ViewBag.CompletedCount = await _context.Rentals.CountAsync(r => r.Status == Rental.StatusCompleted);
+            ViewBag.CancelledCount = await _context.Rentals.CountAsync(r => r.Status == Rental.StatusCancelled);
             return View(list);
         }
 

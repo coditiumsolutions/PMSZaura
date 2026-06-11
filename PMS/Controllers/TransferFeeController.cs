@@ -83,6 +83,25 @@ namespace PMS.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Details(string id)
+        {
+            var denied = await EnsurePermissionAsync("Read");
+            if (denied != null) return denied;
+
+            if (string.IsNullOrWhiteSpace(id))
+                return NotFound();
+
+            var model = await _context.TransferFees
+                .Include(t => t.Project)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (model == null)
+                return NotFound();
+
+            return View(model);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Create(string? projectId = null, string? subProject = null)
         {
             var denied = await EnsurePermissionAsync("Edit");

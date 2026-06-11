@@ -773,6 +773,145 @@
     box-shadow: none !important;
 }
 
+.pms-ndc-details .card-header h6 {
+    font-size: 0.8125rem;
+    font-weight: 600;
+}
+
+.pms-ndc-details .pms-registration-4col-label {
+    color: #475569;
+    font-weight: 500;
+    font-size: 0.75rem;
+    margin-bottom: 0.15rem;
+    line-height: 1.25;
+}
+
+.pms-ndc-details .pms-registration-details-value {
+    font-size: 0.8125rem;
+    min-height: auto;
+    line-height: 1.35;
+}
+
+.pms-ndc-details .badge {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    padding: 0.2em 0.45em;
+}
+
+.pms-refund-listing .pms-listing-search-wrap,
+.pms-allotment-listing .pms-listing-search-wrap,
+.pms-dft-listing .pms-listing-search-wrap,
+.pms-waiver-listing .pms-listing-search-wrap,
+.pms-rental-listing .pms-listing-search-wrap,
+.pms-property-listing .pms-listing-search-wrap,
+.pms-payment-listing .pms-listing-search-wrap {
+    padding: 0.5rem 0.75rem;
+}
+
+.pms-refund-listing .pms-listing-search-wrap .pms-compact-field .form-label,
+.pms-allotment-listing .pms-listing-search-wrap .pms-compact-field .form-label,
+.pms-dft-listing .pms-listing-search-wrap .pms-compact-field .form-label,
+.pms-waiver-listing .pms-listing-search-wrap .pms-compact-field .form-label,
+.pms-rental-listing .pms-listing-search-wrap .pms-compact-field .form-label,
+.pms-property-listing .pms-listing-search-wrap .pms-compact-field .form-label,
+.pms-payment-listing .pms-listing-search-wrap .pms-compact-field .form-label {
+    margin-bottom: 0.2rem;
+}
+
+.pms-refund-listing .pms-listing-search-wrap .row,
+.pms-allotment-listing .pms-listing-search-wrap .row,
+.pms-dft-listing .pms-listing-search-wrap .row,
+.pms-waiver-listing .pms-listing-search-wrap .row,
+.pms-rental-listing .pms-listing-search-wrap .row,
+.pms-property-listing .pms-listing-search-wrap .row,
+.pms-payment-listing .pms-listing-search-wrap .row {
+    --bs-gutter-y: 0.25rem;
+    --bs-gutter-x: 0.5rem;
+}
+
+.pms-allotment-listing.pms-listing-page,
+.pms-dft-listing.pms-listing-page,
+.pms-waiver-listing.pms-listing-page,
+.pms-rental-listing.pms-listing-page,
+.pms-property-listing.pms-listing-page,
+.pms-payment-listing.pms-listing-page {
+    --pms-listing-control-h: 30px;
+}
+
+.pms-allotment-listing .pms-listing-search-wrap .pms-compact-field .form-label,
+.pms-dft-listing .pms-listing-search-wrap .pms-compact-field .form-label,
+.pms-waiver-listing .pms-listing-search-wrap .pms-compact-field .form-label,
+.pms-rental-listing .pms-listing-search-wrap .pms-compact-field .form-label,
+.pms-property-listing .pms-listing-search-wrap .pms-compact-field .form-label,
+.pms-payment-listing .pms-listing-search-wrap .pms-compact-field .form-label {
+    font-size: 0.6875rem;
+    margin-bottom: 0.15rem;
+}
+
+.pms-allotment-listing .pms-listing-search-wrap .form-control,
+.pms-allotment-listing .pms-listing-search-wrap .form-select,
+.pms-dft-listing .pms-listing-search-wrap .form-control,
+.pms-dft-listing .pms-listing-search-wrap .form-select,
+.pms-waiver-listing .pms-listing-search-wrap .form-control,
+.pms-waiver-listing .pms-listing-search-wrap .form-select,
+.pms-rental-listing .pms-listing-search-wrap .form-control,
+.pms-rental-listing .pms-listing-search-wrap .form-select,
+.pms-property-listing .pms-listing-search-wrap .form-control,
+.pms-property-listing .pms-listing-search-wrap .form-select,
+.pms-payment-listing .pms-listing-search-wrap .form-control,
+.pms-payment-listing .pms-listing-search-wrap .form-select {
+    min-height: var(--pms-listing-control-h);
+    height: var(--pms-listing-control-h);
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8125rem;
+    border-radius: 8px;
+}
+
+.pms-allotment-listing .pms-listing-search-wrap .form-select,
+.pms-dft-listing .pms-listing-search-wrap .form-select,
+.pms-waiver-listing .pms-listing-search-wrap .form-select,
+.pms-rental-listing .pms-listing-search-wrap .form-select,
+.pms-property-listing .pms-listing-search-wrap .form-select,
+.pms-payment-listing .pms-listing-search-wrap .form-select {
+    padding-right: 1.75rem;
+    background-position: right 0.45rem center;
+    background-size: 12px 9px;
+}
+
+.pms-allotment-listing .pms-inline-search-group .form-control,
+.pms-dft-listing .pms-inline-search-group .form-control,
+.pms-waiver-listing .pms-inline-search-group .form-control,
+.pms-rental-listing .pms-inline-search-group .form-control,
+.pms-property-listing .pms-inline-search-group .form-control,
+.pms-payment-listing .pms-inline-search-group .form-control {
+    border-radius: 8px 0 0 8px;
+}
+
+.pms-allotment-listing .pms-inline-search-group .pms-inline-search-btn,
+.pms-dft-listing .pms-inline-search-group .pms-inline-search-btn,
+.pms-waiver-listing .pms-inline-search-group .pms-inline-search-btn,
+.pms-rental-listing .pms-inline-search-group .pms-inline-search-btn,
+.pms-property-listing .pms-inline-search-group .pms-inline-search-btn,
+.pms-payment-listing .pms-inline-search-group .pms-inline-search-btn {
+    min-height: var(--pms-listing-control-h);
+    height: var(--pms-listing-control-h);
+    padding: 0 0.4rem;
+    font-size: 0.75rem;
+    line-height: 1;
+    border-radius: 0 8px 8px 0;
+}
+
+.pms-allotment-listing .pms-listing-operations-dropdown .pms-listing-operations-btn,
+.pms-dft-listing .pms-listing-operations-dropdown .pms-listing-operations-btn,
+.pms-waiver-listing .pms-listing-operations-dropdown .pms-listing-operations-btn,
+.pms-rental-listing .pms-listing-operations-dropdown .pms-listing-operations-btn,
+.pms-property-listing .pms-listing-operations-dropdown .pms-listing-operations-btn,
+.pms-payment-listing .pms-listing-operations-dropdown .pms-listing-operations-btn {
+    min-height: var(--pms-listing-control-h);
+    padding: 0.2rem 0.65rem;
+    font-size: 0.75rem;
+}
+
 .pms-registration-details .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label,
 .pms-customer-details .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label {
     color: #475569;
@@ -865,6 +1004,13 @@
 .pms-registration-create .form-label {
     font-size: 0.78125rem;
     margin-bottom: 0.3rem;
+}
+
+.pms-registration-create .pms-registration-4col-form .pms-registration-4col-row,
+.pms-customer-create .pms-registration-4col-form .pms-registration-4col-row {
+    margin-bottom: 0;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid #cbd5e1;
 }
 
 .pms-registration-create .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .form-label,

@@ -1,13 +1,9 @@
 @model IEnumerable<PMS.Models.Allotment>
 
 @{
-    ViewData["Title"] = "Allotment Management";
-    ViewData["ListingTitle"] = "All Allotments";
-    ViewData["ListingDescription"] = "Property allotment records";
-    ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
-    ViewData["ListingAddUrl"] = Url.Action("Create");
-    ViewData["ListingAddText"] = "Create Allotment";
+    ViewData["Title"] = "Allotments";
     ViewData["ListingHideToolbarActions"] = true;
+    ViewData["ListingHideTitle"] = true;
     var workflowStatuses = ViewBag.WorkflowStatuses as List<string> ?? new List<string> { "Initiated", "Operations Desk", "Approved", "Declined" };
     var initiatedStatus = (string?)ViewBag.InitiatedStatus ?? "Initiated";
     var operationsDeskStatus = (string?)ViewBag.OperationsDeskStatus ?? "Operations Desk";
@@ -15,384 +11,318 @@
     var declinedStatus = (string?)ViewBag.DeclinedStatus ?? "Declined";
 }
 
-@* TempData messages are handled in _Layout.cshtml *@
+<div class="pms-allotment-listing pms-listing-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h5 class="pms-grid-title mb-0">Allotments</h5>
+        @if (Model != null)
+        {
+            <span class="badge rounded-pill pms-record-badge">@Model.Count() record@(Model.Count() == 1 ? "" : "s")</span>
+        }
+    </div>
 
-<!-- Statistics Cards -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="avatar-sm rounded-circle bg-primary bg-soft text-primary">
-                            <i class="fas fa-hand-holding font-size-24"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-1 text-muted">Total Allotments</h6>
-                        <h4 class="mb-0">@ViewBag.TotalAllotments</h4>
+    <div class="row g-2 mb-2">
+        <div class="col-6 col-md-3">
+            <a href="@Url.Action("Index", new { statusFilter = initiatedStatus })" class="text-decoration-none">
+                <div class="card border-0 h-100" style="background:#fff3cd;">
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-0">@initiatedStatus</div>
+                        <div class="fs-5 fw-bold text-warning mb-0">@(ViewBag.InitiatedCount ?? 0)</div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="avatar-sm rounded-circle bg-success bg-soft text-success">
-                            <i class="fas fa-check-circle font-size-24"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-1 text-muted">Allotted Properties</h6>
-                        <h4 class="mb-0">@ViewBag.AllottedProperties</h4>
+        <div class="col-6 col-md-3">
+            <a href="@Url.Action("Index", new { statusFilter = operationsDeskStatus })" class="text-decoration-none">
+                <div class="card border-0 h-100" style="background:#d1ecf1;">
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-0">@operationsDeskStatus</div>
+                        <div class="fs-5 fw-bold text-info mb-0">@(ViewBag.OperationsDeskCount ?? 0)</div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="avatar-sm rounded-circle bg-info bg-soft text-info">
-                            <i class="fas fa-home font-size-24"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-1 text-muted">Available Properties</h6>
-                        <h4 class="mb-0">@ViewBag.AvailableProperties</h4>
+        <div class="col-6 col-md-3">
+            <a href="@Url.Action("Index", new { statusFilter = approvedStatus })" class="text-decoration-none">
+                <div class="card border-0 h-100" style="background:#d4edda;">
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-0">@approvedStatus</div>
+                        <div class="fs-5 fw-bold text-success mb-0">@(ViewBag.Approved ?? 0)</div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="avatar-sm rounded-circle bg-warning bg-soft text-warning">
-                            <i class="fas fa-clock font-size-24"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-1 text-muted">@operationsDeskStatus</h6>
-                        <h4 class="mb-0">@(ViewBag.OperationsDeskCount ?? 0)</h4>
+        <div class="col-6 col-md-3">
+            <a href="@Url.Action("Index", new { statusFilter = declinedStatus })" class="text-decoration-none">
+                <div class="card border-0 h-100" style="background:#f8d7da;">
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-0">@declinedStatus</div>
+                        <div class="fs-5 fw-bold text-danger mb-0">@(ViewBag.Declined ?? 0)</div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
-</div>
 
-<form method="get" asp-action="Index" class="mb-4 pms-listing-page">
-    <div class="pms-listing-search-wrap">
-        <div class="row g-2 align-items-end flex-lg-nowrap">
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="pms-compact-field pms-select-dropdown">
-                    <label for="projectFilter" class="form-label">Project</label>
-                    <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()">
-                        <option value="All" selected="@(ViewBag.ProjectFilter == "All")">All Projects</option>
-                        @if (ViewBag.Projects != null)
-                        {
-                            foreach (var project in ViewBag.Projects)
+    <form method="get" asp-action="Index" class="mb-2 pms-listing-page">
+        <div class="pms-listing-search-wrap">
+            <div class="row g-1 align-items-end flex-lg-nowrap">
+                <div class="col-12 col-md-4 col-lg-3">
+                    <div class="pms-compact-field pms-select-dropdown">
+                        <label for="projectFilter" class="form-label">Project</label>
+                        <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()">
+                            <option value="All" selected="@(ViewBag.ProjectFilter == "All")">All Projects</option>
+                            @if (ViewBag.Projects != null)
                             {
-                                <option value="@project.ProjectID" selected="@(ViewBag.ProjectFilter == project.ProjectID)">
-                                    @project.ProjectName
-                                </option>
+                                foreach (var project in ViewBag.Projects)
+                                {
+                                    <option value="@project.ProjectID" selected="@(ViewBag.ProjectFilter == project.ProjectID)">
+                                        @project.ProjectName
+                                    </option>
+                                }
                             }
-                        }
-                    </select>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-md-3 col-lg-2">
+                    <div class="pms-compact-field pms-select-dropdown">
+                        <label for="statusFilter" class="form-label">Status</label>
+                        <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()">
+                            <option value="All" selected="@(ViewBag.StatusFilter == "All")">All Status</option>
+                            @foreach (var s in workflowStatuses)
+                            {
+                                <option value="@s" selected="@(ViewBag.StatusFilter == s)">@s</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-md-5 col-lg-4">
+                    <div class="pms-compact-field">
+                        <label for="searchTerm" class="form-label">Search</label>
+                        <div class="input-group pms-inline-search-group">
+                            <input type="text" name="searchTerm" id="searchTerm" class="form-control"
+                                   placeholder="Search by ID, Customer, Property..."
+                                   value="@ViewBag.SearchTerm" />
+                            <button type="submit" class="btn btn-primary pms-inline-search-btn" title="Search">
+                                <i class="bi bi-search" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-2">
-                <div class="pms-compact-field pms-select-dropdown">
-                    <label for="statusFilter" class="form-label">Status</label>
-                    <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()">
-                        <option value="All" selected="@(ViewBag.StatusFilter == "All")">All Status</option>
-                        @foreach (var s in workflowStatuses)
-                        {
-                            <option value="@s" selected="@(ViewBag.StatusFilter == s)">@s</option>
-                        }
-                    </select>
-                </div>
-            </div>
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="pms-compact-field">
-                    <label for="searchTerm" class="form-label">Search</label>
-                    <input type="text" name="searchTerm" id="searchTerm" class="form-control"
-                           placeholder="Search by ID, Customer, Property..."
-                           value="@ViewBag.SearchTerm" />
-                </div>
-            </div>
-            <div class="col-12 col-lg-3">
-                <div class="d-flex flex-nowrap gap-2 pms-listing-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
-                    </button>
-                    <partial name="_OperationsDropdown" />
+            <div class="row g-1 mt-1">
+                <div class="col-12">
+                    <div class="pms-listing-search-actions">
+                        <partial name="_OperationsDropdown" />
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</form>
+    </form>
 
-<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-4">
-    <div class="card-body">
-        <partial name="Listing/_GridToolbar" />
-
-        @if (Model.Any())
-        {
-            <div class="table-responsive pms-saas-table-wrap">
-                <table class="table pms-saas-table" id="allotmentsTable">
-                    <thead>
-                        <tr>
-                            <th class="pms-saas-th-actions">Actions</th>
-                            <th>Allotment ID</th>
-                            <th>Property</th>
-                            <th>Customer</th>
-                            <th>Project</th>
-                            <th>Type</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var allotment in Model)
-                        {
-                            var wf = allotment.WorkFlowStatus ?? initiatedStatus;
-                            var pillClass = string.Equals(wf, approvedStatus, StringComparison.OrdinalIgnoreCase)
-                                ? "pms-pill--success"
-                                : string.Equals(wf, declinedStatus, StringComparison.OrdinalIgnoreCase)
-                                    ? "pms-pill--danger"
-                                    : string.Equals(wf, operationsDeskStatus, StringComparison.OrdinalIgnoreCase)
-                                        ? "pms-pill--info"
-                                        : "pms-pill--warning";
+    <div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-2">
+        <div class="card-body">
+            @if (Model.Any())
+            {
+                <div class="table-responsive pms-saas-table-wrap">
+                    <table class="table pms-saas-table" id="allotmentsTable">
+                        <thead>
                             <tr>
-                                <td class="pms-saas-td-actions" data-label="Actions">
-                                    <div class="pms-row-actions" role="group">
-                                        <a asp-action="Details"
-                                           asp-route-id="@allotment.AllotmentID"
-                                           class="btn btn-sm btn-outline-secondary"
-                                           title="View allotment (full page)">
-                                            <i class="bi bi-eye" aria-hidden="true"></i>
-                                        </a>
-                                        @if (ViewBag.CanEdit == true && !string.Equals((allotment.WorkFlowStatus ?? ""), approvedStatus, StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            <a asp-action="Edit"
-                                               asp-route-id="@allotment.AllotmentID"
-                                               class="btn btn-sm btn-outline-primary"
-                                               title="Workflow">
-                                                <i class="bi bi-signpost-split" aria-hidden="true"></i>
-                                            </a>
-                                        }
-                                        <a asp-controller="Property"
-                                           asp-action="Details"
-                                           asp-route-id="@allotment.PropertyID"
-                                           class="btn btn-sm btn-outline-secondary"
-                                           title="View Property">
-                                            <i class="bi bi-house" aria-hidden="true"></i>
-                                        </a>
-                                        <a asp-controller="Customer"
-                                           asp-action="Details"
-                                           asp-route-id="@allotment.CustomerID"
-                                           class="btn btn-sm btn-outline-primary"
-                                           title="View Customer">
-                                            <i class="bi bi-person" aria-hidden="true"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                                <td data-label="Allotment ID">
-                                    <code>@allotment.AllotmentID</code>
-                                </td>
-                                <td data-label="Property">
-                                    @if (allotment.Property != null)
-                                    {
-                                        <strong>@allotment.Property.PlotNo</strong>
-                                        <br>
-                                        <small class="text-muted">Block: @allotment.Property.Block | @allotment.Property.Size</small>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">N/A</span>
-                                    }
-                                </td>
-                                <td data-label="Customer">
-                                    @if (allotment.Customer != null)
-                                    {
-                                        <strong>@allotment.Customer.FullName</strong>
-                                        <br>
-                                        <small class="text-muted">@allotment.Customer.CustomerID</small>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">N/A</span>
-                                    }
-                                </td>
-                                <td data-label="Project">
-                                    @if (allotment.Property?.Project != null)
-                                    {
-                                        <span class="pms-pill pms-pill--info">@allotment.Property.Project.ProjectName</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">-</span>
-                                    }
-                                </td>
-                                <td data-label="Type">
-                                    <span class="pms-pill pms-pill--neutral">@allotment.AllottmentType</span>
-                                </td>
-                                <td data-label="Status">
-                                    <span class="pms-pill @pillClass">@wf</span>
-                                </td>
-                                <td data-label="Date">
-                                    @allotment.AllotmentDate.ToString("MMM dd, yyyy")
-                                    <br>
-                                    <small class="text-muted">@allotment.AllotmentDate.ToString("hh:mm tt")</small>
-                                </td>
+                                <th class="pms-saas-th-actions">Actions</th>
+                                <th>Allotment ID</th>
+                                <th>Property</th>
+                                <th>Customer</th>
+                                <th>Project</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Date</th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        else
-        {
-            <div class="text-center py-5">
-                <i class="bi bi-inbox fs-1 mb-3 text-muted d-block" aria-hidden="true"></i>
-                <h5 class="text-muted">No Allotments Found</h5>
-                <p class="text-muted">@(ViewBag.SearchTerm != null && ViewBag.SearchTerm != "" ? "Try different search criteria" : "There are no property allotments matching your filters.")</p>
-                <a asp-action="Create" class="btn btn-primary">
-                    <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>Create First Allotment
-                </a>
-            </div>
-        }
+                        </thead>
+                        <tbody>
+                            @foreach (var allotment in Model)
+                            {
+                                var wf = allotment.WorkFlowStatus ?? initiatedStatus;
+                                var pillClass = string.Equals(wf, approvedStatus, StringComparison.OrdinalIgnoreCase)
+                                    ? "pms-pill--success"
+                                    : string.Equals(wf, declinedStatus, StringComparison.OrdinalIgnoreCase)
+                                        ? "pms-pill--danger"
+                                        : string.Equals(wf, operationsDeskStatus, StringComparison.OrdinalIgnoreCase)
+                                            ? "pms-pill--info"
+                                            : "pms-pill--warning";
+                                <tr>
+                                    <td class="pms-saas-td-actions" data-label="Actions">
+                                        <div class="pms-row-actions" role="group">
+                                            <a asp-action="Details"
+                                               asp-route-id="@allotment.AllotmentID"
+                                               class="btn btn-sm btn-outline-secondary"
+                                               title="View allotment">
+                                                <i class="bi bi-eye" aria-hidden="true"></i>
+                                            </a>
+                                            @if (ViewBag.CanEdit == true && !string.Equals((allotment.WorkFlowStatus ?? ""), approvedStatus, StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <a asp-action="Edit"
+                                                   asp-route-id="@allotment.AllotmentID"
+                                                   class="btn btn-sm btn-outline-primary"
+                                                   title="Workflow">
+                                                    <i class="bi bi-signpost-split" aria-hidden="true"></i>
+                                                </a>
+                                            }
+                                            <a asp-controller="Property"
+                                               asp-action="Details"
+                                               asp-route-id="@allotment.PropertyID"
+                                               class="btn btn-sm btn-outline-secondary"
+                                               title="View Property">
+                                                <i class="bi bi-house" aria-hidden="true"></i>
+                                            </a>
+                                            <a asp-controller="Customer"
+                                               asp-action="Details"
+                                               asp-route-id="@allotment.CustomerID"
+                                               class="btn btn-sm btn-outline-primary"
+                                               title="View Customer">
+                                                <i class="bi bi-person" aria-hidden="true"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                    <td data-label="Allotment ID">
+                                        <code>@allotment.AllotmentID</code>
+                                    </td>
+                                    <td data-label="Property">
+                                        @if (allotment.Property != null)
+                                        {
+                                            <strong class="pms-cell-truncate d-block" title="@allotment.Property.PlotNo">@allotment.Property.PlotNo</strong>
+                                            <small class="text-muted">Block: @allotment.Property.Block | @allotment.Property.Size</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                    <td data-label="Customer">
+                                        @if (allotment.Customer != null)
+                                        {
+                                            <strong class="pms-cell-truncate d-block" title="@allotment.Customer.FullName">@allotment.Customer.FullName</strong>
+                                            <small class="text-muted">@allotment.Customer.CustomerID</small>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">N/A</span>
+                                        }
+                                    </td>
+                                    <td data-label="Project">
+                                        @if (allotment.Property?.Project != null)
+                                        {
+                                            <span class="pms-pill pms-pill--info">@allotment.Property.Project.ProjectName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">—</span>
+                                        }
+                                    </td>
+                                    <td data-label="Type">
+                                        <span class="pms-pill pms-pill--neutral">@allotment.AllottmentType</span>
+                                    </td>
+                                    <td data-label="Status">
+                                        <span class="pms-pill @pillClass">@wf</span>
+                                    </td>
+                                    <td data-label="Date">
+                                        <span class="text-nowrap">@allotment.AllotmentDate.ToString("MMM dd, yyyy")</span>
+                                        <small class="text-muted d-block">@allotment.AllotmentDate.ToString("hh:mm tt")</small>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-1 mb-2 d-block" aria-hidden="true"></i>
+                    <p class="mb-2">No allotments found.</p>
+                    <a asp-action="Create" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Create Allotment
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card pms-listing-flat pms-registration-details">
+        <div class="card-header">
+            <h6 class="mb-0"><i class="fas fa-chart-bar me-1"></i>Property Allocation by Project</h6>
+        </div>
+        <div class="card-body">
+            <canvas id="allocationChart" style="max-height: 320px;"></canvas>
+        </div>
     </div>
 </div>
-
-<!-- Chart Section -->
-<div class="card">
-    <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-        <h5 class="mb-0 text-white">
-            <i class="fas fa-chart-bar me-2"></i>Property Allocation by Project
-        </h5>
-    </div>
-    <div class="card-body">
-        <canvas id="allocationChart" style="max-height: 400px;"></canvas>
-    </div>
-</div>
-
-<style>
-    .avatar-sm {
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .bg-soft {
-        background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
-    }
-
-    .bg-info.bg-soft {
-        background-color: rgba(13, 202, 240, 0.1) !important;
-    }
-
-    .bg-warning.bg-soft {
-        background-color: rgba(255, 193, 7, 0.1) !important;
-    }
-
-    .bg-success.bg-soft {
-        background-color: rgba(25, 135, 84, 0.1) !important;
-    }
-
-    .font-size-24 {
-        font-size: 24px;
-    }
-
-    code {
-        background: rgba(156, 106, 222, 0.1);
-        color: #9C6ADE;
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-</style>
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Chart Data from ViewBag
-        var chartData = @Html.Raw(ViewBag.ChartData);
+        $(document).ready(function () {
+            if ($('#allotmentsTable').length) {
+                $('#allotmentsTable').DataTable({
+                    pageLength: 25,
+                    order: [[7, 'desc']],
+                    columnDefs: [{ orderable: false, targets: 0 }]
+                });
+            }
 
-        // Prepare data for Chart.js
-        var labels = chartData.map(d => d.projectName);
-        var allottedData = chartData.map(d => d.allotted);
-        var notAllottedData = chartData.map(d => d.notAllotted);
+            var chartData = @Html.Raw(ViewBag.ChartData);
+            var ctx = document.getElementById('allocationChart');
+            if (!ctx || !chartData || !chartData.length) return;
 
-        // Create Chart
-        var ctx = document.getElementById('allocationChart').getContext('2d');
-        var allocationChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Allotted',
-                        data: allottedData,
-                        backgroundColor: 'rgba(25, 135, 84, 0.8)',
-                        borderColor: 'rgba(25, 135, 84, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Not Allotted (Available)',
-                        data: notAllottedData,
-                        backgroundColor: 'rgba(13, 202, 240, 0.8)',
-                        borderColor: 'rgba(13, 202, 240, 1)',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Property Allocation Statistics by Project'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            afterLabel: function(context) {
-                                var index = context.dataIndex;
-                                var total = chartData[index].total;
-                                return 'Total Properties: ' + total;
+            var labels = chartData.map(function (d) { return d.projectName; });
+            var allottedData = chartData.map(function (d) { return d.allotted; });
+            var notAllottedData = chartData.map(function (d) { return d.notAllotted; });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Allotted',
+                            data: allottedData,
+                            backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                            borderColor: '#2563eb',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Not Allotted (Available)',
+                            data: notAllottedData,
+                            backgroundColor: 'rgba(71, 85, 105, 0.5)',
+                            borderColor: '#475569',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function (context) {
+                                    var index = context.dataIndex;
+                                    return 'Total Properties: ' + chartData[index].total;
+                                }
                             }
                         }
-                    }
-                },
-                scales: {
-                    x: {
-                        stacked: false,
                     },
-                    y: {
-                        stacked: false,
-                        beginAtZero: true,
-                        ticks: {
-                            precision: 0
-                        }
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { precision: 0 },
+                            grid: { color: 'rgba(203, 213, 225, 0.5)' }
+                        },
+                        x: { grid: { display: false } }
                     }
                 }
-            }
+            });
         });
     </script>
 }

@@ -1,161 +1,172 @@
 @model IEnumerable<PMS.Models.Waiver>
 @{
     ViewData["Title"] = "Waivers";
-    ViewData["ListingTitle"] = "Waivers";
-    ViewData["ListingDescription"] = "Surcharge waiver requests";
-    ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
-    ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
-    ViewData["ListingAddText"] = "New Waiver";
     ViewData["ListingHideToolbarActions"] = true;
+    ViewData["ListingHideTitle"] = true;
     var initiatedStatus = (string?)ViewBag.InitiatedStatus ?? "Initiated";
     var approvedStatus = (string?)ViewBag.ApprovedStatus ?? "Approved";
     var declinedStatus = (string?)ViewBag.DeclinedStatus ?? "Declined";
+    var statusSel = ViewBag.StatusFilter as string ?? "";
 }
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show">
+    <div class="alert alert-success alert-dismissible fade show py-2 mb-2 small">
         @TempData["SuccessMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show">
+    <div class="alert alert-danger alert-dismissible fade show py-2 mb-2 small">
         @TempData["ErrorMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
 
-<div class="row g-3 mb-4">
-    <div class="col-6 col-md-4">
-        <a href="@Url.Action("Index", new { statusFilter = initiatedStatus })" class="text-decoration-none">
-            <div class="card border-0 h-100" style="background:#fff3cd;">
-                <div class="card-body text-center py-3">
-                    <div class="small text-muted text-uppercase fw-semibold">@initiatedStatus</div>
-                    <div class="fs-3 fw-bold text-warning">@(ViewBag.InitiatedCount ?? 0)</div>
-                </div>
-            </div>
-        </a>
+<div class="pms-waiver-listing pms-listing-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h5 class="pms-grid-title mb-0">Waivers</h5>
+        @if (Model != null)
+        {
+            <span class="badge rounded-pill pms-record-badge">@Model.Count() record@(Model.Count() == 1 ? "" : "s")</span>
+        }
     </div>
-    <div class="col-6 col-md-4">
-        <a href="@Url.Action("Index", new { statusFilter = approvedStatus })" class="text-decoration-none">
-            <div class="card border-0 h-100" style="background:#d4edda;">
-                <div class="card-body text-center py-3">
-                    <div class="small text-muted text-uppercase fw-semibold">@approvedStatus</div>
-                    <div class="fs-3 fw-bold text-success">@(ViewBag.ApprovedCount ?? 0)</div>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="col-6 col-md-4">
-        <a href="@Url.Action("Index", new { statusFilter = declinedStatus })" class="text-decoration-none">
-            <div class="card border-0 h-100" style="background:#f8d7da;">
-                <div class="card-body text-center py-3">
-                    <div class="small text-muted text-uppercase fw-semibold">@declinedStatus</div>
-                    <div class="fs-3 fw-bold text-danger">@(ViewBag.DeclinedCount ?? 0)</div>
-                </div>
-            </div>
-        </a>
-    </div>
-</div>
 
-<form method="get" asp-action="Index" class="mb-4 pms-listing-page">
-    <div class="pms-listing-search-wrap">
-        <div class="row g-2 align-items-end flex-lg-nowrap">
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="pms-compact-field pms-select-dropdown">
-                    <label for="statusFilter" class="form-label">Status</label>
-                    <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()">
-                        <option value="">All</option>
-                        @foreach (var s in (ViewBag.WorkflowStatuses as List<string> ?? new List<string>()))
-                        {
-                            <option value="@s" selected="@(ViewBag.StatusFilter == s)">@s</option>
-                        }
-                    </select>
+    <div class="row g-2 mb-2">
+        <div class="col-6 col-md-4">
+            <a href="@Url.Action("Index", new { statusFilter = initiatedStatus })" class="text-decoration-none">
+                <div class="card border-0 h-100" style="background:#fff3cd;">
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-0">@initiatedStatus</div>
+                        <div class="fs-5 fw-bold text-warning mb-0">@(ViewBag.InitiatedCount ?? 0)</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4">
+            <a href="@Url.Action("Index", new { statusFilter = approvedStatus })" class="text-decoration-none">
+                <div class="card border-0 h-100" style="background:#d4edda;">
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-0">@approvedStatus</div>
+                        <div class="fs-5 fw-bold text-success mb-0">@(ViewBag.ApprovedCount ?? 0)</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4">
+            <a href="@Url.Action("Index", new { statusFilter = declinedStatus })" class="text-decoration-none">
+                <div class="card border-0 h-100" style="background:#f8d7da;">
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="small text-muted text-uppercase fw-semibold mb-0">@declinedStatus</div>
+                        <div class="fs-5 fw-bold text-danger mb-0">@(ViewBag.DeclinedCount ?? 0)</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <form method="get" asp-action="Index" class="mb-2">
+        <div class="pms-listing-search-wrap">
+            <div class="row g-1 align-items-end flex-lg-nowrap">
+                <div class="col-12 col-md-4 col-lg-3">
+                    <div class="pms-compact-field pms-select-dropdown">
+                        <label for="statusFilter" class="form-label">Status</label>
+                        <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()">
+                            <option value="" selected="@(statusSel == "")">All</option>
+                            @foreach (var s in (ViewBag.WorkflowStatuses as List<string> ?? new List<string>()))
+                            {
+                                <option value="@s" selected="@(statusSel == s)">@s</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-md-8 col-lg-5">
+                    <div class="pms-compact-field">
+                        <label for="customerFilter" class="form-label">Customer ID</label>
+                        <div class="input-group pms-inline-search-group">
+                            <input type="text" name="customerFilter" id="customerFilter" class="form-control"
+                                   placeholder="Filter by customer ID"
+                                   value="@ViewBag.CustomerFilter" />
+                            <button type="submit" class="btn btn-primary pms-inline-search-btn" title="Search">
+                                <i class="bi bi-search" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-5">
-                <div class="pms-compact-field">
-                    <label for="customerFilter" class="form-label">Customer ID</label>
-                    <input type="text" name="customerFilter" id="customerFilter" class="form-control" placeholder="Filter by customer" value="@ViewBag.CustomerFilter" />
-                </div>
-            </div>
-            <div class="col-12 col-lg-4">
-                <div class="d-flex flex-nowrap gap-2 pms-listing-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
-                    </button>
-                    <partial name="_OperationsDropdown" />
+            <div class="row g-1 mt-1">
+                <div class="col-12">
+                    <div class="pms-listing-search-actions">
+                        <partial name="_OperationsDropdown" />
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</form>
+    </form>
 
-<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page">
-    <div class="card-body">
-        <partial name="Listing/_GridToolbar" />
-
-        <div class="table-responsive pms-saas-table-wrap">
-            <table class="table pms-saas-table" id="waiverTable">
-                <thead>
-                    <tr>
-                        <th class="pms-saas-th-actions">Actions</th>
-                        <th>Waiver ID</th>
-                        <th>Customer</th>
-                        <th>Type</th>
-                        <th class="text-end">Total Surcharge</th>
-                        <th class="text-end">Waived</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var w in Model)
-                    {
-                        var status = w.Status ?? initiatedStatus;
-                        var isApproved = string.Equals(status, approvedStatus, StringComparison.OrdinalIgnoreCase);
-                        var pillClass = string.Equals(status, approvedStatus, StringComparison.OrdinalIgnoreCase)
-                            ? "pms-pill--success"
-                            : string.Equals(status, declinedStatus, StringComparison.OrdinalIgnoreCase)
-                                ? "pms-pill--danger"
-                                : "pms-pill--warning";
+    <div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-2">
+        <div class="card-body">
+            <div class="table-responsive pms-saas-table-wrap">
+                <table class="table pms-saas-table" id="waiverTable">
+                    <thead>
                         <tr>
-                            <td class="pms-saas-td-actions" data-label="Actions">
-                                <div class="pms-row-actions" role="group">
-                                    <a asp-action="Details" asp-route-id="@w.WaiverID" class="btn btn-sm btn-outline-secondary" title="Details">
-                                        <i class="bi bi-eye" aria-hidden="true"></i>
-                                    </a>
-                                    @if (ViewBag.CanEdit == true && !isApproved)
-                                    {
-                                        <a asp-action="Edit" asp-route-id="@w.WaiverID" class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                        </a>
-                                    }
-                                    @if (ViewBag.CanDelete == true && !isApproved)
-                                    {
-                                        <form asp-action="Delete" asp-route-id="@w.WaiverID" method="post" class="d-inline" onsubmit="return confirm('Delete this waiver?');">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                                <i class="bi bi-trash" aria-hidden="true"></i>
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
-                            </td>
-                            <td data-label="Waiver ID"><code>@w.WaiverID</code></td>
-                            <td data-label="Customer">
-                                <div><code>@w.CustomerID</code></div>
-                                <div class="small text-muted">@(w.Customer?.FullName ?? "—")</div>
-                            </td>
-                            <td data-label="Type">@(w.WaiverType ?? "—")</td>
-                            <td class="text-end" data-label="Total Surcharge">@w.TotalAmount.ToString("N0")</td>
-                            <td class="text-end fw-bold text-success" data-label="Waived">@w.WaivedAmount.ToString("N0")</td>
-                            <td data-label="Status"><span class="pms-pill @pillClass">@status</span></td>
+                            <th class="pms-saas-th-actions">Actions</th>
+                            <th>Waiver ID</th>
+                            <th>Customer</th>
+                            <th>Type</th>
+                            <th class="text-end">Total Surcharge</th>
+                            <th class="text-end">Waived</th>
+                            <th>Status</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var w in Model)
+                        {
+                            var status = w.Status ?? initiatedStatus;
+                            var isApproved = string.Equals(status, approvedStatus, StringComparison.OrdinalIgnoreCase);
+                            var pillClass = string.Equals(status, approvedStatus, StringComparison.OrdinalIgnoreCase)
+                                ? "pms-pill--success"
+                                : string.Equals(status, declinedStatus, StringComparison.OrdinalIgnoreCase)
+                                    ? "pms-pill--danger"
+                                    : "pms-pill--warning";
+                            <tr>
+                                <td class="pms-saas-td-actions" data-label="Actions">
+                                    <div class="pms-row-actions" role="group">
+                                        <a asp-action="Details" asp-route-id="@w.WaiverID" class="btn btn-sm btn-outline-secondary" title="Details">
+                                            <i class="bi bi-eye" aria-hidden="true"></i>
+                                        </a>
+                                        @if (ViewBag.CanEdit == true && !isApproved)
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@w.WaiverID" class="btn btn-sm btn-outline-primary" title="Edit">
+                                                <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                            </a>
+                                        }
+                                        @if (ViewBag.CanDelete == true && !isApproved)
+                                        {
+                                            <form asp-action="Delete" asp-route-id="@w.WaiverID" method="post" class="d-inline" onsubmit="return confirm('Delete this waiver?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                    <i class="bi bi-trash" aria-hidden="true"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                                <td data-label="Waiver ID"><code>@w.WaiverID</code></td>
+                                <td data-label="Customer">
+                                    <div><code>@w.CustomerID</code></div>
+                                    <div class="small text-muted">@(w.Customer?.FullName ?? "—")</div>
+                                </td>
+                                <td data-label="Type">@(w.WaiverType ?? "—")</td>
+                                <td class="text-end" data-label="Total Surcharge">@w.TotalAmount.ToString("N0")</td>
+                                <td class="text-end fw-bold text-success" data-label="Waived">@w.WaivedAmount.ToString("N0")</td>
+                                <td data-label="Status"><span class="pms-pill @pillClass">@status</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
