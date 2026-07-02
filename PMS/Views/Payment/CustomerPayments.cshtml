@@ -84,21 +84,16 @@
         <div class="card-body">
             @if (paymentList.Any())
             {
-                <div class="table-responsive pms-saas-table-wrap">
-                    <table id="paymentsTable" class="table pms-saas-table">
+                <div class="pms-saas-table-wrap pms-payment-grid-wrap">
+                    <table id="paymentsTable" class="table pms-saas-table pms-payment-grid-table">
                         <thead>
                             <tr>
-                                <th class="pms-saas-th-actions">Actions</th>
-                                <th>Payment ID</th>
                                 <th>Customer</th>
                                 <th>Plan</th>
                                 <th>Inst.</th>
                                 <th>Entry Date</th>
                                 <th>Deposit</th>
                                 <th class="text-end">Amount</th>
-                                <th>Reference</th>
-                                <th>Bank</th>
-                                <th>Status</th>
                                 <th>Audit</th>
                                 <th>Method</th>
                             </tr>
@@ -106,55 +101,12 @@
                         <tbody>
                             @foreach (var payment in paymentList)
                             {
-                                var statusPill = payment.Status == "Completed" || payment.Status == "Approved"
-                                    ? "pms-pill--success"
-                                    : payment.Status == "Pending"
-                                        ? "pms-pill--warning"
-                                        : payment.Status == "Failed" || payment.Status == "Rejected"
-                                            ? "pms-pill--danger"
-                                            : "pms-pill--neutral";
                                 var auditPill = payment.AuditStatus == "Approved"
                                     ? "pms-pill--success"
                                     : payment.AuditStatus == "Declined"
                                         ? "pms-pill--danger"
                                         : "pms-pill--warning";
                                 <tr>
-                                    <td class="pms-saas-td-actions" data-label="Actions">
-                                        <div class="pms-row-actions" role="group">
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-secondary"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#paymentModal@(payment.PaymentID)"
-                                                    title="View Details">
-                                                <i class="bi bi-eye" aria-hidden="true"></i>
-                                            </button>
-                                            @if (ViewBag.CanEdit == true)
-                                            {
-                                                <a asp-action="EditPayment" asp-route-paymentId="@payment.PaymentID"
-                                                   class="btn btn-sm btn-outline-primary"
-                                                   title="Edit Payment">
-                                                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                                </a>
-                                            }
-                                            <a asp-action="Receipt" asp-route-id="@payment.PaymentID"
-                                               class="btn btn-sm btn-outline-info"
-                                               title="Print Receipt"
-                                               target="_blank">
-                                                <i class="bi bi-printer" aria-hidden="true"></i>
-                                            </a>
-                                            @if (ViewBag.CanDelete == true)
-                                            {
-                                                <form asp-action="DeletePayment" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this payment?');">
-                                                    @Html.AntiForgeryToken()
-                                                    <input type="hidden" name="paymentId" value="@payment.PaymentID" />
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Payment">
-                                                        <i class="bi bi-trash" aria-hidden="true"></i>
-                                                    </button>
-                                                </form>
-                                            }
-                                        </div>
-                                    </td>
-                                    <td data-label="Payment ID"><code>@payment.PaymentID</code></td>
                                     <td data-label="Customer">
                                         <div><code>@payment.CustomerID</code></div>
                                         <div class="small text-muted">@(payment.Customer?.FullName ?? "—")</div>
@@ -183,18 +135,6 @@
                                     <td data-label="Entry Date">@payment.PaymentDate.ToString("dd-MM-yyyy")</td>
                                     <td data-label="Deposit">@(payment.DepositDate?.ToString("dd-MM-yyyy") ?? "—")</td>
                                     <td class="text-end fw-semibold text-success" data-label="Amount">@payment.Amount.ToString("N0")</td>
-                                    <td data-label="Reference">
-                                        @if (!string.IsNullOrEmpty(payment.ReferenceNo))
-                                        {
-                                            <code>@payment.ReferenceNo</code>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">—</span>
-                                        }
-                                    </td>
-                                    <td data-label="Bank">@(!string.IsNullOrWhiteSpace(payment.BankName) ? payment.BankName : "—")</td>
-                                    <td data-label="Status"><span class="pms-pill @statusPill">@payment.Status</span></td>
                                     <td data-label="Audit"><span class="pms-pill @auditPill">@(payment.AuditStatus ?? "Pending")</span></td>
                                     <td data-label="Method"><span class="pms-pill pms-pill--neutral">@payment.Method</span></td>
                                 </tr>
@@ -312,15 +252,54 @@
 }
 
 <style>
-    .pms-payment-listing #paymentsTable th,
-    .pms-payment-listing #paymentsTable td {
+    .pms-payment-listing .pms-payment-grid-wrap {
+        overflow-x: hidden;
+        overflow-y: visible;
+        max-height: none;
+        min-height: 486px;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table {
+        table-layout: fixed;
+        width: 100% !important;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table th,
+    .pms-payment-listing .pms-payment-grid-table td {
+        white-space: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        font-size: 0.8125rem;
+        padding: 0.5rem 0.35rem;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table thead th {
+        font-size: 0.75rem;
+        line-height: 1.2;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table .pms-saas-td-actions {
+        overflow: visible;
         white-space: nowrap;
     }
 
-    .pms-payment-listing #paymentsTable td[data-label="Customer"],
-    .pms-payment-listing #paymentsTable td[data-label="Plan"] {
-        white-space: normal;
-        min-width: 120px;
+    .pms-payment-listing .pms-payment-grid-table .pms-row-actions {
+        flex-wrap: nowrap;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table .pms-pill {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.4rem;
+    }
+
+    .pms-payment-listing .dataTables_wrapper .dataTables_scroll,
+    .pms-payment-listing .dataTables_wrapper .dataTables_scrollBody {
+        overflow-x: hidden !important;
+    }
+
+    .pms-payment-listing .dataTables_wrapper .dataTables_paginate {
+        margin-top: 0.5rem;
     }
 
     .modal-backdrop {
@@ -350,15 +329,34 @@
             {
                 <text>
                 $('#paymentsTable').DataTable({
-                    order: [[5, 'desc']],
-                    pageLength: 25,
-                    columnDefs: [{ orderable: false, targets: 0 }],
+                    order: [[3, 'desc']],
+                    pageLength: 10,
+                    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                    paging: true,
+                    scrollX: false,
+                    autoWidth: false,
+                    columnDefs: [
+                        { width: '15%', targets: 0 }, // Customer
+                        { width: '16%', targets: 1 }, // Plan
+                        { width: '10%', targets: 2 }, // Inst.
+                        { width: '15%', targets: 3 }, // Entry Date
+                        { width: '12%', targets: 4 }, // Deposit
+                        { width: '14%', targets: 5 }, // Amount
+                        { width: '14%', targets: 6 }, // Audit
+                        { width: '13%', targets: 7 }  // Method
+                    ],
                     language: {
                         search: "Search:",
-                        lengthMenu: "Show _MENU_",
-                        info: "_START_–_END_ of _TOTAL_",
+                        lengthMenu: "Show _MENU_ per page",
+                        info: "Showing _START_ to _END_ of _TOTAL_ payments",
                         infoEmpty: "No payments",
-                        infoFiltered: "(filtered from _MAX_)"
+                        infoFiltered: "(filtered from _MAX_)",
+                        paginate: {
+                            first: "First",
+                            last: "Last",
+                            next: "Next",
+                            previous: "Previous"
+                        }
                     }
                 });
                 </text>

@@ -9,7 +9,6 @@
     var totalCustomers = plansOrdered.Sum(p => p.Customers?.Count ?? 0);
     var totalValueSsp = plansOrdered.Sum(p => p.TotalAmount);
     var totalSchedules = plansOrdered.Sum(p => p.PaymentSchedules?.Count ?? 0);
-    var deleteSummaryUrl = Url.Action("GetPaymentPlanDeleteSummary", "Payment");
 }
 
 <div class="pms-payment-listing pms-listing-page">
@@ -78,12 +77,10 @@
 
     <div class="card pms-grid-card pms-listing-flat pms-saas-grid mb-2">
         <div class="card-body">
-            <div class="table-responsive pms-saas-table-wrap">
+            <div class="pms-saas-table-wrap pms-payment-plans-grid-wrap">
                 <table class="table pms-saas-table" id="plansTable">
                     <thead>
                         <tr>
-                            <th class="pms-saas-th-actions">Actions</th>
-                            <th>Plan ID</th>
                             <th>Plan Name</th>
                             <th>Project</th>
                             <th class="text-end">Total (PKR)</th>
@@ -102,31 +99,6 @@
                             var balancePkr = plan.TotalAmount - schedulesSumPkr;
                             var hasBalanceRemaining = balancePkr > 0.0000001m;
                             <tr class="@(hasBalanceRemaining ? "plan-balance-remaining" : null)">
-                                <td class="pms-saas-td-actions" data-label="Actions">
-                                    <div class="pms-row-actions" role="group">
-                                        <a asp-action="PaymentSchedule" asp-route-planId="@plan.PlanID"
-                                           class="btn btn-sm btn-outline-primary" title="View Schedules">
-                                            <i class="bi bi-calendar-check" aria-hidden="true"></i>
-                                        </a>
-                                        <a asp-action="PaymentPlanDetails"
-                                           asp-route-planId="@plan.PlanID"
-                                           class="btn btn-sm btn-outline-secondary"
-                                           title="View Details">
-                                            <i class="bi bi-eye" aria-hidden="true"></i>
-                                        </a>
-                                        @if (ViewBag.CanDelete == true)
-                                        {
-                                            <button type="button"
-                                                    class="btn btn-sm btn-outline-danger js-delete-payment-plan"
-                                                    title="Delete payment plan"
-                                                    data-plan-id="@plan.PlanID"
-                                                    data-plan-name="@plan.PlanName">
-                                                <i class="bi bi-trash" aria-hidden="true"></i>
-                                            </button>
-                                        }
-                                    </div>
-                                </td>
-                                <td data-label="Plan ID"><code>@plan.PlanID</code></td>
                                 <td data-label="Plan Name">
                                     <div>@plan.PlanName</div>
                                     @if (!string.IsNullOrEmpty(plan.Description))
@@ -176,47 +148,6 @@
     </div>
 </div>
 
-@if (ViewBag.CanDelete == true)
-{
-    <div class="modal fade" id="deletePaymentPlanModal" tabindex="-1" aria-labelledby="deletePaymentPlanModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white py-2">
-                    <h6 class="modal-title mb-0" id="deletePaymentPlanModalLabel">
-                        <i class="fas fa-exclamation-triangle me-1"></i>Delete payment plan
-                    </h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body py-2 small">
-                    <p class="fw-semibold mb-2" id="deletePlanTitle"></p>
-                    <div id="deletePlanSummaryBody" class="text-muted"></div>
-                    <div id="deletePlanCustomerBlock" class="mt-2 d-none">
-                        <div class="alert alert-warning mb-2 py-1 px-2">
-                            <strong id="deletePlanCustomerCountText"></strong> These customers will lose this plan assignment (their Plan ID will be cleared).
-                        </div>
-                        <div class="border rounded p-2 bg-light" style="max-height: 160px; overflow-y: auto;">
-                            <ul class="mb-0" id="deletePlanCustomerList"></ul>
-                        </div>
-                    </div>
-                    <p class="text-danger mt-2 mb-0">
-                        This removes the plan and all installment rows. It cannot be undone. You cannot delete a plan that still has payments recorded against any installment.
-                    </p>
-                </div>
-                <div class="modal-footer py-2">
-                    <form asp-action="DeletePaymentPlan" method="post" id="deletePaymentPlanForm" class="d-inline">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="planId" id="deletePaymentPlanFormPlanId" value="" />
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger btn-sm" id="deletePaymentPlanConfirmBtn">
-                            <i class="fas fa-trash-alt me-1"></i>Delete plan
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-
 <style>
     .pms-payment-listing #plansTable tbody tr.plan-balance-remaining {
         box-shadow: inset 3px 0 0 0 var(--accent-gold, #f59e0b);
@@ -226,88 +157,76 @@
     .pms-payment-listing #plansTable tbody tr.plan-balance-remaining:hover {
         background-color: rgba(245, 158, 11, 0.16);
     }
+
+    .pms-payment-listing .pms-payment-plans-grid-wrap {
+        overflow-x: hidden;
+        overflow-y: visible;
+        max-height: none;
+        min-height: 486px;
+    }
+
+    .pms-payment-listing #plansTable {
+        table-layout: fixed;
+        width: 100% !important;
+    }
+
+    .pms-payment-listing #plansTable th,
+    .pms-payment-listing #plansTable td {
+        white-space: normal;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        font-size: 0.8125rem;
+        padding: 0.5rem 0.35rem;
+    }
+
+    .pms-payment-listing #plansTable .pms-pill {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.4rem;
+    }
+
+    .pms-payment-listing .dataTables_wrapper .dataTables_scroll,
+    .pms-payment-listing .dataTables_wrapper .dataTables_scrollBody {
+        overflow-x: hidden !important;
+    }
 </style>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
             $('#plansTable').DataTable({
-                pageLength: 25,
-                order: [[2, 'asc']],
-                columnDefs: [{ orderable: false, targets: 0 }],
+                pageLength: 10,
+                order: [[0, 'asc']],
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                paging: true,
+                scrollX: false,
+                autoWidth: false,
+                columnDefs: [
+                    { width: '22%', targets: 0 },  // Plan Name
+                    { width: '18%', targets: 1 },  // Project
+                    { width: '14%', targets: 2 },  // Total
+                    { width: '8%', targets: 3 },   // Curr.
+                    { width: '10%', targets: 4 },  // Duration
+                    { width: '9%', targets: 5 },   // Freq.
+                    { width: '7%', targets: 6 },   // Cust.
+                    { width: '7%', targets: 7 },   // Sched.
+                    { width: '10%', targets: 8 }   // Balance
+                ],
                 language: {
                     search: 'Search:',
-                    lengthMenu: 'Show _MENU_',
-                    info: '_START_–_END_ of _TOTAL_',
+                    lengthMenu: 'Show _MENU_ per page',
+                    info: 'Showing _START_ to _END_ of _TOTAL_ plans',
                     infoEmpty: 'No plans',
-                    infoFiltered: '(filtered from _MAX_)'
+                    infoFiltered: '(filtered from _MAX_)',
+                    paginate: {
+                        first: 'First',
+                        last: 'Last',
+                        next: 'Next',
+                        previous: 'Previous'
+                    }
                 }
             });
 
-            var deleteSummaryUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(deleteSummaryUrl));
-            var deleteModalEl = document.getElementById('deletePaymentPlanModal');
-            var deleteModal = deleteModalEl ? new bootstrap.Modal(deleteModalEl) : null;
-
-            $('#plansTable').on('click', '.js-delete-payment-plan', function () {
-                var $btn = $(this);
-                var planId = $btn.data('plan-id');
-                var planName = $btn.data('plan-name') || '';
-                if (!planId || !deleteModal) {
-                    return;
-                }
-                $btn.prop('disabled', true);
-                var url = deleteSummaryUrl + (deleteSummaryUrl.indexOf('?') >= 0 ? '&' : '?') + 'planId=' + encodeURIComponent(planId);
-                fetch(url, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
-                    .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
-                    .then(function (res) {
-                        if (!res.data || res.data.found === false) {
-                            alert(res.data && res.data.message ? res.data.message : 'Could not load plan details for delete.');
-                            return;
-                        }
-                        if (!res.data.canDelete) {
-                            alert(res.data.message || 'This plan cannot be deleted because payments are linked to its installments.');
-                            return;
-                        }
-                        $('#deletePlanTitle').text('Delete “' + (res.data.planName || planName) + '” (' + res.data.planId + ')?');
-                        var lines = [];
-                        lines.push('Installment rows to remove: ' + (res.data.scheduleCount || 0));
-                        lines.push('Payments linked to installments: ' + (res.data.paymentCount || 0) + ' (must be zero to delete).');
-                        $('#deletePlanSummaryBody').html(lines.join('<br />'));
-
-                        var cc = res.data.customerCount || 0;
-                        if (cc > 0) {
-                            $('#deletePlanCustomerCountText').text(cc + ' customer(s) are assigned to this plan.');
-                            var $ul = $('#deletePlanCustomerList').empty();
-                            (res.data.customers || []).forEach(function (c) {
-                                var name = (c.fullName || '').trim() || '(no name)';
-                                $ul.append($('<li></li>').text((c.customerId || '') + ' — ' + name));
-                            });
-                            if (cc > (res.data.customers || []).length) {
-                                $ul.append($('<li class="text-muted"></li>').text('… and ' + (cc - (res.data.customers || []).length) + ' more (see Activity Log after delete for full snapshot in audit JSON).'));
-                            }
-                            $('#deletePlanCustomerBlock').removeClass('d-none');
-                        } else {
-                            $('#deletePlanCustomerBlock').addClass('d-none');
-                        }
-
-                        $('#deletePaymentPlanFormPlanId').val(res.data.planId);
-                        $('#deletePaymentPlanConfirmBtn').prop('disabled', false);
-                        deleteModal.show();
-                    })
-                    .catch(function () {
-                        alert('Could not load delete preview. Check your connection or permissions.');
-                    })
-                    .finally(function () {
-                        $btn.prop('disabled', false);
-                    });
-            });
-
-            if (deleteModalEl) {
-                deleteModalEl.addEventListener('hidden.bs.modal', function () {
-                    $('#deletePaymentPlanFormPlanId').val('');
-                    $('#deletePlanCustomerList').empty();
-                });
-            }
         });
     </script>
 }

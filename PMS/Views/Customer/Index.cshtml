@@ -142,12 +142,11 @@ else
             var actionsColumnIndex = showBulkSelection ? 1 : 0;
 
             if ($('#customersTable').length) {
-                $('#customersTable').DataTable({
+                PmsListingDataTable.init('#customersTable', {
                     dom: '<"pms-customer-dt-controls d-flex flex-wrap align-items-center gap-3 mb-2"lf>rtip',
-                    "pageLength": 25,
-                    "order": [[ customerIdColumnIndex, "desc" ]],
-                    "columnDefs": [
-                        { "orderable": false, "targets": actionsColumnIndex }
+                    order: [[ customerIdColumnIndex, "desc" ]],
+                    columnDefs: [
+                        { orderable: false, targets: actionsColumnIndex }
                     ]
                 });
             }

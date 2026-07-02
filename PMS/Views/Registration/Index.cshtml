@@ -202,13 +202,14 @@
 @section Scripts {
     <script>
         $(document).ready(function () {
-            $('#registrationsTable').DataTable({
-                "pageLength": 25,
-                "order": [[1, "desc"]],
-                "columnDefs": [
-                    { "orderable": false, "targets": [0] }
-                ]
-            });
+            if ($('#registrationsTable').length) {
+                PmsListingDataTable.init('#registrationsTable', {
+                    order: [[1, "desc"]],
+                    columnDefs: [
+                        { orderable: false, targets: [0] }
+                    ]
+                });
+            }
         });
     </script>
 }

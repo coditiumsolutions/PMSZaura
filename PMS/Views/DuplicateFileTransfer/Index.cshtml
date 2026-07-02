@@ -156,7 +156,10 @@
 @section Scripts {
 <script>
     $(function () {
-        $('#dftTable').DataTable({ pageLength: 25, order: [[1, 'desc']], columnDefs: [{ orderable: false, targets: 0 }] });
+        PmsListingDataTable.init('#dftTable', {
+            order: [[1, 'desc']],
+            columnDefs: [{ orderable: false, targets: 0 }]
+        });
     });
 </script>
 }

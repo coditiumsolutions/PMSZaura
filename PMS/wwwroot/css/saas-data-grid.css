@@ -389,6 +389,127 @@
     margin-bottom: 1.5rem;
 }
 
+/* ─── Listing grids: 20 rows visible, no horizontal scroll ─── */
+
+.pms-listing-page .table-responsive,
+.pms-customer-listing .table-responsive,
+.pms-transfer-listing .table-responsive,
+.pms-registration-listing .table-responsive,
+.pms-property-listing .table-responsive,
+.pms-allotment-listing .table-responsive,
+.pms-waiver-listing .table-responsive,
+.pms-rental-listing .table-responsive,
+.pms-dft-listing .table-responsive,
+.pms-refund-listing .table-responsive {
+    overflow-x: hidden !important;
+}
+
+.pms-listing-page .pms-saas-table-wrap,
+.pms-customer-listing .pms-saas-table-wrap,
+.pms-transfer-listing .pms-saas-table-wrap,
+.pms-registration-listing .pms-saas-table-wrap,
+.pms-property-listing .pms-saas-table-wrap,
+.pms-allotment-listing .pms-saas-table-wrap,
+.pms-waiver-listing .pms-saas-table-wrap,
+.pms-rental-listing .pms-saas-table-wrap,
+.pms-dft-listing .pms-saas-table-wrap,
+.pms-refund-listing .pms-saas-table-wrap {
+    overflow-x: hidden !important;
+    overflow-y: visible;
+    max-height: none;
+    min-height: 926px;
+}
+
+.pms-listing-page .pms-saas-table,
+.pms-customer-listing .pms-saas-table,
+.pms-transfer-listing .pms-saas-table,
+.pms-registration-listing .pms-saas-table,
+.pms-property-listing .pms-saas-table,
+.pms-allotment-listing .pms-saas-table,
+.pms-waiver-listing .pms-saas-table,
+.pms-rental-listing .pms-saas-table,
+.pms-dft-listing .pms-saas-table {
+    table-layout: fixed;
+}
+
+.pms-listing-page .pms-saas-table thead th,
+.pms-customer-listing .pms-saas-table thead th,
+.pms-transfer-listing .pms-saas-table thead th,
+.pms-registration-listing .pms-saas-table thead th,
+.pms-property-listing .pms-saas-table thead th,
+.pms-allotment-listing .pms-saas-table thead th,
+.pms-waiver-listing .pms-saas-table thead th,
+.pms-rental-listing .pms-saas-table thead th,
+.pms-dft-listing .pms-saas-table thead th {
+    white-space: normal;
+    line-height: 1.2;
+}
+
+.pms-listing-page .pms-saas-table tbody td,
+.pms-customer-listing .pms-saas-table tbody td,
+.pms-transfer-listing .pms-saas-table tbody td,
+.pms-registration-listing .pms-saas-table tbody td,
+.pms-property-listing .pms-saas-table tbody td,
+.pms-allotment-listing .pms-saas-table tbody td,
+.pms-waiver-listing .pms-saas-table tbody td,
+.pms-rental-listing .pms-saas-table tbody td,
+.pms-dft-listing .pms-saas-table tbody td {
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: none;
+}
+
+.pms-listing-page .pms-saas-td-actions,
+.pms-customer-listing .pms-saas-td-actions,
+.pms-transfer-listing .pms-saas-td-actions,
+.pms-registration-listing .pms-saas-td-actions,
+.pms-property-listing .pms-saas-td-actions,
+.pms-allotment-listing .pms-saas-td-actions,
+.pms-waiver-listing .pms-saas-td-actions,
+.pms-rental-listing .pms-saas-td-actions,
+.pms-dft-listing .pms-saas-td-actions {
+    overflow: visible;
+}
+
+.pms-registration-listing .table-responsive {
+    overflow-x: hidden !important;
+    min-height: 926px;
+}
+
+.pms-registration-listing #registrationsTable {
+    table-layout: fixed;
+    width: 100% !important;
+}
+
+.pms-registration-listing #registrationsTable thead th,
+.pms-registration-listing #registrationsTable tbody td {
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pms-listing-page .dataTables_wrapper .dataTables_scroll,
+.pms-listing-page .dataTables_wrapper .dataTables_scrollBody,
+.pms-customer-listing .dataTables_wrapper .dataTables_scroll,
+.pms-customer-listing .dataTables_wrapper .dataTables_scrollBody,
+.pms-transfer-listing .dataTables_wrapper .dataTables_scroll,
+.pms-transfer-listing .dataTables_wrapper .dataTables_scrollBody,
+.pms-registration-listing .dataTables_wrapper .dataTables_scroll,
+.pms-registration-listing .dataTables_wrapper .dataTables_scrollBody,
+.pms-property-listing .dataTables_wrapper .dataTables_scroll,
+.pms-property-listing .dataTables_wrapper .dataTables_scrollBody,
+.pms-allotment-listing .dataTables_wrapper .dataTables_scroll,
+.pms-allotment-listing .dataTables_wrapper .dataTables_scrollBody,
+.pms-waiver-listing .dataTables_wrapper .dataTables_scroll,
+.pms-waiver-listing .dataTables_wrapper .dataTables_scrollBody,
+.pms-rental-listing .dataTables_wrapper .dataTables_scroll,
+.pms-rental-listing .dataTables_wrapper .dataTables_scrollBody,
+.pms-dft-listing .dataTables_wrapper .dataTables_scroll,
+.pms-dft-listing .dataTables_wrapper .dataTables_scrollBody {
+    overflow-x: hidden !important;
+}
+
 /* ─── Mobile card rows ─── */
 
 @media (max-width: 767.98px) {

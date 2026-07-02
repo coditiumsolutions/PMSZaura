@@ -197,8 +197,7 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            $('#propertiesTable').DataTable({
-                pageLength: 25,
+            PmsListingDataTable.init('#propertiesTable', {
                 order: [[6, 'asc']],
                 columnDefs: [{ orderable: false, targets: 0 }]
             });

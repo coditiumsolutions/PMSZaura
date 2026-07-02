@@ -157,8 +157,7 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            $('#transfersTable').DataTable({
-                pageLength: 25,
+            PmsListingDataTable.init('#transfersTable', {
                 order: [[1, 'desc']],
                 columnDefs: [{ orderable: false, targets: 0 }]
             });

@@ -174,8 +174,7 @@
 @section Scripts {
 <script>
     $(function () {
-        $('#waiverTable').DataTable({
-            pageLength: 25,
+        PmsListingDataTable.init('#waiverTable', {
             order: [[1, 'desc']],
             columnDefs: [{ orderable: false, targets: 0 }]
         });

@@ -61,7 +61,7 @@
         @if (Model.Any())
         {
             <div class="table-responsive pms-saas-table-wrap">
-                <table class="table pms-saas-table">
+                <table class="table pms-saas-table" id="transferFeeTable">
                     <thead>
                         <tr>
                             <th class="pms-saas-th-actions">Actions</th>
@@ -128,3 +128,16 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if ($('#transferFeeTable').length) {
+                PmsListingDataTable.init('#transferFeeTable', {
+                    order: [[1, 'desc']],
+                    columnDefs: [{ orderable: false, targets: 0 }]
+                });
+            }
+        });
+    </script>
+}

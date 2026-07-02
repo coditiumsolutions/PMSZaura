@@ -172,8 +172,7 @@
 @section Scripts {
 <script>
     $(document).ready(function () {
-        $('#refundTable').DataTable({
-            pageLength: 25,
+        PmsListingDataTable.init('#refundTable', {
             order: [[1, 'desc']],
             columnDefs: [{ orderable: false, targets: 0 }]
         });

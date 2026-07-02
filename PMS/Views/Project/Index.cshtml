@@ -76,8 +76,7 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            $('#projectsTable').DataTable({
-                pageLength: 25,
+            PmsListingDataTable.init('#projectsTable', {
                 order: [[7, 'desc']],
                 columnDefs: [{ orderable: false, targets: 0 }]
             });

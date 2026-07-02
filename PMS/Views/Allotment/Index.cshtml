@@ -261,8 +261,7 @@
     <script>
         $(document).ready(function () {
             if ($('#allotmentsTable').length) {
-                $('#allotmentsTable').DataTable({
-                    pageLength: 25,
+                PmsListingDataTable.init('#allotmentsTable', {
                     order: [[7, 'desc']],
                     columnDefs: [{ orderable: false, targets: 0 }]
                 });

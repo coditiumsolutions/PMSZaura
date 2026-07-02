@@ -140,8 +140,7 @@
     <script>
         $(document).ready(function () {
             if ($('#requestedReportTable').length) {
-                $('#requestedReportTable').DataTable({
-                    pageLength: 25,
+                PmsListingDataTable.init('#requestedReportTable', {
                     order: []
                 });
             }
