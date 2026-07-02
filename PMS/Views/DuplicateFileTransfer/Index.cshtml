@@ -105,12 +105,11 @@
     </form>
 
     <div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-2">
-        <div class="card-body">
+        <div class="card-body py-2">
             <div class="table-responsive pms-saas-table-wrap">
                 <table class="table pms-saas-table" id="dftTable">
                     <thead>
                         <tr>
-                            <th class="pms-saas-th-actions">Actions</th>
                             <th>ID</th>
                             <th>Customer</th>
                             <th class="text-end">Fee Due</th>
@@ -123,21 +122,12 @@
                             var wf = r.Status ?? Initiated;
                             var pillClass = string.Equals(wf, Approved, StringComparison.OrdinalIgnoreCase) ? "pms-pill--success"
                                 : string.Equals(wf, Declined, StringComparison.OrdinalIgnoreCase) ? "pms-pill--danger" : "pms-pill--warning";
-                            <tr>
-                                <td class="pms-saas-td-actions" data-label="Actions">
-                                    <div class="pms-row-actions" role="group">
-                                        <a asp-action="Details" asp-route-id="@r.Id" class="btn btn-sm btn-outline-secondary" title="Details"><i class="bi bi-eye" aria-hidden="true"></i></a>
-                                        @if (string.Equals(wf, Approved, StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            <a asp-action="DuplicateFileLetter" asp-route-id="@r.Id" target="_blank" class="btn btn-sm btn-outline-success" title="Letter"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></a>
-                                        }
-                                        @if (ViewBag.CanEdit == true && string.Equals(wf, Initiated, StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            <a asp-action="Edit" asp-route-id="@r.Id" class="btn btn-sm btn-outline-primary" title="Edit"><i class="bi bi-pencil-square" aria-hidden="true"></i></a>
-                                        }
-                                    </div>
+                            <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = r.Id })">
+                                <td data-label="ID">
+                                    <a asp-action="Details" asp-route-id="@r.Id" class="text-decoration-none">
+                                        <code>@r.Id</code>
+                                    </a>
                                 </td>
-                                <td data-label="ID"><code>@r.Id</code></td>
                                 <td data-label="Customer">
                                     <div><code>@r.CustomerID</code></div>
                                     <div class="small text-muted">@(r.CustomerName ?? "—")</div>
@@ -157,9 +147,9 @@
 <script>
     $(function () {
         PmsListingDataTable.init('#dftTable', {
-            order: [[1, 'desc']],
-            columnDefs: [{ orderable: false, targets: 0 }]
+            order: [[0, 'desc']]
         });
+        PmsListingDataTable.bindRowNavigation('#dftTable');
     });
 </script>
 }

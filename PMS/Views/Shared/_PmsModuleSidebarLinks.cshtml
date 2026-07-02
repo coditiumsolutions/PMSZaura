@@ -5,32 +5,97 @@
     var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
     var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
     var activeModule = Model.ActiveModule;
+    var showModuleTitle = activeModule != null
+        && !string.Equals(activeModule.Key, PMS.ViewModels.NavigationModuleKeys.Reports, StringComparison.OrdinalIgnoreCase);
 }
 
 @if (activeModule != null)
 {
-    <li class="nav-item sidebar-section-label sidebar-section-label--module">
-        <h6 class="sidebar-section-title">@activeModule.Label</h6>
-    </li>
-
-    @foreach (var item in activeModule.Items)
+    @if (showModuleTitle)
     {
+        <li class="nav-item sidebar-section-label sidebar-section-label--module">
+            <h6 class="sidebar-section-title">@activeModule.Label</h6>
+        </li>
+    }
+
+    var items = activeModule.Items;
+    var index = 0;
+    while (index < items.Count)
+    {
+        var item = items[index];
+
+        if (item.IsSectionHeader && !string.IsNullOrEmpty(item.SectionKey))
+        {
+            var sectionKey = item.SectionKey!;
+            var sectionLabel = item.Label;
+            var sectionClass = item.SectionHeaderClass ?? string.Empty;
+            index++;
+
+            var sectionItems = new List<PMS.ViewModels.NavigationMenuItemViewModel>();
+            while (index < items.Count && !items[index].IsSectionHeader)
+            {
+                sectionItems.Add(items[index]);
+                index++;
+            }
+
+            var visibleItems = sectionItems
+                .Where(i => !i.RequiresAdminRole || User.IsInRole("Admin"))
+                .ToList();
+
+            if (visibleItems.Count > 0)
+            {
+                var sectionHasActive = visibleItems.Any(i =>
+                    NavigationService.IsMenuItemActive(i, currentController, currentAction, Context));
+
+                <li class="nav-item sidebar-subsection-block @sectionClass"
+                    data-sidebar-section="@sectionKey"
+                    data-section-has-active="@(sectionHasActive ? "true" : "false")">
+                    <button type="button"
+                            class="sidebar-subsection-toggle"
+                            aria-expanded="@(sectionHasActive ? "true" : "false")"
+                            data-sidebar-section="@sectionKey">
+                        <i class="bi bi-chevron-right sidebar-subsection-chevron" aria-hidden="true"></i>
+                        <span class="sidebar-subsection-title">@sectionLabel</span>
+                    </button>
+                    <ul class="sidebar-subsection-items list-unstyled mb-0">
+                        @foreach (var child in visibleItems)
+                        {
+                            var isActive = NavigationService.IsMenuItemActive(child, currentController, currentAction, Context);
+                            <li class="nav-item sidebar-module-item sidebar-subsection-child">
+                                <a class="nav-link @(isActive ? "active" : "")"
+                                   asp-controller="@child.Controller"
+                                   asp-action="@child.Action"
+                                   asp-route-id="@child.RouteId"
+                                   asp-route-title="@child.RouteTitle">
+                                    <i class="@child.IconClass"></i>@child.Label
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </li>
+            }
+
+            continue;
+        }
+
         if (item.IsSectionHeader)
         {
             <li class="nav-item sidebar-module-item sidebar-subsection-label @item.SectionHeaderClass">
                 <h6 class="sidebar-subsection-title">@item.Label</h6>
             </li>
+            index++;
             continue;
         }
 
         if (item.RequiresAdminRole && !User.IsInRole("Admin"))
         {
+            index++;
             continue;
         }
 
-        var isActive = NavigationService.IsMenuItemActive(item, currentController, currentAction, Context);
+        var linkActive = NavigationService.IsMenuItemActive(item, currentController, currentAction, Context);
         <li class="nav-item sidebar-module-item">
-            <a class="nav-link @(isActive ? "active" : "")"
+            <a class="nav-link @(linkActive ? "active" : "")"
                asp-controller="@item.Controller"
                asp-action="@item.Action"
                asp-route-id="@item.RouteId"
@@ -38,5 +103,6 @@
                 <i class="@item.IconClass"></i>@item.Label
             </a>
         </li>
+        index++;
     }
 }

@@ -2,73 +2,71 @@
 
 @{
     ViewData["Title"] = "Projects";
-    ViewData["ListingTitle"] = "All Projects";
-    ViewData["ListingDescription"] = "Development projects and portfolios";
-    ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
-    ViewData["ListingShowAdd"] = false;
-    ViewData["ListingExtraActions"] =
-        "<a href=\"" + Url.Action("FloorPlan") + "\" class=\"btn btn-outline-primary btn-sm\">" +
-        "<i class=\"bi bi-layers me-1\" aria-hidden=\"true\"></i>Floor Plan</a>" +
-        "<a href=\"" + Url.Action("Create") + "\" class=\"btn btn-primary btn-sm\">" +
-        "<i class=\"bi bi-plus-lg me-1\" aria-hidden=\"true\"></i>Create New Project</a>";
+    ViewData["ListingHideToolbarActions"] = true;
+    var projectCount = Model?.Count() ?? 0;
 }
 
-<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page">
-    <div class="card-body">
-        <partial name="Listing/_GridToolbar" />
+<div class="pms-listing-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h5 class="pms-grid-title mb-0">Projects</h5>
+        <span class="badge rounded-pill pms-record-badge">@projectCount record@(projectCount == 1 ? "" : "s")</span>
+    </div>
 
-        <div class="table-responsive pms-saas-table-wrap">
-            <table class="table pms-saas-table" id="projectsTable">
-                <thead>
-                    <tr>
-                        <th class="pms-saas-th-actions">Actions</th>
-                        <th>Project ID</th>
-                        <th>Project Name</th>
-                        <th>Type</th>
-                        <th>Location</th>
-                        <th>Properties</th>
-                        <th>Customers</th>
-                        <th>Created Date</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var project in Model)
-                    {
-                        var customerCount = ViewBag.CustomerCounts != null && ViewBag.CustomerCounts.ContainsKey(project.ProjectID)
-                            ? ViewBag.CustomerCounts[project.ProjectID]
-                            : 0;
+    <div class="mb-2">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="@Url.Action("FloorPlan")" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-layers me-1" aria-hidden="true"></i>Floor Plan
+            </a>
+            <a href="@Url.Action("Create")" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Create New Project
+            </a>
+        </div>
+    </div>
+
+    <div class="card pms-grid-card pms-listing-flat pms-saas-grid mb-2">
+        <div class="card-body py-2">
+            <div class="table-responsive pms-saas-table-wrap">
+                <table class="table pms-saas-table" id="projectsTable">
+                    <thead>
                         <tr>
-                            <td class="pms-saas-td-actions" data-label="Actions">
-                                <div class="pms-row-actions" role="group">
-                                    <a asp-action="Edit" asp-route-id="@project.ProjectID" class="btn btn-sm btn-outline-primary" title="Edit">
-                                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                    </a>
-                                    <a asp-action="Details" asp-route-id="@project.ProjectID" class="btn btn-sm btn-outline-secondary" title="Details">
-                                        <i class="bi bi-eye" aria-hidden="true"></i>
-                                    </a>
-                                    <a asp-action="Delete" asp-route-id="@project.ProjectID"
-                                       class="btn btn-sm btn-outline-danger" title="Delete">
-                                        <i class="bi bi-trash" aria-hidden="true"></i>
-                                    </a>
-                                </div>
-                            </td>
-                            <td data-label="Project ID"><span class="badge bg-secondary">@project.ProjectID</span></td>
-                            <td data-label="Project Name">
-                                <strong class="pms-cell-truncate" title="@project.ProjectName">@project.ProjectName</strong>
-                                @if (!string.IsNullOrEmpty(project.Description))
-                                {
-                                    <br><small class="text-muted pms-cell-truncate d-block" title="@project.Description">@project.Description</small>
-                                }
-                            </td>
-                            <td data-label="Type"><span class="pms-pill pms-pill--info">@project.Type</span></td>
-                            <td data-label="Location"><span class="pms-cell-truncate" title="@project.Location">@project.Location</span></td>
-                            <td data-label="Properties"><span class="pms-pill pms-pill--success">@(project.Properties?.Count ?? 0) Properties</span></td>
-                            <td data-label="Customers"><span class="pms-pill pms-pill--info">@customerCount Customers</span></td>
-                            <td data-label="Created"><span class="text-nowrap">@project.CreatedAt.ToString("MMM dd, yyyy")</span></td>
+                            <th>Project ID</th>
+                            <th>Project Name</th>
+                            <th>Type</th>
+                            <th>Location</th>
+                            <th>Properties</th>
+                            <th>Customers</th>
+                            <th>Created Date</th>
                         </tr>
-                    }
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        @foreach (var project in Model)
+                        {
+                            var customerCount = ViewBag.CustomerCounts != null && ViewBag.CustomerCounts.ContainsKey(project.ProjectID)
+                                ? ViewBag.CustomerCounts[project.ProjectID]
+                                : 0;
+                            <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = project.ProjectID })">
+                                <td data-label="Project ID">
+                                    <a asp-action="Details" asp-route-id="@project.ProjectID" class="text-decoration-none">
+                                        <span class="badge bg-secondary">@project.ProjectID</span>
+                                    </a>
+                                </td>
+                                <td data-label="Project Name">
+                                    <strong class="pms-cell-truncate" title="@project.ProjectName">@project.ProjectName</strong>
+                                    @if (!string.IsNullOrEmpty(project.Description))
+                                    {
+                                        <br><small class="text-muted pms-cell-truncate d-block" title="@project.Description">@project.Description</small>
+                                    }
+                                </td>
+                                <td data-label="Type"><span class="pms-pill pms-pill--info">@project.Type</span></td>
+                                <td data-label="Location"><span class="pms-cell-truncate" title="@project.Location">@project.Location</span></td>
+                                <td data-label="Properties"><span class="pms-pill pms-pill--success">@(project.Properties?.Count ?? 0) Properties</span></td>
+                                <td data-label="Customers"><span class="pms-pill pms-pill--info">@customerCount Customers</span></td>
+                                <td data-label="Created"><span class="text-nowrap">@project.CreatedAt.ToString("MMM dd, yyyy")</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -77,9 +75,9 @@
     <script>
         $(document).ready(function() {
             PmsListingDataTable.init('#projectsTable', {
-                order: [[7, 'desc']],
-                columnDefs: [{ orderable: false, targets: 0 }]
+                order: [[6, 'desc']]
             });
+            PmsListingDataTable.bindRowNavigation('#projectsTable');
         });
     </script>
 }

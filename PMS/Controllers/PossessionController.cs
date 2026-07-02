@@ -127,8 +127,8 @@ namespace PMS.Controllers
                 if (string.Equals(workflowFilter, "Pending", StringComparison.OrdinalIgnoreCase))
                 {
                     query = query.Where(p =>
-                        !string.Equals(p.WorkFlowStatus, approvedStatus, StringComparison.OrdinalIgnoreCase)
-                        && !string.Equals(p.WorkFlowStatus, declinedStatus, StringComparison.OrdinalIgnoreCase));
+                        p.WorkFlowStatus == null
+                        || (p.WorkFlowStatus != approvedStatus && p.WorkFlowStatus != declinedStatus));
                 }
                 else
                 {
@@ -144,8 +144,8 @@ namespace PMS.Controllers
             ViewBag.WorkflowFilter = workflowFilter;
             ViewBag.CustomerFilter = customerFilter;
             ViewBag.PendingCount = await _context.Possessions.CountAsync(p =>
-                !string.Equals(p.WorkFlowStatus, approvedStatus, StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(p.WorkFlowStatus, declinedStatus, StringComparison.OrdinalIgnoreCase));
+                p.WorkFlowStatus == null
+                || (p.WorkFlowStatus != approvedStatus && p.WorkFlowStatus != declinedStatus));
             ViewBag.ApprovedCount = await _context.Possessions.CountAsync(p => p.WorkFlowStatus == approvedStatus);
             ViewBag.DeclinedCount = await _context.Possessions.CountAsync(p => p.WorkFlowStatus == declinedStatus);
 

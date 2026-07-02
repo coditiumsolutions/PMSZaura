@@ -9,30 +9,36 @@
 
     var showBulkSelection = (ViewBag.StatusFilter as string) == "Pending" && ViewBag.CanEdit == true;
     ViewData["ShowBulkSelection"] = showBulkSelection;
+    var customerCount = Model?.Count() ?? 0;
 }
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <div class="alert alert-success alert-dismissible fade show py-2 mb-2 small" role="alert">
         <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <div class="alert alert-danger alert-dismissible fade show py-2 mb-2 small" role="alert">
         <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 }
 
-<!-- Search Filters -->
-<form method="get" asp-action="Index" class="mb-4 pms-customer-listing">
+<div class="pms-customer-listing pms-listing-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h5 class="pms-grid-title mb-0">Customers</h5>
+        <span class="badge rounded-pill pms-record-badge">@customerCount record@(customerCount == 1 ? "" : "s")</span>
+    </div>
+
+<form method="get" asp-action="Index" class="mb-2">
     <div class="pms-customer-search-wrap pms-listing-search-wrap">
-        <div class="row g-2 align-items-end flex-lg-nowrap">
+        <div class="row g-1 align-items-end flex-lg-nowrap">
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="pms-compact-field pms-select-dropdown">
-                    <label for="projectFilter" class="form-label">Filter by Project</label>
+                    <label for="projectFilter" class="form-label">Project</label>
                     <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()">
                         <option value="All" selected="@(ViewBag.ProjectFilter == "All")">All Projects</option>
                         @if (ViewBag.Projects != null)
@@ -49,7 +55,7 @@
             </div>
             <div class="col-12 col-md-6 col-lg-2">
                 <div class="pms-compact-field pms-select-dropdown">
-                    <label for="statusFilter" class="form-label">Filter by Status</label>
+                    <label for="statusFilter" class="form-label">Status</label>
                     <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()">
                         <option value="All" selected="@(ViewBag.StatusFilter == "All")">All Status</option>
                         <option value="Active" selected="@(ViewBag.StatusFilter == "Active")">Active</option>
@@ -61,7 +67,7 @@
             </div>
             <div class="col-12 col-lg-3 pms-customer-search-term-field">
                 <div class="pms-compact-field">
-                    <label for="searchTerm" class="form-label">Search (name, cnic, email etc)</label>
+                    <label for="searchTerm" class="form-label">Search</label>
                     <input type="text"
                            name="searchTerm"
                            id="searchTerm"
@@ -118,8 +124,8 @@
             </div>
         </div>
 
-        <div class="card pms-grid-card pms-saas-grid pms-customer-listing">
-            <div class="card-body">
+        <div class="card pms-grid-card pms-saas-grid pms-listing-page mb-2">
+            <div class="card-body py-2">
                 <partial name="_CustomerDataGrid" model="Model" />
             </div>
         </div>
@@ -127,28 +133,26 @@
 }
 else
 {
-    <div class="card pms-grid-card pms-saas-grid pms-customer-listing">
-        <div class="card-body">
+    <div class="card pms-grid-card pms-saas-grid pms-listing-page mb-2">
+        <div class="card-body py-2">
             <partial name="_CustomerDataGrid" model="Model" />
         </div>
     </div>
 }
+</div>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
             var showBulkSelection = @showBulkSelection.ToString().ToLowerInvariant();
-            var customerIdColumnIndex = showBulkSelection ? 2 : 1;
-            var actionsColumnIndex = showBulkSelection ? 1 : 0;
+            var customerIdColumnIndex = showBulkSelection ? 1 : 0;
 
             if ($('#customersTable').length) {
                 PmsListingDataTable.init('#customersTable', {
                     dom: '<"pms-customer-dt-controls d-flex flex-wrap align-items-center gap-3 mb-2"lf>rtip',
-                    order: [[ customerIdColumnIndex, "desc" ]],
-                    columnDefs: [
-                        { orderable: false, targets: actionsColumnIndex }
-                    ]
+                    order: [[ customerIdColumnIndex, "desc" ]]
                 });
+                PmsListingDataTable.bindRowNavigation('#customersTable');
             }
 
             if (showBulkSelection) {

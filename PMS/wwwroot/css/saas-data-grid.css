@@ -42,7 +42,7 @@
 }
 
 .pms-saas-grid .pms-grid-title {
-    font-size: 1.25rem;
+    font-size: 0.875rem;
     font-weight: 700;
     color: #0f172a;
     letter-spacing: -0.025em;
@@ -113,7 +113,7 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    border-bottom: 1px solid var(--saas-border) !important;
+    border-bottom: 2px solid #e2e8f0 !important;
     border-top: none !important;
     padding: 0.9rem 1rem;
     white-space: nowrap;
@@ -141,11 +141,14 @@
 .pms-saas-grid .pms-saas-table tbody tr {
     cursor: pointer;
     transition: background-color 0.2s ease, box-shadow 0.2s ease;
-    border-bottom: 1px solid #f1f5f9;
+}
+
+.pms-saas-grid .pms-saas-table tbody tr:nth-child(even) {
+    background-color: #f8fafc;
 }
 
 .pms-saas-grid .pms-saas-table tbody tr:hover {
-    background-color: #f8fafc !important;
+    background-color: #f1f5f9 !important;
     box-shadow: inset 3px 0 0 var(--saas-primary);
 }
 
@@ -155,12 +158,12 @@
     vertical-align: middle;
     color: #1e293b;
     border: none;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
     max-width: 240px;
 }
 
 .pms-saas-grid .pms-saas-table tbody tr:last-child td {
-    border-bottom: none;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 /* ─── Primary two-line cell ─── */
@@ -487,6 +490,26 @@
     white-space: normal;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+.pms-registration-listing #registrationsTable tbody td {
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.pms-registration-listing #registrationsTable tbody tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+.pms-registration-listing #registrationsTable tbody tr:hover {
+    background-color: #f1f5f9 !important;
+}
+
+.pms-registration-listing #registrationsTable tbody tr:last-child td {
+    border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.pms-registration-listing #registrationsTable thead th {
+    border-bottom: 2px solid #e2e8f0 !important;
 }
 
 .pms-listing-page .dataTables_wrapper .dataTables_scroll,

@@ -120,14 +120,13 @@
     </form>
 
     <div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-2">
-        <div class="card-body">
+        <div class="card-body py-2">
             @if (Model.Any())
             {
                 <div class="table-responsive pms-saas-table-wrap">
                     <table class="table pms-saas-table" id="allotmentsTable">
                         <thead>
                             <tr>
-                                <th class="pms-saas-th-actions">Actions</th>
                                 <th>Allotment ID</th>
                                 <th>Property</th>
                                 <th>Customer</th>
@@ -148,42 +147,11 @@
                                         : string.Equals(wf, operationsDeskStatus, StringComparison.OrdinalIgnoreCase)
                                             ? "pms-pill--info"
                                             : "pms-pill--warning";
-                                <tr>
-                                    <td class="pms-saas-td-actions" data-label="Actions">
-                                        <div class="pms-row-actions" role="group">
-                                            <a asp-action="Details"
-                                               asp-route-id="@allotment.AllotmentID"
-                                               class="btn btn-sm btn-outline-secondary"
-                                               title="View allotment">
-                                                <i class="bi bi-eye" aria-hidden="true"></i>
-                                            </a>
-                                            @if (ViewBag.CanEdit == true && !string.Equals((allotment.WorkFlowStatus ?? ""), approvedStatus, StringComparison.OrdinalIgnoreCase))
-                                            {
-                                                <a asp-action="Edit"
-                                                   asp-route-id="@allotment.AllotmentID"
-                                                   class="btn btn-sm btn-outline-primary"
-                                                   title="Workflow">
-                                                    <i class="bi bi-signpost-split" aria-hidden="true"></i>
-                                                </a>
-                                            }
-                                            <a asp-controller="Property"
-                                               asp-action="Details"
-                                               asp-route-id="@allotment.PropertyID"
-                                               class="btn btn-sm btn-outline-secondary"
-                                               title="View Property">
-                                                <i class="bi bi-house" aria-hidden="true"></i>
-                                            </a>
-                                            <a asp-controller="Customer"
-                                               asp-action="Details"
-                                               asp-route-id="@allotment.CustomerID"
-                                               class="btn btn-sm btn-outline-primary"
-                                               title="View Customer">
-                                                <i class="bi bi-person" aria-hidden="true"></i>
-                                            </a>
-                                        </div>
-                                    </td>
+                                <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = allotment.AllotmentID })">
                                     <td data-label="Allotment ID">
-                                        <code>@allotment.AllotmentID</code>
+                                        <a asp-action="Details" asp-route-id="@allotment.AllotmentID" class="text-decoration-none">
+                                            <code>@allotment.AllotmentID</code>
+                                        </a>
                                     </td>
                                     <td data-label="Property">
                                         @if (allotment.Property != null)
@@ -262,9 +230,9 @@
         $(document).ready(function () {
             if ($('#allotmentsTable').length) {
                 PmsListingDataTable.init('#allotmentsTable', {
-                    order: [[7, 'desc']],
-                    columnDefs: [{ orderable: false, targets: 0 }]
+                    order: [[6, 'desc']]
                 });
+                PmsListingDataTable.bindRowNavigation('#allotmentsTable');
             }
 
             var chartData = @Html.Raw(ViewBag.ChartData);

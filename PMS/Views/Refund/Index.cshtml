@@ -101,13 +101,12 @@
     </div>
 </form>
 
-<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page">
-    <div class="card-body">
+<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-2">
+    <div class="card-body py-2">
         <div class="table-responsive pms-saas-table-wrap">
             <table class="table pms-saas-table" id="refundTable">
                 <thead>
                     <tr>
-                        <th class="pms-saas-th-actions">Actions</th>
                         <th>Refund ID</th>
                         <th>Customer</th>
                         <th>Type</th>
@@ -127,30 +126,12 @@
                             : string.Equals(wf, declinedStatus, StringComparison.OrdinalIgnoreCase)
                                 ? "pms-pill--danger"
                                 : "pms-pill--warning";
-                        <tr>
-                            <td class="pms-saas-td-actions" data-label="Actions">
-                                <div class="pms-row-actions" role="group">
-                                    <a asp-action="Details" asp-route-id="@r.RefundID" class="btn btn-sm btn-outline-secondary" title="Details">
-                                        <i class="bi bi-eye" aria-hidden="true"></i>
-                                    </a>
-                                    @if (ViewBag.CanEdit == true && !isApproved)
-                                    {
-                                        <a asp-action="Edit" asp-route-id="@r.RefundID" class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                        </a>
-                                    }
-                                    @if (ViewBag.CanDelete == true)
-                                    {
-                                        <form asp-action="Delete" asp-route-id="@r.RefundID" method="post" class="d-inline" onsubmit="return confirm('Delete this refund?');">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                                <i class="bi bi-trash" aria-hidden="true"></i>
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
+                        <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = r.RefundID })">
+                            <td data-label="Refund ID">
+                                <a asp-action="Details" asp-route-id="@r.RefundID" class="text-decoration-none">
+                                    <code>@r.RefundID</code>
+                                </a>
                             </td>
-                            <td data-label="Refund ID"><code>@r.RefundID</code></td>
                             <td data-label="Customer">
                                 <div><code>@r.CustomerID</code></div>
                                 <div class="small text-muted">@(r.Customer?.FullName ?? "—")</div>
@@ -173,9 +154,9 @@
 <script>
     $(document).ready(function () {
         PmsListingDataTable.init('#refundTable', {
-            order: [[1, 'desc']],
-            columnDefs: [{ orderable: false, targets: 0 }]
+            order: [[0, 'desc']]
         });
+        PmsListingDataTable.bindRowNavigation('#refundTable');
     });
 </script>
 }

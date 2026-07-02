@@ -17,6 +17,7 @@ namespace PMS.Services
                 // Apply pending migrations and create database if it doesn't exist
                 context.Database.Migrate();
                 await EnsureClientCertificateSecurityTablesAsync(context);
+                await PossessionSchemaEnsurer.EnsureAsync(context);
 
                 // Seed initial data
                 await seedService.SeedAsync();

@@ -19,6 +19,8 @@ public sealed class NavigationMenuItemViewModel
     public string IconClass { get; init; } = string.Empty;
     public bool IsSectionHeader { get; init; }
     public string? SectionHeaderClass { get; init; }
+    /// <summary>When set on a section header, child links collapse under this key until the next section header.</summary>
+    public string? SectionKey { get; init; }
     public string? RouteId { get; init; }
     public string? RouteTitle { get; init; }
     /// <summary>When set, item is active only when current action equals this value.</summary>

@@ -312,10 +312,6 @@ namespace PMS.Controllers
                         .ToListAsync();
 
                     ViewBag.ReportDescription = "All active customers.";
-                    ViewBag.ReportSummary = new Dictionary<string, string>
-                    {
-                        ["Total Active Members"] = activeCustomers.Count.ToString("N0")
-                    };
                     ViewBag.ReportColumns = new List<string> { "Customer ID", "Name", "CNIC", "Phone", "Plan", "Created" };
                     ViewBag.ReportRows = activeCustomers.Select(c => new List<string>
                     {

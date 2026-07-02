@@ -106,12 +106,11 @@
     </form>
 
     <div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-2">
-        <div class="card-body">
+        <div class="card-body py-2">
             <div class="table-responsive pms-saas-table-wrap">
                 <table class="table pms-saas-table" id="waiverTable">
                     <thead>
                         <tr>
-                            <th class="pms-saas-th-actions">Actions</th>
                             <th>Waiver ID</th>
                             <th>Customer</th>
                             <th>Type</th>
@@ -130,30 +129,12 @@
                                 : string.Equals(status, declinedStatus, StringComparison.OrdinalIgnoreCase)
                                     ? "pms-pill--danger"
                                     : "pms-pill--warning";
-                            <tr>
-                                <td class="pms-saas-td-actions" data-label="Actions">
-                                    <div class="pms-row-actions" role="group">
-                                        <a asp-action="Details" asp-route-id="@w.WaiverID" class="btn btn-sm btn-outline-secondary" title="Details">
-                                            <i class="bi bi-eye" aria-hidden="true"></i>
-                                        </a>
-                                        @if (ViewBag.CanEdit == true && !isApproved)
-                                        {
-                                            <a asp-action="Edit" asp-route-id="@w.WaiverID" class="btn btn-sm btn-outline-primary" title="Edit">
-                                                <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                            </a>
-                                        }
-                                        @if (ViewBag.CanDelete == true && !isApproved)
-                                        {
-                                            <form asp-action="Delete" asp-route-id="@w.WaiverID" method="post" class="d-inline" onsubmit="return confirm('Delete this waiver?');">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                                    <i class="bi bi-trash" aria-hidden="true"></i>
-                                                </button>
-                                            </form>
-                                        }
-                                    </div>
+                            <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = w.WaiverID })">
+                                <td data-label="Waiver ID">
+                                    <a asp-action="Details" asp-route-id="@w.WaiverID" class="text-decoration-none">
+                                        <code>@w.WaiverID</code>
+                                    </a>
                                 </td>
-                                <td data-label="Waiver ID"><code>@w.WaiverID</code></td>
                                 <td data-label="Customer">
                                     <div><code>@w.CustomerID</code></div>
                                     <div class="small text-muted">@(w.Customer?.FullName ?? "—")</div>
@@ -175,9 +156,9 @@
 <script>
     $(function () {
         PmsListingDataTable.init('#waiverTable', {
-            order: [[1, 'desc']],
-            columnDefs: [{ orderable: false, targets: 0 }]
+            order: [[0, 'desc']]
         });
+        PmsListingDataTable.bindRowNavigation('#waiverTable');
     });
 </script>
 }

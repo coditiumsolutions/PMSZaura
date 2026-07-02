@@ -2,154 +2,127 @@
 
 @{
     ViewData["Title"] = "Transfers";
-    ViewData["ListingTitle"] = "All Transfers";
-    ViewData["ListingDescription"] = "Manage property transfer records";
-    ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
-    ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
-    ViewData["ListingAddText"] = "New Transfer";
     ViewData["ListingHideToolbarActions"] = true;
+    var transferCount = Model?.Count() ?? 0;
 }
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <div class="alert alert-success alert-dismissible fade show py-2 mb-2 small" role="alert">
         @TempData["SuccessMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 @if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+    <div class="alert alert-warning alert-dismissible fade show py-2 mb-2 small" role="alert">
         @TempData["ErrorMessage"]
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
-<form method="get" asp-action="Index" class="mb-4 pms-transfer-listing">
-    <div class="pms-transfer-search-wrap pms-listing-search-wrap">
-        <div class="row g-2 align-items-end flex-lg-nowrap">
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="pms-compact-field">
-                    <label for="customerIdFilter" class="form-label">Customer ID</label>
-                    <input type="text"
-                           name="customerIdFilter"
-                           id="customerIdFilter"
-                           class="form-control"
-                           value="@ViewBag.CustomerIdFilter" />
+<div class="pms-transfer-listing pms-listing-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h5 class="pms-grid-title mb-0">Transfers</h5>
+        <span class="badge rounded-pill pms-record-badge">@transferCount record@(transferCount == 1 ? "" : "s")</span>
+    </div>
+
+    <form method="get" asp-action="Index" class="mb-2">
+        <div class="pms-transfer-search-wrap pms-listing-search-wrap">
+            <div class="row g-1 align-items-end flex-lg-nowrap">
+                <div class="col-12 col-md-5 col-lg-3">
+                    <div class="pms-compact-field">
+                        <label for="customerIdFilter" class="form-label">Customer ID</label>
+                        <input type="text"
+                               name="customerIdFilter"
+                               id="customerIdFilter"
+                               class="form-control"
+                               placeholder="Search customer ID"
+                               value="@ViewBag.CustomerIdFilter" />
+                    </div>
                 </div>
-            </div>
-            <div class="col-12 col-md-6 col-lg-4">
-                <div class="pms-compact-field pms-select-dropdown">
-                    <label for="workflowFilter" class="form-label">Workflow Status</label>
-                    <select name="workflowFilter" id="workflowFilter" class="form-select" onchange="this.form.submit()">
-                        <option value="">All</option>
-                        @if (ViewBag.WorkflowStatuses != null)
-                        {
-                            foreach (var s in (string[])ViewBag.WorkflowStatuses)
+                <div class="col-12 col-md-4 col-lg-3">
+                    <div class="pms-compact-field pms-select-dropdown">
+                        <label for="workflowFilter" class="form-label">Workflow</label>
+                        <select name="workflowFilter" id="workflowFilter" class="form-select" onchange="this.form.submit()">
+                            <option value="">All</option>
+                            @if (ViewBag.WorkflowStatuses != null)
                             {
-                                <option value="@s" selected="@(ViewBag.WorkflowFilter == s)">@s</option>
+                                foreach (var s in (string[])ViewBag.WorkflowStatuses)
+                                {
+                                    <option value="@s" selected="@(ViewBag.WorkflowFilter == s)">@s</option>
+                                }
                             }
-                        }
-                    </select>
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div class="col-12 col-lg-4">
-                <div class="d-flex flex-nowrap gap-2 pms-transfer-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
-                    </button>
-                    <partial name="_OperationsDropdown" />
+                <div class="col-12 col-lg">
+                    <div class="d-flex flex-wrap gap-2 pms-transfer-search-actions">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                        </button>
+                        @if (!string.IsNullOrWhiteSpace(ViewBag.CustomerIdFilter as string) || !string.IsNullOrWhiteSpace(ViewBag.WorkflowFilter as string))
+                        {
+                            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Clear</a>
+                        }
+                        <partial name="_OperationsDropdown" />
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</form>
+    </form>
 
-<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-transfer-listing">
-    <div class="card-body">
-        <partial name="Listing/_GridToolbar" />
-
-        <div class="table-responsive pms-saas-table-wrap">
-            <table class="table pms-saas-table" id="transfersTable">
-                <thead>
-                    <tr>
-                        <th class="pms-saas-th-actions">Actions</th>
-                        <th>Transfer ID</th>
-                        <th>Customer ID</th>
-                        <th>Customer / Project</th>
-                        <th>Seller</th>
-                        <th>Buyer</th>
-                        <th>Workflow</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var t in Model)
-                    {
-                        var isInitiated = string.Equals(t.WorkFlowStatus?.Trim(), "Created", StringComparison.OrdinalIgnoreCase)
-                            || string.Equals(t.WorkFlowStatus?.Trim(), "Initiated", StringComparison.OrdinalIgnoreCase);
+    <div class="card pms-grid-card pms-listing-flat pms-saas-grid mb-2">
+        <div class="card-body py-2">
+            <div class="table-responsive pms-saas-table-wrap">
+                <table class="table pms-saas-table" id="transfersTable">
+                    <thead>
                         <tr>
-                            <td class="pms-saas-td-actions" data-label="Actions">
-                                <div class="pms-row-actions" role="group">
-                                    <a asp-action="Details" asp-route-id="@t.TransferID" class="btn btn-sm btn-outline-secondary" title="Details">
-                                        <i class="bi bi-eye" aria-hidden="true"></i>
+                            <th>Transfer ID</th>
+                            <th>Customer ID</th>
+                            <th>Customer / Project</th>
+                            <th>Seller</th>
+                            <th>Buyer</th>
+                            <th>Workflow</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var t in Model)
+                        {
+                            <tr class="pms-transfer-row" data-href="@Url.Action("Details", new { id = t.TransferID })">
+                                <td data-label="Transfer ID">
+                                    <a asp-action="Details" asp-route-id="@t.TransferID" class="text-decoration-none">
+                                        <span class="badge bg-secondary">@t.TransferID</span>
                                     </a>
-                                    @if (t.WorkFlowStatus == "Approved")
+                                </td>
+                                <td data-label="Customer ID"><code>@t.CustomerID</code></td>
+                                <td data-label="Customer / Project">
+                                    @if (t.Customer?.PaymentPlan?.Project != null)
                                     {
-                                        <a asp-action="TransferLetter" asp-route-id="@t.TransferID" target="_blank" class="btn btn-sm btn-outline-success" title="Transfer Letter">
-                                            <i class="bi bi-file-earmark-text" aria-hidden="true"></i>
-                                        </a>
+                                        <span class="pms-pill pms-pill--info">@t.Customer.PaymentPlan.Project.ProjectName</span>
                                     }
                                     else
                                     {
-                                        <a asp-action="TransferReceipt" asp-route-id="@t.TransferID" target="_blank" class="btn btn-sm btn-outline-warning" title="Transfer Receipt">
-                                            <i class="bi bi-receipt" aria-hidden="true"></i>
-                                        </a>
+                                        <span class="text-muted">—</span>
                                     }
-                                    @if ((ViewBag.CanEdit == true) && t.WorkFlowStatus != "Approved")
-                                    {
-                                        <a asp-action="Edit" asp-route-id="@t.TransferID" class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                        </a>
-                                    }
-                                    @if (ViewBag.CanDelete == true && isInitiated)
-                                    {
-                                        <form asp-action="Delete" asp-route-id="@t.TransferID" method="post" class="d-inline" onsubmit="return confirm('Delete this transfer?');">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                                <i class="bi bi-trash" aria-hidden="true"></i>
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
-                            </td>
-                            <td data-label="Transfer ID"><span class="badge bg-secondary">@t.TransferID</span></td>
-                            <td data-label="Customer ID"><code>@t.CustomerID</code></td>
-                            <td data-label="Customer / Project">
-                                @if (t.Customer?.PaymentPlan?.Project != null)
-                                {
-                                    <span class="pms-pill pms-pill--info">@t.Customer.PaymentPlan.Project.ProjectName</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">—</span>
-                                }
-                            </td>
-                            <td data-label="Seller"><span class="pms-cell-truncate" title="@t.SellerName">@(t.SellerName ?? "—")</span></td>
-                            <td data-label="Buyer"><span class="pms-cell-truncate" title="@t.BuyerName">@(t.BuyerName ?? "—")</span></td>
-                            <td data-label="Workflow">
-                                @if (t.WorkFlowStatus == "Approved")
-                                { <span class="pms-pill pms-pill--success">@t.WorkFlowStatus</span> }
-                                else if (t.WorkFlowStatus == "Created")
-                                { <span class="pms-pill pms-pill--info">@t.WorkFlowStatus</span> }
-                                else if (t.WorkFlowStatus == "Pending")
-                                { <span class="pms-pill pms-pill--warning">@t.WorkFlowStatus</span> }
-                                else
-                                { <span class="pms-pill pms-pill--warning">@(t.WorkFlowStatus ?? "—")</span> }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                                </td>
+                                <td data-label="Seller"><span class="pms-cell-truncate" title="@t.SellerName">@(t.SellerName ?? "—")</span></td>
+                                <td data-label="Buyer"><span class="pms-cell-truncate" title="@t.BuyerName">@(t.BuyerName ?? "—")</span></td>
+                                <td data-label="Workflow">
+                                    @if (t.WorkFlowStatus == "Approved")
+                                    { <span class="pms-pill pms-pill--success">@t.WorkFlowStatus</span> }
+                                    else if (t.WorkFlowStatus == "Created")
+                                    { <span class="pms-pill pms-pill--info">@t.WorkFlowStatus</span> }
+                                    else if (t.WorkFlowStatus == "Pending")
+                                    { <span class="pms-pill pms-pill--warning">@t.WorkFlowStatus</span> }
+                                    else
+                                    { <span class="pms-pill pms-pill--warning">@(t.WorkFlowStatus ?? "—")</span> }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -158,9 +131,9 @@
     <script>
         $(document).ready(function() {
             PmsListingDataTable.init('#transfersTable', {
-                order: [[1, 'desc']],
-                columnDefs: [{ orderable: false, targets: 0 }]
+                order: [[0, 'desc']]
             });
+            PmsListingDataTable.bindRowNavigation('#transfersTable', { rowSelector: 'tr.pms-transfer-row' });
         });
     </script>
 }

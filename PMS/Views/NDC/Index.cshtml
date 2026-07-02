@@ -2,41 +2,43 @@
 
 @{
     ViewData["Title"] = "NDC (No Dues Certificate)";
-    ViewData["ListingTitle"] = "NDC (No Dues Certificate)";
-    ViewData["ListingDescription"] = "No Dues Certificate records before property transfer";
-    ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
-    ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
-    ViewData["ListingAddText"] = "New NDC";
     ViewData["ListingHideToolbarActions"] = true;
+    var ndcCount = Model?.Count() ?? 0;
 }
 
 @if (TempData["Success"] != null)
 {
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <div class="alert alert-success alert-dismissible fade show py-2 mb-2 small" role="alert">
         @TempData["Success"]
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <div class="alert alert-danger alert-dismissible fade show py-2 mb-2 small" role="alert">
         @TempData["Error"]
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 }
 
-<form method="get" asp-action="Index" class="mb-4 pms-listing-page">
+<div class="pms-listing-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h5 class="pms-grid-title mb-0">NDC (No Dues Certificate)</h5>
+        <span class="badge rounded-pill pms-record-badge">@ndcCount record@(ndcCount == 1 ? "" : "s")</span>
+    </div>
+
+<form method="get" asp-action="Index" class="mb-2">
     <div class="pms-listing-search-wrap">
-        <div class="row g-2 align-items-end flex-lg-nowrap">
-            <div class="col-12 col-md-6 col-lg-4">
+        <div class="row g-1 align-items-end flex-lg-nowrap">
+            <div class="col-12 col-md-5 col-lg-3">
                 <div class="pms-compact-field">
                     <label for="customerIdFilter" class="form-label">Customer ID</label>
-                    <input type="text" name="customerIdFilter" id="customerIdFilter" class="form-control" placeholder="Search by Customer ID" value="@ViewBag.CustomerIdFilter" />
+                    <input type="text" name="customerIdFilter" id="customerIdFilter" class="form-control" placeholder="Customer ID" value="@ViewBag.CustomerIdFilter" />
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-4">
+            <div class="col-12 col-md-4 col-lg-3">
                 <div class="pms-compact-field pms-select-dropdown">
-                    <label for="workflowFilter" class="form-label">Workflow Status</label>
+                    <label for="workflowFilter" class="form-label">Workflow</label>
                     <select name="workflowFilter" id="workflowFilter" class="form-select" onchange="this.form.submit()">
                         <option value="">All</option>
                         @if (ViewBag.WorkflowStatuses != null)
@@ -49,8 +51,8 @@
                     </select>
                 </div>
             </div>
-            <div class="col-12 col-lg-4">
-                <div class="d-flex flex-nowrap gap-2 pms-listing-search-actions">
+            <div class="col-12 col-lg">
+                <div class="d-flex flex-wrap gap-2 pms-listing-search-actions">
                     <button type="submit" class="btn btn-primary btn-sm">
                         <i class="bi bi-search me-1" aria-hidden="true"></i>Search
                     </button>
@@ -61,17 +63,14 @@
     </div>
 </form>
 
-<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page">
-    <div class="card-body">
-        <partial name="Listing/_GridToolbar" />
-
+<div class="card pms-grid-card pms-listing-flat pms-saas-grid mb-2">
+    <div class="card-body py-2">
         @if (Model != null && Model.Any())
         {
             <div class="table-responsive pms-saas-table-wrap">
                 <table class="table pms-saas-table" id="ndcTable">
                     <thead>
                         <tr>
-                            <th class="pms-saas-th-actions">Actions</th>
                             <th>NDC ID</th>
                             <th>Customer ID</th>
                             <th>Customer / Project</th>
@@ -79,10 +78,6 @@
                             <th>Total Due</th>
                             <th>Total Paid</th>
                             <th>Remaining Dues</th>
-                            <th>Amount/Unit</th>
-                            <th>Property Size</th>
-                            <th>Transfer Fee</th>
-                            <th>All Clear</th>
                             <th>Expiry</th>
                             <th>Workflow</th>
                         </tr>
@@ -90,34 +85,12 @@
                     <tbody>
                         @foreach (var n in Model)
                         {
-                            var isApproved = string.Equals(n.WorkFlowStatus?.Trim(), "Approved", StringComparison.OrdinalIgnoreCase);
-                            <tr>
-                                <td class="pms-saas-td-actions" data-label="Actions">
-                                    <div class="pms-row-actions" role="group">
-                                        <a asp-action="Print" asp-route-id="@n.NDCID" target="_blank" class="btn btn-sm btn-outline-secondary" title="Print">
-                                            <i class="bi bi-printer" aria-hidden="true"></i>
-                                        </a>
-                                        <a asp-action="Details" asp-route-id="@n.NDCID" class="btn btn-sm btn-outline-secondary" title="Details">
-                                            <i class="bi bi-eye" aria-hidden="true"></i>
-                                        </a>
-                                        @if (ViewBag.CanEdit == true && !isApproved)
-                                        {
-                                            <a asp-action="Edit" asp-route-id="@n.NDCID" class="btn btn-sm btn-outline-primary" title="Edit">
-                                                <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                            </a>
-                                        }
-                                        @if (ViewBag.CanDelete == true)
-                                        {
-                                            <form asp-action="Delete" asp-route-id="@n.NDCID" method="post" class="d-inline" onsubmit="return confirm('Delete this NDC record?');">
-                                                @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
-                                                    <i class="bi bi-trash" aria-hidden="true"></i>
-                                                </button>
-                                            </form>
-                                        }
-                                    </div>
+                            <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = n.NDCID })">
+                                <td data-label="NDC ID">
+                                    <a asp-action="Details" asp-route-id="@n.NDCID" class="text-decoration-none">
+                                        <span class="badge bg-secondary">@n.NDCID</span>
+                                    </a>
                                 </td>
-                                <td data-label="NDC ID"><span class="badge bg-secondary">@n.NDCID</span></td>
                                 <td data-label="Customer ID"><code>@n.CustomerID</code></td>
                                 <td data-label="Customer / Project">
                                     @if (n.Customer != null)
@@ -143,15 +116,6 @@
                                 <td data-label="Total Due">@(n.TotalDueAmount?.ToString("N0") ?? "—")</td>
                                 <td data-label="Total Paid">@(n.TotalDueInstallments?.ToString("N0") ?? "—")</td>
                                 <td data-label="Remaining Dues">@(n.RemainingDues?.ToString("N0") ?? "—")</td>
-                                <td data-label="Amount/Unit">@(n.AmountPerUnit?.ToString("N2") ?? "—")</td>
-                                <td data-label="Property Size">@(n.PropertySize?.ToString("N2") ?? "—")</td>
-                                <td data-label="Transfer Fee">@(n.TransferFeeAmount?.ToString("N0") ?? "—")</td>
-                                <td data-label="All Clear">
-                                    @if (n.AllPaymentClear)
-                                    { <span class="pms-pill pms-pill--success">Yes</span> }
-                                    else
-                                    { <span class="pms-pill pms-pill--warning">No</span> }
-                                </td>
                                 <td data-label="Expiry">@(n.NDCExpiryDate?.ToString("MMM dd, yyyy") ?? "—")</td>
                                 <td data-label="Workflow"><span class="pms-pill pms-pill--info">@(n.WorkFlowStatus ?? "—")</span></td>
                             </tr>
@@ -174,15 +138,16 @@
         }
     </div>
 </div>
+</div>
 
 @section Scripts {
     <script>
         $(document).ready(function () {
             if ($('#ndcTable').length) {
                 PmsListingDataTable.init('#ndcTable', {
-                    order: [[1, 'desc']],
-                    columnDefs: [{ orderable: false, targets: 0 }]
+                    order: [[0, 'desc']]
                 });
+                PmsListingDataTable.bindRowNavigation('#ndcTable');
             }
         });
     </script>

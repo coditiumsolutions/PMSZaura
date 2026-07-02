@@ -15,7 +15,6 @@
                             <input type="checkbox" id="selectAllPendingCustomers" class="pms-saas-checkbox" title="Select all" aria-label="Select all customers" />
                         </th>
                     }
-                    <th class="pms-saas-th-actions">Actions</th>
                     <th>Customer ID</th>
                     <th>Full Name</th>
                     <th>Project</th>
@@ -38,7 +37,7 @@
                     var formLine = !string.IsNullOrWhiteSpace(customer.FormNo)
                         ? "Form No: " + customer.FormNo
                         : null;
-                    <tr>
+                    <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = customer.CustomerID })">
                         @if (showBulkSelection)
                         {
                             <td class="pms-saas-td-check" data-label="Select">
@@ -50,34 +49,13 @@
                                        @(string.IsNullOrWhiteSpace(customer.CustomerID) ? "disabled" : "") />
                             </td>
                         }
-                        <td class="pms-saas-td-actions" data-label="Actions">
-                            <div class="pms-row-actions" role="group">
-                                <a asp-action="AccountStatement" asp-route-id="@(customer.CustomerID ?? "")" class="btn btn-sm btn-outline-secondary" title="Account Statement">
-                                    <i class="bi bi-receipt" aria-hidden="true"></i>
-                                </a>
-                                @if (ViewBag.CanEdit == true)
-                                {
-                                    <a asp-action="Edit" asp-route-id="@(customer.CustomerID ?? "")" class="btn btn-sm btn-outline-primary" title="Edit">
-                                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                    </a>
-                                }
-                                <a asp-action="Details" asp-route-id="@(customer.CustomerID ?? "")" class="btn btn-sm btn-outline-secondary" title="View">
-                                    <i class="bi bi-eye" aria-hidden="true"></i>
-                                </a>
-                                @if (ViewBag.CanDelete == true)
-                                {
-                                    <a asp-action="Delete" asp-route-id="@(customer.CustomerID ?? "")"
-                                       class="btn btn-sm btn-outline-danger" title="Delete">
-                                        <i class="bi bi-trash" aria-hidden="true"></i>
-                                    </a>
-                                }
-                            </div>
-                        </td>
                         <td data-label="Customer ID">
-                            <div class="pms-cell-primary">
-                                <span class="pms-cell-primary-title">@(customer.CustomerID ?? "—")</span>
-                                <span class="pms-cell-primary-sub">@(formLine ?? "—")</span>
-                            </div>
+                            <a asp-action="Details" asp-route-id="@(customer.CustomerID ?? "")" class="text-decoration-none">
+                                <div class="pms-cell-primary">
+                                    <span class="pms-cell-primary-title">@(customer.CustomerID ?? "—")</span>
+                                    <span class="pms-cell-primary-sub">@(formLine ?? "—")</span>
+                                </div>
+                            </a>
                         </td>
                         <td data-label="Full Name">
                             <div class="pms-cell-primary">

@@ -117,12 +117,11 @@
     </form>
 
     <div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-2">
-        <div class="card-body">
+        <div class="card-body py-2">
             <div class="table-responsive pms-saas-table-wrap">
                 <table class="table pms-saas-table" id="propertiesTable">
                     <thead>
                         <tr>
-                            <th class="pms-saas-th-actions">Actions</th>
                             <th>Property ID</th>
                             <th>Project</th>
                             <th>SubProject</th>
@@ -145,29 +144,12 @@
                                 "Occupied" => "pms-pill--info",
                                 _ => "pms-pill--danger"
                             };
-                            <tr>
-                                <td class="pms-saas-td-actions" data-label="Actions">
-                                    <div class="pms-row-actions" role="group">
-                                        <a asp-action="Edit" asp-route-id="@property.PropertyID" class="btn btn-sm btn-outline-primary" title="Edit">
-                                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                        </a>
-                                        <a asp-action="Details" asp-route-id="@property.PropertyID" class="btn btn-sm btn-outline-secondary" title="Details">
-                                            <i class="bi bi-eye" aria-hidden="true"></i>
-                                        </a>
-                                        @if (property.Status == "Available")
-                                        {
-                                            <a asp-action="Allot" asp-route-id="@property.PropertyID"
-                                               class="btn btn-sm btn-outline-success" title="Allot Property">
-                                                <i class="bi bi-hand-index" aria-hidden="true"></i>
-                                            </a>
-                                        }
-                                        <a asp-action="Delete" asp-route-id="@property.PropertyID"
-                                           class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="bi bi-trash" aria-hidden="true"></i>
-                                        </a>
-                                    </div>
+                            <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = property.PropertyID })">
+                                <td data-label="Property ID">
+                                    <a asp-action="Details" asp-route-id="@property.PropertyID" class="text-decoration-none">
+                                        <span class="badge bg-secondary">@property.PropertyID</span>
+                                    </a>
                                 </td>
-                                <td data-label="Property ID"><span class="badge bg-secondary">@property.PropertyID</span></td>
                                 <td data-label="Project">
                                     @if (property.Project != null)
                                     {
@@ -198,9 +180,9 @@
     <script>
         $(document).ready(function() {
             PmsListingDataTable.init('#propertiesTable', {
-                order: [[6, 'asc']],
-                columnDefs: [{ orderable: false, targets: 0 }]
+                order: [[5, 'asc']]
             });
+            PmsListingDataTable.bindRowNavigation('#propertiesTable');
         });
     </script>
 }

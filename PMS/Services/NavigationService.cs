@@ -141,15 +141,16 @@ public sealed class NavigationService : INavigationService
                 {
                     IsSectionHeader = true,
                     Label = "Customer Reports",
-                    SectionHeaderClass = "mt-1"
+                    SectionHeaderClass = "mt-1",
+                    SectionKey = "customer-reports"
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Total Active Members",
+                    Label = "Active Members",
                     Controller = "Reports",
                     Action = "RequestedReport",
                     RouteId = "total-active-members",
-                    RouteTitle = "Total Active Members",
+                    RouteTitle = "Active Members",
                     ActiveAction = "RequestedReport",
                     ActiveRouteId = "total-active-members",
                     IconClass = "fas fa-users me-2"
@@ -164,40 +165,40 @@ public sealed class NavigationService : INavigationService
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Defaulter of X Installments",
+                    Label = "Defaulters",
                     Controller = "Reports",
                     Action = "RequestedReport",
                     RouteId = "defaulter-x-installments",
-                    RouteTitle = "Defaulter of X Installments",
+                    RouteTitle = "Defaulters",
                     ActiveAction = "RequestedReport",
                     ActiveRouteId = "defaulter-x-installments",
                     IconClass = "fas fa-filter me-2"
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "All Paid Customers",
+                    Label = "Paid Members",
                     Controller = "Reports",
                     Action = "RequestedReport",
                     RouteId = "all-paid-customers",
-                    RouteTitle = "All Paid Customers",
+                    RouteTitle = "Paid Members",
                     ActiveAction = "RequestedReport",
                     ActiveRouteId = "all-paid-customers",
                     IconClass = "fas fa-check-circle me-2"
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Inst Due Amount",
+                    Label = "Due Amount",
                     Controller = "Reports",
                     Action = "RequestedReport",
                     RouteId = "inst-due-amount",
-                    RouteTitle = "Inst Due Amount",
+                    RouteTitle = "Due Amount",
                     ActiveAction = "RequestedReport",
                     ActiveRouteId = "inst-due-amount",
                     IconClass = "fas fa-file-invoice-dollar me-2"
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Project Wise Customers",
+                    Label = "Project Wise",
                     Controller = "Customer",
                     Action = "ByProject",
                     ActiveAction = "ByProject",
@@ -207,48 +208,49 @@ public sealed class NavigationService : INavigationService
                 {
                     IsSectionHeader = true,
                     Label = "Transfer Reports",
-                    SectionHeaderClass = "mt-2"
+                    SectionHeaderClass = "mt-2",
+                    SectionKey = "transfer-reports"
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Total Transfers Report",
+                    Label = "Transfer Report",
                     Controller = "Reports",
                     Action = "RequestedReport",
                     RouteId = "total-transfers-report",
-                    RouteTitle = "Total Transfers Report",
+                    RouteTitle = "Transfer Report",
                     ActiveAction = "RequestedReport",
                     ActiveRouteId = "total-transfers-report",
                     IconClass = "fas fa-exchange-alt me-2"
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Daily Transfer Report",
+                    Label = "Daily transfer",
                     Controller = "Reports",
                     Action = "RequestedReport",
                     RouteId = "daily-transfer-report",
-                    RouteTitle = "Daily Transfer Report",
+                    RouteTitle = "Daily transfer",
                     ActiveAction = "RequestedReport",
                     ActiveRouteId = "daily-transfer-report",
                     IconClass = "fas fa-calendar-day me-2"
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Project Wise Transfer",
+                    Label = "Project Wise",
                     Controller = "Reports",
                     Action = "RequestedReport",
                     RouteId = "project-wise-transfer",
-                    RouteTitle = "Project Wise Transfer",
+                    RouteTitle = "Project Wise",
                     ActiveAction = "RequestedReport",
                     ActiveRouteId = "project-wise-transfer",
                     IconClass = "fas fa-sitemap me-2"
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Transfer Amount Received",
+                    Label = "Amount Received",
                     Controller = "Reports",
                     Action = "RequestedReport",
                     RouteId = "transfer-amount-received",
-                    RouteTitle = "Transfer Amount Received",
+                    RouteTitle = "Amount Received",
                     ActiveAction = "RequestedReport",
                     ActiveRouteId = "transfer-amount-received",
                     IconClass = "fas fa-money-check-alt me-2"

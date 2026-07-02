@@ -95,12 +95,11 @@
     </form>
 
     <div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-2">
-        <div class="card-body">
+        <div class="card-body py-2">
             <div class="table-responsive pms-saas-table-wrap">
                 <table class="table pms-saas-table" id="rentalsTable">
                     <thead>
                         <tr>
-                            <th class="pms-saas-th-actions">Actions</th>
                             <th>Rental ID</th>
                             <th>Property</th>
                             <th>Tenant</th>
@@ -112,18 +111,12 @@
                     <tbody>
                         @foreach (var r in Model)
                         {
-                            <tr>
-                                <td class="pms-saas-td-actions" data-label="Actions">
-                                    <div class="pms-row-actions" role="group">
-                                        <a asp-action="Details" asp-route-id="@r.RentalID" class="btn btn-sm btn-outline-secondary" title="Details">
-                                            <i class="bi bi-eye" aria-hidden="true"></i>
-                                        </a>
-                                        <a asp-action="Create" asp-route-propertyId="@r.PropertyID" class="btn btn-sm btn-outline-primary" title="New Rental (Same Property)">
-                                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                                        </a>
-                                    </div>
+                            <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = r.RentalID })">
+                                <td data-label="Rental ID">
+                                    <a asp-action="Details" asp-route-id="@r.RentalID" class="text-decoration-none">
+                                        <span class="badge bg-secondary">@r.RentalID</span>
+                                    </a>
                                 </td>
-                                <td data-label="Rental ID"><span class="badge bg-secondary">@r.RentalID</span></td>
                                 <td data-label="Property">
                                     <div>
                                         <code>@r.PropertyID</code>
@@ -170,9 +163,9 @@
     <script>
         $(document).ready(function () {
             PmsListingDataTable.init('#rentalsTable', {
-                order: [[1, 'desc']],
-                columnDefs: [{ orderable: false, targets: 0 }]
+                order: [[0, 'desc']]
             });
+            PmsListingDataTable.bindRowNavigation('#rentalsTable');
         });
     </script>
 }

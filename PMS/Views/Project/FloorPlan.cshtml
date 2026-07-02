@@ -11,11 +11,11 @@
     var subProjects = ViewBag.SubProjects as IList<string> ?? new List<string>();
 }
 
-<div class="mb-3 pms-listing-page">
+<div class="mb-2 pms-listing-page">
     <partial name="Listing/_GridToolbar" />
 </div>
 
-<form method="get" asp-action="FloorPlan" class="mb-4 pms-listing-page">
+<form method="get" asp-action="FloorPlan" class="mb-2 pms-listing-page">
     <div class="pms-listing-search-wrap">
         <div class="row g-2 align-items-end flex-lg-nowrap">
             <div class="col-12 col-md-6 col-lg-4">
@@ -68,9 +68,6 @@
                         <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Clear
                     </a>
                 </div>
-            </div>
-            <div class="col-12">
-                <small class="text-muted">Select a project first, then optionally narrow units by subproject.</small>
             </div>
         </div>
     </div>
