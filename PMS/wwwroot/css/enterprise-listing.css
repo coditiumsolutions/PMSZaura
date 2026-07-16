@@ -536,7 +536,9 @@
 .pms-listing-operations-dropdown .dropdown-menu,
 .pms-customer-operations-dropdown .dropdown-menu {
     min-width: 14rem;
-    --bs-position: start;
+    --bs-position: end;
+    right: 0;
+    left: auto;
 }
 
 .pms-listing-search-actions .pms-listing-operations-dropdown,
@@ -932,7 +934,15 @@
 }
 
 .pms-property-listing .pms-listing-search-actions {
-    justify-content: flex-start;
+    justify-content: flex-end;
+}
+
+.pms-property-listing .pms-listing-search-wrap .row.flex-lg-nowrap > [class*="col-"] {
+    min-width: 0;
+}
+
+.pms-property-listing .pms-listing-operations-dropdown .pms-listing-operations-btn {
+    min-width: 8.5rem;
 }
 
 .pms-registration-details .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label,
@@ -1222,3 +1232,181 @@
 [data-theme="dark"] .pms-registration-process-note .pms-registration-process-detail {
     color: #60a5fa !important;
 }
+
+/* Multiple Payments — compact Payment Header (light contrast vs dark top navbar) */
+.pms-mp-header {
+    background: var(--pms-slate-100, #f1f5f9);
+    border: 1px solid var(--pms-slate-500, #64748b) !important;
+    box-shadow: var(--pms-shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.06)) !important;
+}
+
+.pms-mp-header .card-body {
+    background: #ffffff;
+}
+
+.pms-mp-header .card-body > .row {
+    padding-bottom: 0.7rem;
+    margin-bottom: 0.7rem !important;
+    border-bottom: 1px solid var(--pms-slate-200, #e2e8f0);
+}
+
+.pms-mp-header .card-body .pms-registration-4col-form > .row {
+    padding-bottom: 0.7rem;
+    margin-bottom: 0.7rem !important;
+    border-bottom: 1px solid var(--pms-slate-200, #e2e8f0);
+}
+
+.pms-mp-header-bar {
+    background: linear-gradient(
+        180deg,
+        var(--pms-blue-200, #bfdbfe) 0%,
+        var(--pms-slate-200, #e2e8f0) 100%
+    ) !important;
+    border-bottom: 1px solid #cbd5e1;
+    color: var(--pms-blue-900, #1e3a8a);
+}
+
+.pms-mp-header-bar h6 {
+    color: var(--pms-blue-900, #1e3a8a);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.pms-mp-header .card-header h6,
+.pms-mp-header .card-header h5 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--pms-blue-900, #1e3a8a);
+    margin-bottom: 0;
+}
+
+.pms-mp-header .form-control,
+.pms-mp-header .form-select,
+.pms-mp-header .input-group > .form-control,
+.pms-mp-header .input-group > .btn {
+    min-height: 30px;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    font-size: 0.8125rem;
+    color: #1e3a8a;
+    background-color: #fff;
+    border-color: #cbd5e1;
+}
+
+.pms-mp-header .form-control:not(textarea):not([type="file"]),
+.pms-mp-header .form-select {
+    height: 30px;
+}
+
+.pms-mp-header .form-control-sm,
+.pms-mp-header .form-select-sm,
+.pms-mp-header .input-group-sm > .form-control,
+.pms-mp-header .input-group-sm > .btn {
+    min-height: 30px;
+    height: 30px;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
+    font-size: 0.8125rem;
+    color: #1e3a8a;
+    background-color: #fff;
+}
+
+.pms-mp-header .form-control-sm::placeholder,
+.pms-mp-header .form-select-sm {
+    color: #1e3a8a;
+}
+
+.pms-mp-header .form-select-sm option {
+    color: #1e3a8a;
+}
+
+.pms-mp-header textarea.form-control-sm {
+    height: auto;
+    min-height: 30px;
+    color: #1e3a8a;
+    background-color: #fff;
+}
+
+.pms-mp-header .form-label,
+.pms-mp-header .form-label.small,
+.pms-mp-header .form-check-label,
+.pms-mp-header label.form-label {
+    color: #1e3a8a !important;
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+.pms-mp-header .form-label.fw-bold,
+.pms-mp-header .form-label.fw-semibold,
+.pms-mp-header label.fw-bold,
+.pms-mp-header label.fw-semibold {
+    font-weight: 600 !important;
+}
+
+.pms-mp-header .form-label i {
+    color: #1e40af !important;
+}
+
+.pms-mp-header .form-control:focus,
+.pms-mp-header .form-select:focus {
+    border-color: var(--pms-blue-500, #3b82f6);
+    box-shadow: 0 0 0 0.15rem rgba(59, 130, 246, 0.15);
+}
+
+.pms-mp-header .form-control::placeholder {
+    color: #64748b;
+}
+
+.pms-mp-header textarea.form-control {
+    height: auto;
+    min-height: 30px;
+}
+
+.pms-mp-header input[type="file"].form-control {
+    height: auto;
+    min-height: 30px;
+    padding: 0.2rem 0.5rem;
+}
+
+.pms-mp-btn-save {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%) !important;
+    color: #fff !important;
+    border: none !important;
+}
+
+.pms-mp-btn-save:hover {
+    color: #fff !important;
+    filter: brightness(1.05);
+}
+
+.pms-mp-header.pms-listing-flat.card,
+.pms-mp-header.pms-registration-create.pms-listing-flat,
+.pms-mp-header.pms-customer-create.pms-listing-flat {
+    background: var(--pms-slate-100, #f1f5f9) !important;
+    border: 1px solid var(--pms-slate-500, #64748b) !important;
+    box-shadow: var(--pms-shadow-sm, 0 1px 2px rgba(15, 23, 42, 0.06)) !important;
+}
+
+.pms-mp-header.pms-listing-flat > .card-body,
+.pms-mp-header.pms-registration-create.pms-listing-flat > .card-body,
+.pms-mp-header.pms-customer-create.pms-listing-flat > .card-body {
+    padding: 0.75rem !important;
+    background: #ffffff !important;
+}
+
+/* Enterprise create forms — reuse Payment Header form shell */
+.pms-mp-header .pms-registration-4col-form .pms-registration-4col-row,
+.pms-mp-header .pms-customer-4col-form .pms-registration-4col-row {
+    margin-bottom: 0.7rem !important;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid var(--pms-slate-200, #e2e8f0);
+}
+
+.pms-mp-header .pms-registration-4col-form .pms-registration-4col-row > .col-md-2 .form-label,
+.pms-mp-header .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .form-label,
+.pms-mp-header .pms-customer-4col-form .pms-registration-4col-row > .col-md-2 .form-label,
+.pms-mp-header .pms-customer-4col-form .pms-registration-4col-row > .col-lg-2 .form-label {
+    color: #1e3a8a !important;
+    font-weight: 600 !important;
+}
+

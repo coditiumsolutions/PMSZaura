@@ -13,13 +13,26 @@
                     @foreach (var module in Model.NavigationShell!.Modules)
                     {
                         var isActive = string.Equals(module.Key, Model.NavigationShell.ActiveModuleKey, StringComparison.OrdinalIgnoreCase);
-                        <a class="pms-topbar-module-link@(isActive ? " active" : "")"
-                           asp-controller="Navigation"
-                           asp-action="SelectModule"
-                           asp-route-module="@module.Key"
-                           aria-current="@(isActive ? "page" : null)">
-                            @module.Label
-                        </a>
+                        var isWorkspace = string.Equals(module.Key, PMS.ViewModels.NavigationModuleKeys.OtherLinks, StringComparison.OrdinalIgnoreCase);
+                        if (isWorkspace)
+                        {
+                            <a class="pms-topbar-module-link@(isActive ? " active" : "")"
+                               asp-controller="Home"
+                               asp-action="Workspace"
+                               aria-current="@(isActive ? "page" : null)">
+                                @module.Label
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="pms-topbar-module-link@(isActive ? " active" : "")"
+                               asp-controller="Navigation"
+                               asp-action="SelectModule"
+                               asp-route-module="@module.Key"
+                               aria-current="@(isActive ? "page" : null)">
+                                @module.Label
+                            </a>
+                        }
                     }
                 </nav>
             }

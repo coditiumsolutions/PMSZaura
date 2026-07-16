@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PMS.Services;
+using PMS.ViewModels;
 
 namespace PMS.Controllers;
 
@@ -19,6 +20,9 @@ public sealed class NavigationController : Controller
     {
         if (!_navigationService.TrySetActiveModule(HttpContext, module))
             return RedirectToAction("Index", "Home");
+
+        if (string.Equals(module, NavigationModuleKeys.OtherLinks, StringComparison.OrdinalIgnoreCase))
+            return RedirectToAction("Workspace", "Home");
 
         var firstItem = _navigationService.GetFirstNavigableItem(module);
         if (firstItem == null)

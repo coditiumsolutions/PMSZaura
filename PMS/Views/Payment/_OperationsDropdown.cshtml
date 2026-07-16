@@ -6,14 +6,14 @@
             aria-expanded="false">
         Operations
     </button>
-    <ul class="dropdown-menu" aria-labelledby="paymentOperationsDropdown">
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="paymentOperationsDropdown">
         <li>
             <a class="dropdown-item" asp-controller="PaymentAudit" asp-action="Index">
                 <i class="bi bi-clipboard-check me-2" aria-hidden="true"></i>Audit Payments
             </a>
         </li>
         <li>
-            <a class="dropdown-item" asp-action="CustomerPayments" asp-route-auditFilter="Pending">
+            <a class="dropdown-item" asp-controller="PaymentAudit" asp-action="Index">
                 <i class="bi bi-clock me-2" aria-hidden="true"></i>Pending Audit
                 <span class="badge bg-warning text-dark ms-1">@(ViewBag.PendingAuditCount ?? 0)</span>
             </a>

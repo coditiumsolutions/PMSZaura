@@ -1210,11 +1210,7 @@
             border: 1px solid var(--border);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             padding: 8px 0;
-            position: absolute !important;
-            z-index: 9999 !important;
-            left: 100% !important;
-            top: 0 !important;
-            margin-left: 10px !important;
+            z-index: 9999;
             min-width: 200px;
             background: var(--surface);
         }
@@ -1348,6 +1344,11 @@
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
+            position: absolute !important;
+            left: 100% !important;
+            top: 0 !important;
+            margin-left: 10px !important;
+            z-index: 9999 !important;
         }
 
         .sidebar .dropdown-item {
@@ -1506,6 +1507,8 @@
                         var layoutCtrl = ViewContext.RouteData.Values["Controller"]?.ToString();
                         var isAmsSidebarShell = string.Equals(layoutCtrl, "AccountsManagement", StringComparison.Ordinal)
                             || (!string.IsNullOrEmpty(layoutCtrl) && layoutCtrl.StartsWith("Ams", StringComparison.Ordinal));
+                        var isAuditShell = ViewData["IsAuditShell"] as bool? == true
+                            || string.Equals(layoutCtrl, "PaymentAudit", StringComparison.OrdinalIgnoreCase);
                         var hidePageBanner = ViewData["HidePageBanner"] as bool? == true;
                         var showPageBanner = !hidePageBanner
                             && !string.IsNullOrEmpty(layoutCtrl)
@@ -1514,7 +1517,7 @@
                                 || layoutCtrl.StartsWith("Ams", StringComparison.Ordinal));
                     }
                     <!-- Sidebar -->
-                    <nav id="appSidebar" class="col-md-3 col-lg-3 d-md-block sidebar collapse@(isAmsSidebarShell ? " sidebar--ams" : "")">
+                    <nav id="appSidebar" class="col-md-3 col-lg-3 d-md-block sidebar collapse@(isAmsSidebarShell ? " sidebar--ams" : "")@(isAuditShell ? " sidebar--audit" : "")">
                 <div class="position-sticky sidebar-sticky-inner">
                     <div class="brand-section" style="background: var(--sidebar-bg);">
                         @{
@@ -1527,6 +1530,10 @@
                         {
                             <div class="brand-subtitle">Accounting (AMS)</div>
                         }
+                        else if (isAuditShell)
+                        {
+                            <div class="brand-subtitle">Payment Audit</div>
+                        }
                     </div>
                     
                     <ul class="nav flex-column">
@@ -1536,11 +1543,15 @@
                             var isAmsArea = string.Equals(currentController, "AccountsManagement", StringComparison.Ordinal)
                                 || (!string.IsNullOrEmpty(currentController) && currentController.StartsWith("Ams", StringComparison.Ordinal));
                             var navigationShell = ViewData["NavigationShell"] as NavigationShellViewModel
-                                ?? NavigationService.BuildShellViewModel(Context, currentController, currentAction, showModuleNavigation: !isAmsArea);
+                                ?? NavigationService.BuildShellViewModel(Context, currentController, currentAction, showModuleNavigation: !isAmsArea && !isAuditShell);
                             ViewData["AmsNavCollapsePrefix"] = isAmsArea ? "amsSA" : "amsMain";
                             ViewData["AmsNavStandalone"] = isAmsArea;
                         }
-@if (isAmsArea)
+@if (isAuditShell)
+{
+                        <partial name="_AuditSidebarLinks" />
+}
+else if (isAmsArea)
 {
                         <li class="nav-item mb-2">
                             <a class="nav-link fw-semibold" asp-controller="Home" asp-action="Workspace">

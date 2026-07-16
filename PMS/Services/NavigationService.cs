@@ -260,8 +260,8 @@ public sealed class NavigationService : INavigationService
         new NavigationModuleViewModel
         {
             Key = NavigationModuleKeys.OtherLinks,
-            Label = "Other Links",
-            IconClass = "fas fa-link",
+            Label = "Workspace",
+            IconClass = "fas fa-th-large",
             Items = new[]
             {
                 new NavigationMenuItemViewModel
@@ -321,7 +321,8 @@ public sealed class NavigationService : INavigationService
             return NavigationModuleKeys.Reports;
         }
 
-        if (string.Equals(controller, "Payment", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(controller, "Payment", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(controller, "PaymentAudit", StringComparison.OrdinalIgnoreCase))
             return NavigationModuleKeys.Payments;
 
         if (string.Equals(controller, "SalesInquiry", StringComparison.OrdinalIgnoreCase)
@@ -332,6 +333,12 @@ public sealed class NavigationService : INavigationService
 
         if (string.Equals(controller, "Reports", StringComparison.OrdinalIgnoreCase))
             return NavigationModuleKeys.Reports;
+
+        if (string.Equals(controller, "Home", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(action, "Workspace", StringComparison.OrdinalIgnoreCase))
+        {
+            return NavigationModuleKeys.OtherLinks;
+        }
 
         if (string.Equals(controller, "Settings", StringComparison.OrdinalIgnoreCase))
             return NavigationModuleKeys.OtherLinks;

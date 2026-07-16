@@ -1,6 +1,8 @@
-using PMS.Data;
+using System;
+using System.IO;
+using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using PMS.Services;
+using PMS.Data;
 
 namespace PMS.Services
 {
@@ -18,6 +20,8 @@ namespace PMS.Services
                 context.Database.Migrate();
                 await EnsureClientCertificateSecurityTablesAsync(context);
                 await PossessionSchemaEnsurer.EnsureAsync(context);
+                await UsersTwoFactorSchemaEnsurer.EnsureAsync(context);
+                await EnsureAccSchemaAsync(context);
 
                 // Seed initial data
                 await seedService.SeedAsync();
@@ -25,8 +29,79 @@ namespace PMS.Services
             catch (Exception ex)
             {
                 // Log error or handle as needed
-                Console.WriteLine($"Database initialization error: {ex.Message}");
+                Console.WriteLine($"Database initialization error: {ex}");
+                throw;
             }
+        }
+
+        private static async Task EnsureAccSchemaAsync(PMSDbContext context)
+        {
+            // The EF model expects acc.ARReceipt / acc.ARReceiptAllocation.
+            // If they are missing, integration flows will fail with:
+            // "Invalid object name 'acc.ARReceipt'".
+            var conn = context.Database.GetDbConnection();
+            var shouldClose = conn.State != System.Data.ConnectionState.Open;
+            if (shouldClose)
+            {
+                await conn.OpenAsync();
+            }
+
+            await using var cmd = conn.CreateCommand();
+            cmd.CommandText = "SELECT CASE WHEN OBJECT_ID(N'acc.ARReceipt', N'U') IS NULL THEN 1 ELSE 0 END";
+            var missing = Convert.ToInt32(await cmd.ExecuteScalarAsync()) == 1;
+            if (!missing)
+            {
+                if (shouldClose)
+                {
+                    await conn.CloseAsync();
+                }
+                return;
+            }
+
+            // Try to locate and execute the idempotent schema creation script.
+            // We remove `GO` batch separators so the script can be executed in one command.
+            var scriptPath = ResolveScriptPath("Scripts", "AMS_Create_acc_schema.sql") ??
+                              Path.Combine(AppContext.BaseDirectory, "Scripts", "AMS_Create_acc_schema.sql");
+
+            if (!File.Exists(scriptPath))
+            {
+                throw new FileNotFoundException(
+                    $"Cannot create acc schema because '{scriptPath}' was not found. Run Scripts/AMS_Create_acc_schema.sql against the target database once.");
+            }
+
+            var raw = await File.ReadAllTextAsync(scriptPath);
+            var cleaned = string.Join(Environment.NewLine,
+                raw.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
+                   .Where(line =>
+                   {
+                       var t = line.Trim();
+                       return !string.Equals(t, "GO", StringComparison.OrdinalIgnoreCase)
+                              && !string.Equals(t, "GO;", StringComparison.OrdinalIgnoreCase);
+                   })
+            );
+
+            context.Database.SetCommandTimeout(TimeSpan.FromMinutes(10));
+            await context.Database.ExecuteSqlRawAsync(cleaned);
+
+            if (shouldClose)
+            {
+                await conn.CloseAsync();
+            }
+        }
+
+        private static string? ResolveScriptPath(string relativeFolder, string fileName)
+        {
+            // Walk up from the current runtime directory to find the repository folder.
+            // This makes local dev work even if the working directory changes.
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            for (var i = 0; i < 10 && dir != null; i++)
+            {
+                var candidate = Path.Combine(dir.FullName, relativeFolder, fileName);
+                if (File.Exists(candidate)) return candidate;
+                dir = dir.Parent;
+            }
+
+            return null;
         }
 
         private static async Task EnsureClientCertificateSecurityTablesAsync(PMSDbContext context)

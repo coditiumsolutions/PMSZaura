@@ -63,7 +63,7 @@
     <form method="get" asp-action="Index" class="mb-2">
         <div class="pms-listing-search-wrap">
             <div class="row g-1 align-items-end flex-lg-nowrap">
-                <div class="col-12 col-md-4 col-lg-3">
+                <div class="col-6 col-md-3 col-lg-2">
                     <div class="pms-compact-field pms-select-dropdown">
                         <label for="projectFilter" class="form-label">Project</label>
                         <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()">
@@ -80,7 +80,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-12 col-md-3 col-lg-2">
+                <div class="col-6 col-md-2 col-lg-2">
                     <div class="pms-compact-field pms-select-dropdown">
                         <label for="statusFilter" class="form-label">Status</label>
                         <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()">
@@ -92,7 +92,7 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-12 col-md-5 col-lg-4">
+                <div class="col-12 col-md-5 col-lg-5">
                     <div class="pms-compact-field">
                         <label for="searchTerm" class="form-label">Search</label>
                         <div class="input-group pms-inline-search-group">
@@ -105,9 +105,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="row g-1 mt-1">
-                <div class="col-12">
+                <div class="col-12 col-md-2 col-lg-auto ms-lg-auto">
                     <div class="pms-listing-search-actions">
                         <partial name="_OperationsDropdown" />
                     </div>
