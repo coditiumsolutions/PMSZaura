@@ -270,6 +270,47 @@ namespace PMS.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // POST: Create new inquiry
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(string fullName, string phoneNumber, string? emailAddress, string? inquiryType, string? message)
+        {
+            var denied = await EnsurePermissionAsync("Edit");
+            if (denied != null) return denied;
+
+            if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                TempData["Error"] = "Full name and phone number are required.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var inquiry = new PropertyInquiry
+            {
+                FullName = fullName.Trim(),
+                PhoneNumber = phoneNumber.Trim(),
+                EmailAddress = string.IsNullOrWhiteSpace(emailAddress) ? null : emailAddress.Trim(),
+                InquiryType = string.IsNullOrWhiteSpace(inquiryType) ? null : inquiryType.Trim(),
+                Message = string.IsNullOrWhiteSpace(message) ? null : message.Trim(),
+                SubmittedAt = DateTime.Now,
+                Status = "New",
+                IsContacted = false,
+                CreatedAt = DateTime.Now,
+                IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+            };
+
+            _context.PropertyInquiries.Add(inquiry);
+            await _context.SaveChangesAsync();
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                await LogActivity(userId, "Created Property Inquiry", "PropertyInquiry", inquiry.InquiryID.ToString());
+            }
+
+            TempData["Success"] = "Inquiry created successfully!";
+            return RedirectToAction(nameof(Index));
+        }
+
         // Helper method to log activities
         private async Task LogActivity(string userId, string action, string refType, string refId)
         {

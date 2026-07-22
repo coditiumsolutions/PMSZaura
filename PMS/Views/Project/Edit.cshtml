@@ -4,120 +4,128 @@
     ViewData["Title"] = "Edit Project";
 }
 
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="fas fa-edit me-2"></i>Edit Project</h2>
-            <a asp-action="Index" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Back to List
-            </a>
+<div class="pms-project-edit">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <h2 class="pms-project-edit-title mb-0"><i class="fas fa-edit me-2"></i>Edit Project</h2>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm pms-project-edit-btn">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm pms-mp-header pms-registration-create mb-3 pms-project-edit-card">
+        <div class="card-header py-2 pms-mp-header-bar">
+            <h6 class="mb-0"><i class="fas fa-project-diagram me-2"></i>Project Details</h6>
         </div>
+        <div class="card-body py-3 px-3">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="ProjectID" />
+                <input type="hidden" asp-for="CreatedAt" />
+                <input type="hidden" asp-for="Prefix" />
 
-        <div class="card">
-            <div class="card-body">
-                <form asp-action="Edit" method="post">
-                    <input type="hidden" asp-for="ProjectID" />
-                    <input type="hidden" asp-for="CreatedAt" />
-                    <input type="hidden" asp-for="Prefix" />
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label asp-for="ProjectName" class="form-label">Project Name *</label>
-                                <input asp-for="ProjectName" class="form-control" required />
-                                <span asp-validation-for="ProjectName" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Type" class="form-label">Project Type *</label>
-                                <select asp-for="Type" class="form-select" required>
-                                    <option value="">Select Project Type</option>
-                                    @if (ViewBag.ProjectTypes != null)
+                <div class="pms-registration-4col-form">
+                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="ProjectName" class="form-label pms-registration-4col-label">Project Name *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="ProjectName" class="form-control" required />
+                            <span asp-validation-for="ProjectName" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Type" class="form-label pms-registration-4col-label">Project Type *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select asp-for="Type" class="form-select" required>
+                                <option value="">Select Project Type</option>
+                                @if (ViewBag.ProjectTypes != null)
+                                {
+                                    @foreach (var projectType in ViewBag.ProjectTypes)
                                     {
-                                        @foreach (var projectType in ViewBag.ProjectTypes)
-                                        {
-                                            <option value="@projectType">@projectType</option>
-                                        }
+                                        <option value="@projectType">@projectType</option>
                                     }
-                                </select>
-                                <span asp-validation-for="Type" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Location" class="form-label">Location *</label>
-                                <input asp-for="Location" class="form-control" required />
-                                <span asp-validation-for="Location" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Sizes</label>
-                                <div class="d-flex gap-2 flex-wrap align-items-center">
-                                    <input type="text" id="sizeInput" class="form-control" placeholder="e.g. 5 Marla" style="max-width: 200px;" />
-                                    <button type="button" id="btnAddSize" class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-plus me-1"></i>Add
-                                    </button>
-                                    <button type="button" id="btnAddMoreSize" class="btn btn-outline-secondary btn-sm">
-                                        <i class="fas fa-plus-circle me-1"></i>Add more
-                                    </button>
-                                </div>
-                                <input type="hidden" asp-for="Sizes" id="sizesValue" />
-                                <div id="sizesList" class="mt-2 d-flex flex-wrap gap-1"></div>
-                                <small class="text-muted">Add sizes one by one; stored as comma-separated in database.</small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Sub Projects with Prefixes</label>
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <small class="text-muted">Manage entries in popup. Prefixes must be unique per project.</small>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#subProjectModalEdit">
-                                        <i class="fas fa-plus me-1"></i>Add SubProject
-                                    </button>
-                                </div>
-                                <input type="hidden" asp-for="SubProjects" id="subProjectsValue" />
-                                <div class="table-responsive">
-                                    <table class="table table-sm table-bordered mb-0" id="subProjectsTable">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>SubProject</th>
-                                                <th>Prefix</th>
-                                                <th style="width:90px;">Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr id="subProjectsEmptyRow">
-                                                <td colspan="3" class="text-muted text-center">No subprojects added.</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <span asp-validation-for="SubProjects" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label asp-for="Description" class="form-label">Description</label>
-                                <textarea asp-for="Description" class="form-control" rows="6"></textarea>
-                                <span asp-validation-for="Description" class="text-danger"></span>
-                            </div>
+                                }
+                            </select>
+                            <span asp-validation-for="Type" class="text-danger"></span>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-12">
-                            <hr>
-                            <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary me-2">
-                                    <i class="fas fa-save me-2"></i>Update Project
+                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Location" class="form-label pms-registration-4col-label">Location *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="Location" class="form-control" required />
+                            <span asp-validation-for="Location" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Description" class="form-label pms-registration-4col-label">Description</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Sizes</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <div class="d-flex gap-2 flex-wrap align-items-center mb-1">
+                                <input type="text" id="sizeInput" class="form-control" placeholder="e.g. 5 Marla" style="max-width: 200px;" />
+                                <button type="button" id="btnAddSize" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-plus me-1"></i>Add
                                 </button>
-                                <a asp-action="Index" class="btn btn-secondary">
-                                    <i class="fas fa-times me-2"></i>Cancel
-                                </a>
+                                <button type="button" id="btnAddMoreSize" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-plus-circle me-1"></i>Add more
+                                </button>
                             </div>
+                            <input type="hidden" asp-for="Sizes" id="sizesValue" />
+                            <div id="sizesList" class="mt-1 d-flex flex-wrap gap-1"></div>
                         </div>
                     </div>
-                </form>
-            </div>
+
+                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Sub Projects with Prefixes</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <div class="d-flex justify-content-end mb-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#subProjectModalEdit">
+                                    <i class="fas fa-plus me-1"></i>Add SubProject
+                                </button>
+                            </div>
+                            <input type="hidden" asp-for="SubProjects" id="subProjectsValue" />
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered mb-0" id="subProjectsTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>SubProject</th>
+                                            <th>Prefix</th>
+                                            <th style="width:90px;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr id="subProjectsEmptyRow">
+                                            <td colspan="3" class="text-muted text-center">No subprojects added.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <span asp-validation-for="SubProjects" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary btn-sm pms-project-edit-btn">
+                        <i class="fas fa-save me-1"></i>Update Project
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary btn-sm pms-project-edit-btn">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -147,6 +155,29 @@
         </div>
     </div>
 </div>
+
+<style>
+    .pms-project-edit .pms-project-edit-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .pms-project-edit .pms-project-edit-btn {
+        font-size: 0.78rem;
+        padding: 0.28rem 0.65rem;
+        line-height: 1.25;
+    }
+
+    .pms-project-edit .pms-project-edit-card,
+    .pms-project-edit .pms-project-edit-card > .card-body {
+        background: #ffffff !important;
+    }
+
+    .pms-project-edit .pms-registration-4col-form .pms-registration-4col-row {
+        background: transparent !important;
+    }
+</style>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

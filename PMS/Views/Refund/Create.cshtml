@@ -86,55 +86,77 @@
         <input type="hidden" name="PaidAmount" id="hiddenPaidAmount" value="0" />
         <input type="hidden" name="selectedPaymentIdsJson" id="hiddenSelectedIds" />
 
-        <div class="card border-0 shadow-sm pms-mp-header mb-3">
+        <div class="card border-0 shadow-sm pms-mp-header pms-refund-create mb-3">
             <div class="card-header py-2 pms-mp-header-bar">
                 <h6 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Refund Details</h6>
             </div>
-            <div class="card-body py-3 px-3">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Refund Type <span class="text-danger">*</span></label>
-                        <select name="RefundType" class="form-select" required>
-                            <option value="">-- Select --</option>
-                            <option value="Full">Full</option>
-                            <option value="Partial">Partial</option>
-                        </select>
+            <div class="card-body py-2 px-3">
+                <div class="pms-registration-4col-form pms-refund-details-form">
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Refund Type <span class="text-danger">*</span></label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select name="RefundType" class="form-select form-select-sm" required>
+                                <option value="">-- Select --</option>
+                                <option value="Full">Full</option>
+                                <option value="Partial">Partial</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Paid Amount (PKR)</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="number" id="paidAmountDisplay" class="form-control form-control-sm" readonly />
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Paid Amount (PKR)</label>
-                        <input type="number" id="paidAmountDisplay" class="form-control" readonly style="background:#f8f9fa;" />
-                        <small class="text-muted">Auto-calculated from selected payments</small>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Deduction Amount (PKR)</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="number" name="DeductionAmount" id="deductionInput" class="form-control form-control-sm" value="0" min="0" step="0.01" />
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Refunded Amount (PKR)</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="number" name="RefundedAmount" id="refundedAmountDisplay" class="form-control form-control-sm" readonly />
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Deduction Amount (PKR)</label>
-                        <input type="number" name="DeductionAmount" id="deductionInput" class="form-control" value="0" min="0" step="0.01" />
-                        <small class="text-muted">Fees or charges to withhold</small>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Reason <span class="text-danger">*</span></label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <input type="text" name="Reason" class="form-control form-control-sm" required maxlength="255" placeholder="Reason for refund" />
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold">Refunded Amount (PKR)</label>
-                        <input type="number" name="RefundedAmount" id="refundedAmountDisplay" class="form-control" readonly style="background:#e8f5e9; font-weight:600;" />
-                        <small class="text-muted">Paid Amount − Deduction</small>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Notes</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <textarea name="Notes" class="form-control form-control-sm" rows="2" maxlength="500" placeholder="Additional notes (optional)"></textarea>
+                        </div>
                     </div>
-                    <div class="col-md-8">
-                        <label class="form-label fw-semibold">Reason <span class="text-danger">*</span></label>
-                        <input type="text" name="Reason" class="form-control" required maxlength="255" placeholder="Reason for refund" />
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label fw-semibold">Notes</label>
-                        <textarea name="Notes" class="form-control" rows="2" maxlength="500" placeholder="Additional notes (optional)"></textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="refundAttachment" class="form-label fw-semibold">
-                            <i class="fas fa-paperclip me-1"></i>Attachment (Optional)
-                        </label>
-                        <input type="file" name="refundAttachment" id="refundAttachment" class="form-control" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
-                        <small class="text-muted d-block mt-1">Allowed: JPG, PNG, GIF, BMP, PDF (max 8MB)</small>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="refundAttachmentDescription" class="form-label fw-semibold">
-                            <i class="fas fa-file-alt me-1"></i>Attachment Title / Notes (Optional)
-                        </label>
-                        <input type="text" name="refundAttachmentDescription" id="refundAttachmentDescription" class="form-control" maxlength="500" placeholder="e.g. Approval Note, Bank Slip" />
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label for="refundAttachment" class="form-label pms-registration-4col-label">Attachment</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="file" name="refundAttachment" id="refundAttachment" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label for="refundAttachmentDescription" class="form-label pms-registration-4col-label">Attachment Title</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="text" name="refundAttachmentDescription" id="refundAttachmentDescription" class="form-control form-control-sm" maxlength="500" placeholder="e.g. Approval Note, Bank Slip" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -148,6 +170,66 @@
         </div>
     </form>
 </div>
+
+<style>
+    /* Refund Details: title | field | title | field — black titles, blue fields, compact rows */
+    .pms-refund-create .pms-refund-details-form .pms-registration-4col-row {
+        margin-bottom: 0.35rem !important;
+        padding-bottom: 0.35rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-refund-create .pms-refund-details-form .pms-registration-4col-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0 !important;
+        padding-bottom: 0;
+    }
+
+    .pms-refund-create .pms-refund-details-form .form-label,
+    .pms-refund-create .pms-refund-details-form .pms-registration-4col-label {
+        color: #111827 !important;
+        font-weight: 600 !important;
+        font-size: 0.75rem;
+        margin-bottom: 0;
+        padding-top: 0.2rem;
+        line-height: 1.2;
+    }
+
+    .pms-refund-create .pms-refund-details-form .form-control,
+    .pms-refund-create .pms-refund-details-form .form-select,
+    .pms-refund-create .pms-refund-details-form .form-control-sm,
+    .pms-refund-create .pms-refund-details-form .form-select-sm {
+        color: #1e40af !important;
+        font-size: 0.8125rem;
+        min-height: 28px;
+        height: 28px;
+        padding-top: 0.15rem;
+        padding-bottom: 0.15rem;
+    }
+
+    .pms-refund-create .pms-refund-details-form textarea.form-control,
+    .pms-refund-create .pms-refund-details-form textarea.form-control-sm {
+        height: auto;
+        min-height: 48px;
+        color: #1e40af !important;
+    }
+
+    .pms-refund-create .pms-refund-details-form input[type="file"].form-control,
+    .pms-refund-create .pms-refund-details-form input[type="file"].form-control-sm {
+        height: auto;
+        min-height: 28px;
+        color: #1e40af !important;
+    }
+
+    .pms-refund-create .pms-refund-details-form #paidAmountDisplay {
+        background: #f8fafc;
+    }
+
+    .pms-refund-create .pms-refund-details-form #refundedAmountDisplay {
+        background: #eff6ff;
+        font-weight: 600;
+    }
+</style>
 
 @section Scripts {
 <script>

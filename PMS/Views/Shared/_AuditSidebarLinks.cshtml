@@ -1,0 +1,64 @@
+@{
+    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString() ?? "";
+    var auditFilter = Context.Request.Query["auditFilter"].ToString();
+    var isIndex = string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase);
+    var isAuditDetail = string.Equals(currentAction, "Audit", StringComparison.OrdinalIgnoreCase);
+    var isAll = isIndex && string.IsNullOrEmpty(auditFilter);
+    var isPending = isIndex && string.Equals(auditFilter, "Pending", StringComparison.OrdinalIgnoreCase);
+    var isApproved = isIndex && string.Equals(auditFilter, "Approved", StringComparison.OrdinalIgnoreCase);
+    var isDeclined = isIndex && string.Equals(auditFilter, "Declined", StringComparison.OrdinalIgnoreCase);
+}
+
+<li class="nav-item sidebar-section-label sidebar-section-label--module">
+    <h6 class="sidebar-section-title">Payment Audit</h6>
+</li>
+
+<li class="nav-item sidebar-module-item">
+    <a class="nav-link @(isAll || isAuditDetail ? "active" : "")"
+       asp-controller="PaymentAudit"
+       asp-action="Index">
+        <i class="fas fa-list me-2"></i>All Payments
+    </a>
+</li>
+<li class="nav-item sidebar-module-item">
+    <a class="nav-link @(isPending ? "active" : "")"
+       asp-controller="PaymentAudit"
+       asp-action="Index"
+       asp-route-auditFilter="Pending">
+        <i class="fas fa-clock me-2"></i>Pending
+    </a>
+</li>
+<li class="nav-item sidebar-module-item">
+    <a class="nav-link @(isApproved ? "active" : "")"
+       asp-controller="PaymentAudit"
+       asp-action="Index"
+       asp-route-auditFilter="Approved">
+        <i class="fas fa-check-circle me-2"></i>Approved
+    </a>
+</li>
+<li class="nav-item sidebar-module-item">
+    <a class="nav-link @(isDeclined ? "active" : "")"
+       asp-controller="PaymentAudit"
+       asp-action="Index"
+       asp-route-auditFilter="Declined">
+        <i class="fas fa-times-circle me-2"></i>Declined
+    </a>
+</li>
+
+<li class="nav-item sidebar-section-label sidebar-section-label--general">
+    <h6 class="sidebar-section-title">General</h6>
+</li>
+<li class="nav-item sidebar-module-item">
+    <a class="nav-link"
+       asp-controller="Payment"
+       asp-action="CustomerPayments">
+        <i class="fas fa-money-bill-wave me-2"></i>Customer Payments
+    </a>
+</li>
+<li class="nav-item sidebar-module-item">
+    <a class="nav-link"
+       asp-controller="Home"
+       asp-action="Workspace">
+        <i class="fas fa-th-large me-2"></i>Workspace
+    </a>
+</li>

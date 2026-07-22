@@ -17,18 +17,18 @@ public sealed class NavigationService : INavigationService
             {
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Registration",
-                    Controller = "Registration",
-                    Action = "Index",
-                    IconClass = "fas fa-file-alt me-2"
-                },
-                new NavigationMenuItemViewModel
-                {
                     Label = "Customers",
                     Controller = "Customer",
                     Action = "Index",
                     IconClass = "fas fa-user-friends me-2",
                     ExcludeActiveAction = "ByProject"
+                },
+                new NavigationMenuItemViewModel
+                {
+                    Label = "Registration",
+                    Controller = "Registration",
+                    Action = "Index",
+                    IconClass = "fas fa-file-alt me-2"
                 }
             }
         },
@@ -123,7 +123,7 @@ public sealed class NavigationService : INavigationService
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Ticket Management Module",
+                    Label = "Ticket Management",
                     Controller = "Ticket",
                     Action = "Index",
                     IconClass = "fas fa-ticket-alt me-2"

@@ -4,301 +4,341 @@
     ViewData["Title"] = "Create Payment Plan";
 }
 
-<div class="row">
-    <div class="col-md-10 mx-auto">
-        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-            <h5 class="mb-0">Create Payment Plan</h5>
-            <a asp-action="Index" class="btn btn-outline-secondary btn-sm py-0 px-2">
-                <i class="fas fa-arrow-left me-1"></i>Back to Payments
-            </a>
-        </div>
+<div class="pms-create-payment-plan">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <h5 class="mb-0">Create Payment Plan</h5>
+        <a asp-action="PaymentPlans" class="btn btn-outline-secondary btn-sm py-0 px-2">
+            <i class="fas fa-arrow-left me-1"></i>Back to Payment Plans
+        </a>
+    </div>
 
-        <form id="paymentPlanForm" asp-action="CreatePaymentPlan" method="post">
-            @Html.AntiForgeryToken()
+    <form id="paymentPlanForm" asp-action="CreatePaymentPlan" method="post">
+        @Html.AntiForgeryToken()
 
-            <!-- Payment Plan Section -->
-            <div class="card border-0 shadow-sm pms-mp-header mb-3">
-                <div class="card-header py-2 pms-mp-header-bar">
-                    <h6 class="mb-0">
-                        <i class="fas fa-file-invoice-dollar me-2"></i>Payment Plan Information
-                    </h6>
-                </div>
-                <div class="card-body py-3 px-3">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label asp-for="PlanName" class="form-label">Plan Name *</label>
-                                <input asp-for="PlanName" id="PlanName" class="form-control" type="text" required placeholder="e.g. 2 Year Plan" />
-                                <span asp-validation-for="PlanName" class="text-danger"></span>
-                            </div>
+        <!-- Payment Plan Section -->
+        <div class="card border-0 shadow-sm pms-mp-header mb-3">
+            <div class="card-header py-2 pms-mp-header-bar">
+                <h6 class="mb-0">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Payment Plan Information
+                </h6>
+            </div>
+            <div class="card-body py-2 px-3">
+                <div class="pms-registration-4col-form pms-cpp-form">
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="PlanName" class="form-label pms-registration-4col-label">Plan Name *</label>
                         </div>
-
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label asp-for="ProjectID" class="form-label">Project *</label>
-                                <select asp-for="ProjectID" id="ProjectID" class="form-select" required>
-                                    <option value="">Select Project</option>
-                                    @if (ViewBag.Projects != null)
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="PlanName" id="PlanName" class="form-control form-control-sm" type="text" required placeholder="e.g. 2 Year Plan" />
+                            <span asp-validation-for="PlanName" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="ProjectID" class="form-label pms-registration-4col-label">Project *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select asp-for="ProjectID" id="ProjectID" class="form-select form-select-sm" required>
+                                <option value="">Select Project</option>
+                                @if (ViewBag.Projects != null)
+                                {
+                                    @foreach (var project in ViewBag.Projects)
                                     {
-                                        @foreach (var project in ViewBag.Projects)
-                                        {
-                                            <option value="@project.ProjectID">@project.ProjectName</option>
-                                        }
+                                        <option value="@project.ProjectID">@project.ProjectName</option>
                                     }
-                                </select>
-                                <span asp-validation-for="ProjectID" class="text-danger"></span>
-                            </div>
+                                }
+                            </select>
+                            <span asp-validation-for="ProjectID" class="text-danger"></span>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Primary Currency</label>
-                                <input type="text" class="form-control" value="PKR (Pakistani Rupee)" readonly />
-                            </div>
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Primary Currency</label>
                         </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label">Size *</label>
-                                <input id="RegisteredSize" class="form-control" type="text" inputmode="decimal" autocomplete="off" required placeholder="e.g. 5, 10.5" />
-                                <datalist id="RegisteredSizeOptions"></datalist>
-                                <small class="text-muted">Numeric free text. You can type your own value.</small>
-                            </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="text" class="form-control form-control-sm" value="PKR (Pakistani Rupee)" readonly />
                         </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label">Subproject *</label>
-                                <select id="SubProject" class="form-select" required>
-                                    <option value="">Select Subproject</option>
-                                </select>
-                            </div>
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Size *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input id="RegisteredSize" list="RegisteredSizeOptions" class="form-control form-control-sm" type="text" inputmode="decimal" autocomplete="off" required placeholder="e.g. 5, 10.5" />
+                            <datalist id="RegisteredSizeOptions"></datalist>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label">Price per unit</label>
-                                <input id="PricePerUnit" type="text" inputmode="decimal" class="form-control" placeholder="e.g., 85000" />
-                                <small class="text-muted">UI-only helper to auto-fill Total Amount.</small>
-                            </div>
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Subproject *</label>
                         </div>
-
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label asp-for="TotalAmount" class="form-label">Total Amount (PKR) *</label>
-                                <input asp-for="TotalAmount" id="TotalAmount" type="number" step="1" min="1" max="1000000000" class="form-control" placeholder="e.g., 5000000" required />
-                                <span asp-validation-for="TotalAmount" class="text-danger"></span>
-                            </div>
+                        <div class="col-12 col-lg-4">
+                            <select id="SubProject" class="form-select form-select-sm" required>
+                                <option value="">Select Subproject</option>
+                            </select>
                         </div>
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Price per unit</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input id="PricePerUnit" type="text" inputmode="decimal" class="form-control form-control-sm" placeholder="e.g., 85000" />
+                        </div>
+                    </div>
 
-                        <div class="col-md-6" id="durationMonthsGroup" style="display: none;">
-                            <div class="mb-3">
-                                <label asp-for="DurationMonths" class="form-label">Plan Duration (Months) *</label>
-                                <input asp-for="DurationMonths" id="DurationMonths" type="number" class="form-control" placeholder="e.g., 36" required readonly />
-                                <span asp-validation-for="DurationMonths" class="text-danger"></span>
-                            </div>
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="TotalAmount" class="form-label pms-registration-4col-label">Total Amount (PKR) *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="TotalAmount" id="TotalAmount" type="number" step="1" min="1" max="1000000000" class="form-control form-control-sm" placeholder="e.g., 5000000" required />
+                            <span asp-validation-for="TotalAmount" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2" id="durationMonthsLabel" style="display: none;">
+                            <label asp-for="DurationMonths" class="form-label pms-registration-4col-label">Plan Duration (Months) *</label>
+                        </div>
+                        <div class="col-12 col-lg-4" id="durationMonthsGroup" style="display: none;">
+                            <input asp-for="DurationMonths" id="DurationMonths" type="number" class="form-control form-control-sm" placeholder="e.g., 36" required readonly />
+                            <span asp-validation-for="DurationMonths" class="text-danger"></span>
                         </div>
                     </div>
 
                     <input type="hidden" id="ExchangeRate" value="@((decimal?)ViewBag.UsdToPkrRate ?? 1m)" />
-
-                    <!-- Payment Frequency hidden - selected in child section -->
                     <input type="hidden" asp-for="Frequency" id="Frequency" />
 
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="mb-3">
-                                <label asp-for="Description" class="form-label">Description</label>
-                                <textarea asp-for="Description" id="Description" class="form-control" rows="3" placeholder="Enter payment plan details and terms"></textarea>
-                                <span asp-validation-for="Description" class="text-danger"></span>
-                            </div>
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Description" class="form-label pms-registration-4col-label">Description</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <textarea asp-for="Description" id="Description" class="form-control form-control-sm" rows="2" placeholder="Enter payment plan details and terms"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- Payment Schedule Section -->
-            <div class="card border-0 shadow-sm pms-mp-header mb-3">
-                <div class="card-header py-2 pms-mp-header-bar">
-                    <h6 class="mb-0">
-                        <i class="fas fa-calendar-check me-2"></i>Payment Schedule Configuration
-                    </h6>
+        <!-- Payment Schedule Section -->
+        <div class="card border-0 shadow-sm pms-mp-header mb-3">
+            <div class="card-header py-2 pms-mp-header-bar">
+                <h6 class="mb-0">
+                    <i class="fas fa-calendar-check me-2"></i>Payment Schedule Configuration
+                </h6>
+            </div>
+            <div class="card-body py-2 px-3">
+                <!-- Token Option -->
+                <div class="mb-3 p-2 border rounded bg-light">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="includeToken" checked>
+                        <label class="form-check-label fw-bold" for="includeToken">
+                            <i class="fas fa-ticket-alt me-2"></i>Include Token Payment (Installment 0)
+                        </label>
+                    </div>
+                    <div id="tokenAmountSection" class="pms-registration-4col-form pms-cpp-form">
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <label for="tokenAmount" class="form-label pms-registration-4col-label">Token Amount (PKR) *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="number" id="tokenAmount" step="1" min="1" max="1000000000" class="form-control form-control-sm" placeholder="e.g., 50000" required />
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label for="tokenDueDate" class="form-label pms-registration-4col-label">Token Due Date *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="date" id="tokenDueDate" class="form-control form-control-sm" required />
+                            </div>
+                        </div>
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <label for="tokenPaymentDescription" class="form-label pms-registration-4col-label">Token Description *</label>
+                            </div>
+                            <div class="col-12 col-lg-10">
+                                <input type="text" id="tokenPaymentDescription" class="form-control form-control-sm" placeholder="e.g., Booking Token" required />
+                            </div>
+                        </div>
+                    </div>
+                    <small class="text-muted d-block"><i class="fas fa-info-circle me-1"></i>Token has <strong>no surcharge</strong> policy applied.</small>
                 </div>
-                <div class="card-body py-3 px-3">
-                    <!-- Token Option -->
-                    <div class="mb-4 p-3 border rounded bg-light">
-                        <div class="form-check mb-3">
-                            <input class="form-check-input" type="checkbox" id="includeToken" checked>
-                            <label class="form-check-label fw-bold" for="includeToken">
-                                <i class="fas fa-ticket-alt me-2"></i>Include Token Payment (Installment 0)
-                            </label>
-                        </div>
-                        <div id="tokenAmountSection" class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="tokenAmount" class="form-label">Token Amount (PKR) *</label>
-                                    <input type="number" id="tokenAmount" step="1" min="1" max="1000000000" class="form-control" placeholder="e.g., 50000" required />
-                                    <small class="text-muted">Token payment amount (Installment 0 - No surcharge applied)</small>
-                                </div>
+
+                <!-- Possession Option -->
+                <div class="mb-3 p-2 border rounded bg-light">
+                    <div class="pms-registration-4col-form pms-cpp-form">
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <label for="possessionAmount" class="form-label pms-registration-4col-label">Possession Amount (PKR)</label>
                             </div>
-                            <div class="col-md-12">
-                                <div class="mb-3">
-                                    <label for="tokenPaymentDescription" class="form-label">Token Payment Description *</label>
-                                    <input type="text" id="tokenPaymentDescription" class="form-control" placeholder="e.g., Booking Token" required />
-                                    <small class="text-muted">Used only for Installment 0 (token).</small>
-                                </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="number" id="possessionAmount" step="1" min="0" max="1000000000" class="form-control form-control-sm" value="0" placeholder="e.g., 200000" />
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="tokenDueDate" class="form-label">Token Due Date *</label>
-                                    <input type="date" id="tokenDueDate" class="form-control" required />
-                                    <small class="text-muted">Due date for installment 0 (token). Independent of the first regular installment date.</small>
-                                </div>
+                            <div class="col-12 col-lg-2">
+                                <label for="possessionDueDate" class="form-label pms-registration-4col-label">Possession Due Date</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="date" id="possessionDueDate" class="form-control form-control-sm" />
                             </div>
                         </div>
-                        <small class="text-muted d-block"><i class="fas fa-info-circle me-1"></i>Token payment is a special installment (Installment No: 0). Token has <strong>no surcharge</strong> policy applied.</small>
-                    </div>
-
-                    <!-- Possession Option -->
-                    <div class="mb-4 p-3 border rounded bg-light">
-                        <div class="mb-3">
-                            <label for="possessionAmount" class="form-label fw-bold">
-                                <i class="fas fa-key me-2"></i>Possession Amount (PKR)
-                            </label>
-                            <input type="number" id="possessionAmount" step="1" min="0" max="1000000000" class="form-control" value="0" placeholder="e.g., 200000" />
-                            <small class="text-muted">If greater than 0, Possession is saved as the last payment.</small>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="possessionPaymentDescription" class="form-label">Possession Account Head</label>
-                                    <input type="text" id="possessionPaymentDescription" class="form-control" placeholder="e.g., Possession Charges" />
-                                    <small class="text-muted">Required only when possession amount is greater than zero.</small>
-                                </div>
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <label for="possessionPaymentDescription" class="form-label pms-registration-4col-label">Possession Account Head</label>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="possessionDueDate" class="form-label">Possession Due Date</label>
-                                    <input type="date" id="possessionDueDate" class="form-control" />
-                                    <small class="text-muted">Required when possession amount is greater than zero.</small>
-                                </div>
-                            </div>
-                        </div>
-                        <small class="text-muted d-block"><i class="fas fa-info-circle me-1"></i>Possession has <strong>no surcharge</strong> and is created after regular installments.</small>
-                    </div>
-
-                    <!-- Installment Options -->
-                    <div class="mb-4">
-                        <h6 class="mb-3"><i class="fas fa-list-ol me-2"></i>Bulk Installment Creation</h6>
-                        
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="totalInstallments" class="form-label">Total Installments (Excluding Token) *</label>
-                                    <input type="number" id="totalInstallments" class="form-control" min="1" value="1" required />
-                                    <small class="text-muted">Number of installments to create (not including token if selected)</small>
-                                </div>
-                            </div>
-
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="installmentAmount" class="form-label">Installment Amount (PKR) *</label>
-                                    <input type="number" id="installmentAmount" step="1" min="1" max="1000000000" class="form-control" placeholder="Enter amount per installment" required />
-                                    <small class="text-muted">Manual input allowed. Child total may be less than parent total, but cannot exceed it.</small>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="scheduleFrequency" class="form-label">Frequency *</label>
-                                    <select id="scheduleFrequency" class="form-select" required>
-                                        <option value="">Select Frequency</option>
-                                        <option value="Monthly">Monthly</option>
-                                        <option value="Quarterly">Quarterly</option>
-                                        <option value="Half Yearly">Half Yearly</option>
-                                        <option value="Yearly">Yearly</option>
-                                    </select>
-                                    <small class="text-muted">Used to calculate DueDate for each installment</small>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="firstInstallmentDueDate" class="form-label">1st Installment Due Date *</label>
-                                    <input type="date" id="firstInstallmentDueDate" class="form-control" required />
-                                    <small class="text-muted">Due date for the first installment (subsequent dates calculated based on frequency)</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="paymentDescription" class="form-label">Payment Description *</label>
-                                    <input type="text" id="paymentDescription" class="form-control" placeholder="e.g., Monthly Installment" required />
-                                    <small class="text-muted">Same description will be used for all installments</small>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="surchargeRate" class="form-label">Surcharge Rate *</label>
-                                    <input type="number" id="surchargeRate" step="0.0001" class="form-control" value="0.05" required />
-                                    <small class="text-muted">Use fractional rate (e.g., 0.05 means 5% per day). This applies only to regular installments; Token and Possession surcharge are always 0.</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="surchargeApplied" checked>
-                                <label class="form-check-label" for="surchargeApplied">
-                                    Apply Surcharge (Default: Yes)
-                                </label>
+                            <div class="col-12 col-lg-10">
+                                <input type="text" id="possessionPaymentDescription" class="form-control form-control-sm" placeholder="e.g., Possession Charges" />
                             </div>
                         </div>
                     </div>
+                    <small class="text-muted d-block"><i class="fas fa-info-circle me-1"></i>Possession has <strong>no surcharge</strong> and is created after regular installments.</small>
+                </div>
 
-                    <!-- Preview Section -->
-                    <div class="alert alert-info">
-                        <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>Installment Preview</h6>
-                        <div id="installmentPreview" class="mt-2">
-                            <p class="mb-1"><strong>Total Installments:</strong> <span id="previewTotalInstallments">0</span></p>
-                            <p class="mb-1"><strong>Token:</strong> <span id="previewToken">Not included</span></p>
-                            <p class="mb-1"><strong>Possession:</strong> <span id="previewPossession">Not included</span></p>
-                            <p class="mb-1"><strong>Amount per Installment:</strong> PKR <span id="previewAmount">0</span></p>
-                            <p class="mb-1"><strong>Frequency:</strong> <span id="previewFrequency">-</span></p>
-                            <p class="mb-1"><strong>Total Installments Amount:</strong> PKR <span id="previewTotalInstallmentsAmount">0</span></p>
-                            <p class="mb-1"><strong>Token Amount:</strong> PKR <span id="previewTokenAmount">0</span></p>
-                            <p class="mb-1"><strong>Possession Amount:</strong> PKR <span id="previewPossessionAmount">0</span></p>
-                            <p class="mb-0"><strong>Grand Total (Token + Installments + Possession):</strong> PKR <span id="previewGrandTotal">0</span> / Plan Total PKR <span id="previewPlanTotal">0</span></p>
+                <!-- Installment Options -->
+                <div class="mb-3">
+                    <h6 class="mb-2 small fw-semibold"><i class="fas fa-list-ol me-2"></i>Bulk Installment Creation</h6>
+                    <div class="pms-registration-4col-form pms-cpp-form">
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <label for="totalInstallments" class="form-label pms-registration-4col-label">Total Installments *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="number" id="totalInstallments" class="form-control form-control-sm" min="1" value="1" required />
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label for="installmentAmount" class="form-label pms-registration-4col-label">Installment Amount (PKR) *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="number" id="installmentAmount" step="1" min="1" max="1000000000" class="form-control form-control-sm" placeholder="Enter amount per installment" required />
+                            </div>
                         </div>
-                        <div id="amountValidationMessage" class="mt-2" style="display: none;">
-                            <div class="alert alert-danger mb-0">
-                                <i class="fas fa-exclamation-triangle me-2"></i><span id="validationMessageText"></span>
+
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <label for="scheduleFrequency" class="form-label pms-registration-4col-label">Frequency *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select id="scheduleFrequency" class="form-select form-select-sm" required>
+                                    <option value="">Select Frequency</option>
+                                    <option value="Monthly">Monthly</option>
+                                    <option value="Quarterly">Quarterly</option>
+                                    <option value="Half Yearly">Half Yearly</option>
+                                    <option value="Yearly">Yearly</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label for="firstInstallmentDueDate" class="form-label pms-registration-4col-label">1st Installment Due Date *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="date" id="firstInstallmentDueDate" class="form-control form-control-sm" required />
+                            </div>
+                        </div>
+
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <label for="paymentDescription" class="form-label pms-registration-4col-label">Payment Description *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="text" id="paymentDescription" class="form-control form-control-sm" placeholder="e.g., Monthly Installment" required />
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label for="surchargeRate" class="form-label pms-registration-4col-label">Surcharge Rate *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="number" id="surchargeRate" step="0.0001" class="form-control form-control-sm" value="0.05" required />
+                            </div>
+                        </div>
+
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <span class="form-label pms-registration-4col-label">Surcharge</span>
+                            </div>
+                            <div class="col-12 col-lg-10">
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input" type="checkbox" id="surchargeApplied" checked>
+                                    <label class="form-check-label" for="surchargeApplied">Apply Surcharge (Default: Yes)</label>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Submit Buttons -->
-            <div class="d-flex justify-content-end gap-2 mb-3">
-                <button type="submit" class="btn btn-sm fw-semibold pms-mp-btn-save">
-                    <i class="fas fa-check me-1"></i>Create Payment Plan &amp; Schedules
-                </button>
-                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-times me-1"></i>Cancel
-                </a>
+                <!-- Preview Section -->
+                <div class="alert alert-info py-2 mb-0">
+                    <h6 class="alert-heading mb-1"><i class="fas fa-info-circle me-2"></i>Installment Preview</h6>
+                    <div id="installmentPreview" class="mt-1 small">
+                        <p class="mb-1"><strong>Total Installments:</strong> <span id="previewTotalInstallments">0</span></p>
+                        <p class="mb-1"><strong>Token:</strong> <span id="previewToken">Not included</span></p>
+                        <p class="mb-1"><strong>Possession:</strong> <span id="previewPossession">Not included</span></p>
+                        <p class="mb-1"><strong>Amount per Installment:</strong> PKR <span id="previewAmount">0</span></p>
+                        <p class="mb-1"><strong>Frequency:</strong> <span id="previewFrequency">-</span></p>
+                        <p class="mb-1"><strong>Total Installments Amount:</strong> PKR <span id="previewTotalInstallmentsAmount">0</span></p>
+                        <p class="mb-1"><strong>Token Amount:</strong> PKR <span id="previewTokenAmount">0</span></p>
+                        <p class="mb-1"><strong>Possession Amount:</strong> PKR <span id="previewPossessionAmount">0</span></p>
+                        <p class="mb-0"><strong>Grand Total (Token + Installments + Possession):</strong> PKR <span id="previewGrandTotal">0</span> / Plan Total PKR <span id="previewPlanTotal">0</span></p>
+                    </div>
+                    <div id="amountValidationMessage" class="mt-2" style="display: none;">
+                        <div class="alert alert-danger mb-0 py-2">
+                            <i class="fas fa-exclamation-triangle me-2"></i><span id="validationMessageText"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </form>
-    </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="d-flex justify-content-end gap-2 mb-3">
+            <button type="submit" class="btn btn-sm fw-semibold pms-mp-btn-save">
+                <i class="fas fa-check me-1"></i>Create Payment Plan &amp; Schedules
+            </button>
+            <a asp-action="PaymentPlans" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-times me-1"></i>Cancel
+            </a>
+        </div>
+    </form>
 </div>
+
+<style>
+    .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-row {
+        margin-bottom: 0.35rem !important;
+        padding-bottom: 0.35rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0 !important;
+        padding-bottom: 0;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-label,
+    .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-label {
+        color: #111827 !important;
+        font-weight: 600 !important;
+        font-size: 0.75rem;
+        margin-bottom: 0;
+        padding-top: 0.2rem;
+        line-height: 1.2;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-control,
+    .pms-create-payment-plan .pms-cpp-form .form-select,
+    .pms-create-payment-plan .pms-cpp-form .form-control-sm,
+    .pms-create-payment-plan .pms-cpp-form .form-select-sm {
+        color: #1e40af !important;
+        font-size: 0.8125rem;
+        min-height: 28px;
+        height: 28px;
+        padding-top: 0.15rem;
+        padding-bottom: 0.15rem;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form textarea.form-control,
+    .pms-create-payment-plan .pms-cpp-form textarea.form-control-sm {
+        height: auto;
+        min-height: 48px;
+        color: #1e40af !important;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-check-label {
+        color: #111827 !important;
+        font-size: 0.8125rem;
+    }
+</style>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

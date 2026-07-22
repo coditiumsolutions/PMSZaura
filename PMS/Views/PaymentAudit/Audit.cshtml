@@ -8,262 +8,229 @@
     var paymentAttachments = ViewBag.PaymentAttachments as List<PMS.Models.Attachment> ?? new List<PMS.Models.Attachment>();
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-    <h2 class="mb-0"><i class="fas fa-gavel me-2"></i>Audit Payment</h2>
-    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
-        <i class="fas fa-arrow-left me-1"></i>Back to Audit List
-    </a>
-</div>
-
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show">
-        @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show">
-        @TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-<div class="row g-4">
-    <!-- Payment Details -->
-    <div class="col-md-7">
-        <div class="card h-100">
-            <div class="card-header" style="background: linear-gradient(135deg,#6c757d,#495057); color:#fff;">
-                <h5 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Payment Details</h5>
-            </div>
-            <div class="card-body">
-                <div class="row g-2">
-                    <div class="col-6">
-                        <div class="detail-field">
-                            <label>Payment ID</label>
-                            <p><code>@Model.PaymentID</code></p>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="detail-field">
-                            <label>Current Audit Status</label>
-                            <p>
-                                @{
-                                    var badgeClass = auditStatus == "Approved" ? "bg-success"
-                                                   : auditStatus == "Declined" ? "bg-danger"
-                                                   : "bg-warning text-dark";
-                                }
-                                <span class="badge @badgeClass fs-6">@auditStatus</span>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="detail-field">
-                            <label>Customer ID</label>
-                            <p><code>@Model.CustomerID</code></p>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="detail-field">
-                            <label>Customer Name</label>
-                            <p>@(Model.Customer?.FullName ?? "—")</p>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="detail-field">
-                            <label>Project</label>
-                            <p>@projectName</p>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="detail-field">
-                            <label>Installment</label>
-                            <p>
-                                @(Model.PaymentSchedule?.PaymentDescription ?? "—")
-                                @if (Model.PaymentSchedule?.InstallmentNo != null)
-                                {
-                                    <span class="badge bg-secondary ms-1">#@Model.PaymentSchedule.InstallmentNo</span>
-                                }
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="detail-field">
-                            <label>Amount (PKR)</label>
-                            <p class="fw-bold text-success fs-5">@Model.Amount.ToString("N0")</p>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="detail-field">
-                            <label>Payment Method</label>
-                            <p>@(Model.Method ?? "—")</p>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="detail-field">
-                            <label>Reference No</label>
-                            <p>@(Model.ReferenceNo ?? "—")</p>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="detail-field">
-                            <label>Payment Date</label>
-                            <p>@Model.PaymentDate.ToString("MMMM dd, yyyy")</p>
-                        </div>
-                    </div>
-                    <div class="col-6">
-                        <div class="detail-field">
-                            <label>Payment Status</label>
-                            <p>@(Model.Status ?? "—")</p>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="detail-field">
-                            <label>Remarks</label>
-                            <p>@(Model.Remarks ?? "—")</p>
-                        </div>
-                    </div>
-                    <div class="col-12">
-                        <div class="detail-field">
-                            <label>Proof Attachments</label>
-                            @if (paymentAttachments.Count == 0)
-                            {
-                                <p class="text-muted mb-0">No proof attachment uploaded.</p>
-                            }
-                            else
-                            {
-                                <ul class="mb-0 ps-3">
-                                    @foreach (var att in paymentAttachments)
-                                    {
-                                        <li class="mb-1">
-                                            <a href="@att.FilePath" target="_blank" rel="noopener">
-                                                @(string.IsNullOrWhiteSpace(att.FileName) ? "Attachment" : att.FileName)
-                                            </a>
-                                            <span class="text-muted">(@((att.FileSize ?? 0) / 1024) KB)</span>
-                                            @if (!string.IsNullOrWhiteSpace(att.Description))
-                                            {
-                                                <span class="text-muted"> - @att.Description</span>
-                                            }
-                                        </li>
-                                    }
-                                </ul>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                @if (!string.IsNullOrEmpty(Model.AuditedBy))
-                {
-                    <hr />
-                    <div class="row g-2 mt-1">
-                        <div class="col-6">
-                            <div class="detail-field">
-                                <label>Audited By</label>
-                                <p>@(Model.AuditedByUser?.UserID ?? Model.AuditedBy)</p>
-                            </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="detail-field">
-                                <label>Audited At</label>
-                                <p>@Model.AuditedAt?.ToString("MMMM dd, yyyy hh:mm tt")</p>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="detail-field">
-                                <label>Audit Remarks</label>
-                                <p>@(Model.AuditRemarks ?? "—")</p>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
+<div class="pms-payment-audit-detail">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h2 class="pms-payment-audit-detail-title mb-0"><i class="fas fa-gavel me-2"></i>Audit Payment</h2>
+        <div class="d-flex align-items-center gap-2 flex-wrap">
+            @if (!isPending && ViewBag.CanAdmin == true)
+            {
+                <form asp-action="ResetAudit" method="post" class="mb-0"
+                      onsubmit="return confirm('Reset audit status to Pending for @Model.PaymentID?')">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="paymentId" value="@Model.PaymentID" />
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-undo me-1"></i>Reset to Pending
+                    </button>
+                </form>
+            }
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i>Back to Audit List
+            </a>
         </div>
     </div>
 
-    <!-- Audit Action -->
-    <div class="col-md-5">
-        @if (isPending && ViewBag.CanEdit == true)
-        {
-            <div class="card border-primary h-100">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Audit Decision</h5>
-                </div>
-                <div class="card-body">
-                    <form asp-action="Audit" method="post">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="paymentId" value="@Model.PaymentID" />
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Decision <span class="text-danger">*</span></label>
-                            <div class="d-flex gap-3 mt-2">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="auditStatus" id="radioApprove" value="Approved" required />
-                                    <label class="form-check-label text-success fw-semibold" for="radioApprove">
-                                        <i class="fas fa-check-circle me-1"></i>Approve
-                                    </label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="auditStatus" id="radioDecline" value="Declined" />
-                                    <label class="form-check-label text-danger fw-semibold" for="radioDecline">
-                                        <i class="fas fa-times-circle me-1"></i>Decline
-                                    </label>
+    <div class="row g-3">
+        <div class="@(isPending && ViewBag.CanEdit == true ? "col-lg-8" : "col-12")">
+            <div class="card border-0 shadow-sm pms-payment-audit-detail-card">
+                <div class="card-header py-2 pms-payment-audit-detail-header">
+                    <h6 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Payment Details</h6>
+                </div>
+                <div class="card-body py-2 px-3">
+                    @if (!isPending)
+                    {
+                        <div class="pms-payment-audit-status-banner mb-2 @(auditStatus == "Approved" ? "is-approved" : "is-declined")">
+                            @if (auditStatus == "Approved")
+                            {
+                                <span class="fw-semibold text-success">This payment has been Approved</span>
+                            }
+                            else
+                            {
+                                <span class="fw-semibold text-danger">This payment has been Declined</span>
+                            }
+                            <span class="text-muted mx-2">·</span>
+                            <span class="small text-muted">Audited on @Model.AuditedAt?.ToString("MMMM dd, yyyy")</span>
+                        </div>
+                    }
+
+                    <div class="pms-registration-4col-form">
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Payment ID</div></div>
+                            <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><code>@Model.PaymentID</code></div></div>
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Audit Status</div></div>
+                            <div class="col-12 col-lg-4">
+                                <div class="pms-registration-details-value">
+                                    @{
+                                        var badgeClass = auditStatus == "Approved" ? "bg-success"
+                                                       : auditStatus == "Declined" ? "bg-danger"
+                                                       : "bg-warning text-dark";
+                                    }
+                                    <span class="badge @badgeClass">@auditStatus</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label fw-bold">Audit Remarks</label>
-                            <textarea name="auditRemarks" class="form-control" rows="5"
-                                      placeholder="Enter remarks (required when declining)..." id="auditRemarksInput"></textarea>
-                            <small class="text-muted">Remarks are required when declining a payment.</small>
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Customer ID</div></div>
+                            <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><code>@Model.CustomerID</code></div></div>
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Customer Name</div></div>
+                            <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.Customer?.FullName ?? "—")</div></div>
                         </div>
 
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg" id="btnSubmitAudit">
-                                <i class="fas fa-gavel me-2"></i>Submit Audit Decision
-                            </button>
-                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Project</div></div>
+                            <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@projectName</div></div>
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Installment</div></div>
+                            <div class="col-12 col-lg-4">
+                                <div class="pms-registration-details-value">
+                                    @(Model.PaymentSchedule?.PaymentDescription ?? "—")
+                                    @if (Model.PaymentSchedule?.InstallmentNo != null)
+                                    {
+                                        <span class="badge bg-secondary ms-1">#@Model.PaymentSchedule.InstallmentNo</span>
+                                    }
+                                </div>
+                            </div>
                         </div>
-                    </form>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Amount (PKR)</div></div>
+                            <div class="col-12 col-lg-4"><div class="pms-registration-details-value fw-semibold">@Model.Amount.ToString("N0")</div></div>
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Payment Method</div></div>
+                            <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.Method ?? "—")</div></div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Reference No</div></div>
+                            <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.ReferenceNo ?? "—")</div></div>
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Payment Date</div></div>
+                            <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.PaymentDate.ToString("MMMM dd, yyyy")</div></div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Payment Status</div></div>
+                            <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.Status ?? "—")</div></div>
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Remarks</div></div>
+                            <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.Remarks ?? "—")</div></div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Proof Attachments</div></div>
+                            <div class="col-12 col-lg-10">
+                                <div class="pms-registration-details-value">
+                                    @if (paymentAttachments.Count == 0)
+                                    {
+                                        <span class="text-muted">No proof attachment uploaded.</span>
+                                    }
+                                    else
+                                    {
+                                        <ul class="mb-0 ps-3">
+                                            @foreach (var att in paymentAttachments)
+                                            {
+                                                <li class="mb-1">
+                                                    <a href="@att.FilePath" target="_blank" rel="noopener">
+                                                        @(string.IsNullOrWhiteSpace(att.FileName) ? "Attachment" : att.FileName)
+                                                    </a>
+                                                    <span class="text-muted">(@((att.FileSize ?? 0) / 1024) KB)</span>
+                                                    @if (!string.IsNullOrWhiteSpace(att.Description))
+                                                    {
+                                                        <span class="text-muted"> - @att.Description</span>
+                                                    }
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.AuditedBy))
+                        {
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Audited By</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.AuditedByUser?.UserID ?? Model.AuditedBy)</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Audited At</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.AuditedAt?.ToString("MMMM dd, yyyy hh:mm tt")</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Audit Remarks</div></div>
+                                <div class="col-12 col-lg-10"><div class="pms-registration-details-value">@(Model.AuditRemarks ?? "—")</div></div>
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
-        }
-        else if (!isPending)
+        </div>
+
+        @if (isPending && ViewBag.CanEdit == true)
         {
-            <div class="card border-0 bg-light h-100">
-                <div class="card-body text-center d-flex flex-column align-items-center justify-content-center gap-3">
-                    @if (auditStatus == "Approved")
-                    {
-                        <i class="fas fa-check-circle fa-4x text-success"></i>
-                        <h5 class="text-success">This payment has been Approved</h5>
-                    }
-                    else
-                    {
-                        <i class="fas fa-times-circle fa-4x text-danger"></i>
-                        <h5 class="text-danger">This payment has been Declined</h5>
-                    }
-                    <p class="text-muted small">Audited on @Model.AuditedAt?.ToString("MMMM dd, yyyy")</p>
-                    @if (ViewBag.CanAdmin == true)
-                    {
-                        <form asp-action="ResetAudit" method="post"
-                              onsubmit="return confirm('Reset audit status to Pending for @Model.PaymentID?')">
+            <div class="col-lg-4">
+                <div class="card border-primary h-100">
+                    <div class="card-header bg-primary text-white py-2">
+                        <h6 class="mb-0"><i class="fas fa-clipboard-check me-2"></i>Audit Decision</h6>
+                    </div>
+                    <div class="card-body">
+                        <form asp-action="Audit" method="post">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="paymentId" value="@Model.PaymentID" />
-                            <button type="submit" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-undo me-1"></i>Reset to Pending
-                            </button>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Decision <span class="text-danger">*</span></label>
+                                <div class="d-flex gap-3 mt-2">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="auditStatus" id="radioApprove" value="Approved" required />
+                                        <label class="form-check-label text-success fw-semibold" for="radioApprove">
+                                            <i class="fas fa-check-circle me-1"></i>Approve
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="auditStatus" id="radioDecline" value="Declined" />
+                                        <label class="form-check-label text-danger fw-semibold" for="radioDecline">
+                                            <i class="fas fa-times-circle me-1"></i>Decline
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Audit Remarks</label>
+                                <textarea name="auditRemarks" class="form-control" rows="4"
+                                          placeholder="Enter remarks (required when declining)..." id="auditRemarksInput"></textarea>
+                                <small class="text-muted">Remarks are required when declining a payment.</small>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary" id="btnSubmitAudit">
+                                    <i class="fas fa-gavel me-2"></i>Submit Audit Decision
+                                </button>
+                                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Cancel</a>
+                            </div>
                         </form>
-                    }
+                    </div>
                 </div>
             </div>
         }
-        else
+        else if (isPending)
         {
-            <div class="card border-0 bg-light h-100">
-                <div class="card-body text-center d-flex flex-column align-items-center justify-content-center">
-                    <i class="fas fa-lock fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">You don't have permission to audit payments.</p>
+            <div class="col-lg-4">
+                <div class="card border-0 bg-light h-100">
+                    <div class="card-body text-center d-flex flex-column align-items-center justify-content-center">
+                        <i class="fas fa-lock fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">You don't have permission to audit payments.</p>
+                    </div>
                 </div>
             </div>
         }
@@ -271,21 +238,91 @@
 </div>
 
 <style>
-    .detail-field { padding: 8px 10px; background: linear-gradient(135deg,#f8f9fa 0%,#f3f0ff 100%); border-radius: 6px; }
-    .detail-field label { display: block; margin-bottom: 3px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #666; font-weight: 600; }
-    .detail-field p { font-size: 14px; color: var(--text-dark,#333); margin-bottom: 0; font-weight: 500; }
+    .pms-payment-audit-detail-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .pms-payment-audit-detail-card,
+    .pms-payment-audit-detail-card > .card-body {
+        background: #ffffff !important;
+    }
+
+    .pms-payment-audit-detail-header {
+        background: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a;
+    }
+
+    .pms-payment-audit-status-banner {
+        padding: 0.4rem 0.75rem;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.15rem;
+        line-height: 1.3;
+        font-size: 0.8125rem;
+    }
+
+    .pms-payment-audit-status-banner.is-approved {
+        border-color: #bbf7d0;
+        background: #f0fdf4;
+    }
+
+    .pms-payment-audit-status-banner.is-declined {
+        border-color: #fecaca;
+        background: #fef2f2;
+    }
+
+    .pms-payment-audit-detail .pms-registration-4col-form .pms-registration-4col-row {
+        --bs-gutter-y: 0.1rem;
+        --bs-gutter-x: 0.5rem;
+        margin-bottom: 0.1rem !important;
+        padding-top: 0.1rem !important;
+        padding-bottom: 0.12rem !important;
+        border-bottom: 1px solid #e2e8f0;
+        background: transparent !important;
+        align-items: center !important;
+    }
+
+    .pms-payment-audit-detail .pms-registration-4col-form .pms-registration-4col-row:last-child {
+        margin-bottom: 0 !important;
+        border-bottom: none;
+        padding-bottom: 0 !important;
+    }
+
+    .pms-payment-audit-detail .pms-registration-4col-label {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #000;
+        line-height: 1.15;
+        margin-bottom: 0;
+    }
+
+    .pms-payment-audit-detail .pms-registration-details-value {
+        font-size: 0.8rem;
+        color: #2563eb;
+        font-weight: 500;
+        line-height: 1.2;
+        padding-top: 0;
+        margin-bottom: 0;
+        background: transparent !important;
+    }
 </style>
 
 @section Scripts {
 <script>
-    // Require remarks when declining
-    document.querySelector('form')?.addEventListener('submit', function(e) {
+    document.getElementById('btnSubmitAudit')?.closest('form')?.addEventListener('submit', function(e) {
         var status = document.querySelector('input[name="auditStatus"]:checked')?.value;
         var remarks = (document.getElementById('auditRemarksInput')?.value || '').trim();
         if (status === 'Declined' && !remarks) {
             e.preventDefault();
             alert('Remarks are required when declining a payment.');
-            document.getElementById('auditRemarksInput').focus();
+            document.getElementById('auditRemarksInput')?.focus();
         }
     });
 </script>

@@ -7,8 +7,43 @@
 
 <div class="pms-registration-listing pms-listing-page">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-        <h5 class="pms-grid-title mb-0">Registrations</h5>
+        <h5 class="pms-grid-title pms-registration-page-heading mb-0">Registrations</h5>
         <span class="badge rounded-pill pms-record-badge">@registrationCount record@(registrationCount == 1 ? "" : "s")</span>
+    </div>
+
+    <div class="row g-2 mb-2 pms-registration-summary-cards">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 h-100 pms-registration-stat-card" style="background:#e8f0fe;">
+                <div class="card-body text-center py-2 px-2">
+                    <div class="small text-muted text-uppercase fw-semibold mb-0">Total Registrations</div>
+                    <div class="fs-5 fw-bold text-primary mb-0">@(ViewBag.TotalRegistrations ?? 0)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 h-100 pms-registration-stat-card" style="background:#fff3cd;">
+                <div class="card-body text-center py-2 px-2">
+                    <div class="small text-muted text-uppercase fw-semibold mb-0">Pending</div>
+                    <div class="fs-5 fw-bold text-warning mb-0">@(ViewBag.PendingRegistrations ?? 0)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 h-100 pms-registration-stat-card" style="background:#d4edda;">
+                <div class="card-body text-center py-2 px-2">
+                    <div class="small text-muted text-uppercase fw-semibold mb-0">Approved</div>
+                    <div class="fs-5 fw-bold text-success mb-0">@(ViewBag.ApprovedRegistrations ?? 0)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 h-100 pms-registration-stat-card" style="background:#e2e3f3;">
+                <div class="card-body text-center py-2 px-2">
+                    <div class="small text-muted text-uppercase fw-semibold mb-0">Converted Customers</div>
+                    <div class="fs-5 fw-bold text-info mb-0">@(ViewBag.ConvertedToCustomers ?? 0)</div>
+                </div>
+            </div>
+        </div>
     </div>
 
 <form method="get" asp-action="Index" class="mb-2">
@@ -16,8 +51,8 @@
         <div class="row g-1 align-items-end flex-lg-nowrap pms-registration-search-fields">
             <div class="col-12 col-lg-3">
                 <div class="pms-compact-field pms-select-dropdown">
-                    <label for="statusFilter" class="form-label">Status</label>
-                    <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()">
+                    <label for="statusFilter" class="visually-hidden">Status</label>
+                    <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()" aria-label="Status">
                         <option value="All" selected="@(ViewBag.StatusFilter == "All")">All Status</option>
                         <option value="Pending" selected="@(ViewBag.StatusFilter == "Pending")">Pending</option>
                         <option value="Approved" selected="@(ViewBag.StatusFilter == "Approved")">Approved</option>
@@ -27,17 +62,18 @@
             </div>
             <div class="col-12 col-lg">
                 <div class="pms-compact-field">
-                    <label for="searchTerm" class="form-label">Search</label>
+                    <label for="searchTerm" class="visually-hidden">Search Registration</label>
                     <input type="text"
                            name="searchTerm"
                            id="searchTerm"
                            class="form-control"
+                           placeholder="Search Registration"
+                           aria-label="Search Registration"
                            value="@ViewBag.SearchTerm" />
                 </div>
             </div>
             <div class="col-12 col-lg-auto">
                 <div class="pms-compact-field pms-registration-inline-action">
-                    <label class="form-label d-none d-lg-block" aria-hidden="true">&nbsp;</label>
                     <button type="submit" class="btn btn-primary btn-sm w-100">
                         <i class="bi bi-search me-1" aria-hidden="true"></i>Search
                     </button>
@@ -47,7 +83,6 @@
             {
                 <div class="col-12 col-lg-auto">
                     <div class="pms-compact-field pms-registration-inline-action">
-                        <label class="form-label d-none d-lg-block" aria-hidden="true">&nbsp;</label>
                         <a asp-action="Create" class="btn btn-primary btn-sm w-100">
                             <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New Registration
                         </a>
@@ -67,12 +102,11 @@
                 <table class="table table-hover align-middle pms-enterprise-table" id="registrationsTable">
                     <thead>
                         <tr>
-                            <th>Registration ID</th>
-                            <th>Full Name</th>
+                            <th>Reg ID</th>
+                            <th>Name</th>
                             <th>Project</th>
                             <th>Size</th>
                             <th>SubProject</th>
-                            <th>Contact</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -81,27 +115,14 @@
                         {
                             <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = registration.RegID })">
                                 <td>
-                                    <a asp-action="Details" asp-route-id="@registration.RegID" class="text-decoration-none">
-                                        <code>@registration.RegID</code>
+                                    <a asp-action="Details" asp-route-id="@registration.RegID" class="text-decoration-none pms-reg-id-link">
+                                        <code class="pms-reg-id">@registration.RegID</code>
                                     </a>
                                 </td>
                                 <td><strong class="pms-cell-truncate" title="@registration.FullName">@registration.FullName</strong></td>
                                 <td><span class="pms-cell-truncate" title="@(registration.Project?.ProjectName ?? "—")">@(registration.Project?.ProjectName ?? "—")</span></td>
                                 <td>@(registration.Size ?? "—")</td>
                                 <td>@(registration.SubProject ?? "—")</td>
-                                <td>
-                                    <div>
-                                        <i class="fas fa-phone text-primary me-1"></i>@registration.Phone
-                                    </div>
-                                    @if (!string.IsNullOrEmpty(registration.Email))
-                                    {
-                                        <div>
-                                            <small class="text-muted pms-cell-truncate d-block" title="@registration.Email">
-                                                <i class="fas fa-envelope me-1"></i>@registration.Email
-                                            </small>
-                                        </div>
-                                    }
-                                </td>
                                 <td>
                                     @if (registration.Status == "Pending")
                                     {
@@ -151,16 +172,26 @@
 </div>
 
 <style>
+    .pms-registration-page-heading {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
     .pms-registration-search-panel {
-        padding: 0.65rem 1rem !important;
+        padding: 0.75rem 1rem !important;
+        background: #e8eef8 !important;
+        border: 1px solid #c5d0e0 !important;
+        border-radius: 12px;
     }
 
     .pms-registration-search-fields {
         margin-top: 0 !important;
+        align-items: center !important;
     }
 
-    .pms-registration-listing .pms-registration-search-panel .form-label {
-        margin-bottom: 0.2rem;
+    .pms-registration-listing .pms-registration-search-panel .form-label:not(.visually-hidden) {
+        display: none !important;
     }
 
     .pms-registration-inline-action .btn {
@@ -168,8 +199,58 @@
         white-space: nowrap;
     }
 
+    .pms-registration-listing .pms-reg-id {
+        color: #000 !important;
+        font-size: 0.9rem;
+        font-weight: 600;
+        background: transparent;
+        padding: 0;
+    }
+
+    .pms-registration-listing .pms-reg-id-link {
+        color: #000;
+    }
+
+    .pms-registration-listing .pms-reg-id-link:hover .pms-reg-id {
+        color: #000 !important;
+        text-decoration: underline;
+    }
+
     .pms-registration-grid-compact > .card-body {
         padding-top: 0.25rem !important;
+    }
+
+    .pms-registration-listing .pms-registration-dt-footer {
+        width: 100%;
+        padding: 0.5rem 0.25rem 0.25rem;
+    }
+
+    .pms-registration-listing .pms-registration-dt-footer .dataTables_length,
+    .pms-registration-listing .pms-registration-dt-footer .dataTables_info,
+    .pms-registration-listing .pms-registration-dt-footer .dataTables_paginate {
+        float: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 0.8125rem;
+        color: #64748b;
+    }
+
+    .pms-registration-listing .pms-registration-dt-footer .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid #94a3b8;
+        padding: 0.2rem 1.75rem 0.2rem 0.5rem;
+        min-height: 32px;
+        height: 32px;
+        font-size: 0.8125rem;
+        margin: 0 0.35rem;
+        background-color: #fff;
+    }
+
+    .pms-registration-listing .pms-registration-dt-footer .dataTables_paginate {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.15rem;
     }
 
     html[data-theme="dark"] #registrationsTable thead th {
@@ -192,7 +273,9 @@
         $(document).ready(function () {
             if ($('#registrationsTable').length) {
                 PmsListingDataTable.init('#registrationsTable', {
-                    order: [[0, "desc"]]
+                    searching: false,
+                    order: [[0, "desc"]],
+                    dom: 'rt<"pms-registration-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>'
                 });
                 PmsListingDataTable.bindRowNavigation('#registrationsTable');
             }

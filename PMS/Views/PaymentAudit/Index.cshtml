@@ -7,186 +7,236 @@
     int declinedCount = ViewBag.DeclinedCount ?? 0;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-    <h2 class="mb-0"><i class="fas fa-search-dollar me-2"></i>Payment Audit</h2>
-    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-secondary btn-sm">
-        <i class="fas fa-arrow-left me-1"></i>Back to Workspace
-    </a>
-</div>
+<div class="pms-payment-audit">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h2 class="pms-payment-audit-title mb-0"><i class="fas fa-search-dollar me-2"></i>Payment Audit</h2>
+    </div>
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
 
-<!-- Summary Cards -->
-<div class="row g-3 mb-4">
-    <div class="col-6 col-md-4">
-        <a href="@Url.Action("Index", new { auditFilter = "Pending" })" class="text-decoration-none">
-            <div class="card border-0 h-100" style="background:#fff3cd;">
-                <div class="card-body text-center py-3">
-                    <div class="small text-muted text-uppercase fw-semibold">Pending</div>
-                    <div class="fs-3 fw-bold text-warning">@pendingCount</div>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="col-6 col-md-4">
-        <a href="@Url.Action("Index", new { auditFilter = "Approved" })" class="text-decoration-none">
-            <div class="card border-0 h-100" style="background:#d4edda;">
-                <div class="card-body text-center py-3">
-                    <div class="small text-muted text-uppercase fw-semibold">Approved</div>
-                    <div class="fs-3 fw-bold text-success">@approvedCount</div>
-                </div>
-            </div>
-        </a>
-    </div>
-    <div class="col-6 col-md-4">
-        <a href="@Url.Action("Index", new { auditFilter = "Declined" })" class="text-decoration-none">
-            <div class="card border-0 h-100" style="background:#f8d7da;">
-                <div class="card-body text-center py-3">
-                    <div class="small text-muted text-uppercase fw-semibold">Declined</div>
-                    <div class="fs-3 fw-bold text-danger">@declinedCount</div>
-                </div>
-            </div>
-        </a>
-    </div>
-</div>
-
-<!-- Filters -->
-<form method="get" asp-action="Index" class="mb-4">
-    <div class="card">
-        <div class="card-body">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">Audit Status</label>
-                    <select name="auditFilter" class="form-select form-select-sm" onchange="this.form.submit()">
-                        <option value="" selected="@(string.IsNullOrEmpty(ViewBag.AuditFilter as string))">All</option>
-                        <option value="Pending"  selected="@(ViewBag.AuditFilter == "Pending")">Pending</option>
-                        <option value="Approved" selected="@(ViewBag.AuditFilter == "Approved")">Approved</option>
-                        <option value="Declined" selected="@(ViewBag.AuditFilter == "Declined")">Declined</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label fw-semibold">Customer ID</label>
-                    <div class="input-group input-group-sm">
-                        <input type="text" name="customerFilter" class="form-control" placeholder="Filter by customer ID" value="@ViewBag.CustomerFilter" />
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+    <!-- Summary Cards -->
+    <div class="row g-2 mb-3">
+        <div class="col-6 col-md-4">
+            <a href="@Url.Action("Index", new { auditFilter = "Pending" })" class="text-decoration-none">
+                <div class="card border-0 pms-payment-audit-stat-card" style="background:#fff3cd;">
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="pms-payment-audit-stat-label text-muted text-uppercase fw-semibold">Pending</div>
+                        <div class="pms-payment-audit-stat-value fw-bold text-warning">@pendingCount</div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <a asp-action="Index" class="btn btn-secondary btn-sm"><i class="fas fa-times me-1"></i>Clear</a>
+            </a>
+        </div>
+        <div class="col-6 col-md-4">
+            <a href="@Url.Action("Index", new { auditFilter = "Approved" })" class="text-decoration-none">
+                <div class="card border-0 pms-payment-audit-stat-card" style="background:#d4edda;">
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="pms-payment-audit-stat-label text-muted text-uppercase fw-semibold">Approved</div>
+                        <div class="pms-payment-audit-stat-value fw-bold text-success">@approvedCount</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4">
+            <a href="@Url.Action("Index", new { auditFilter = "Declined" })" class="text-decoration-none">
+                <div class="card border-0 pms-payment-audit-stat-card" style="background:#f8d7da;">
+                    <div class="card-body text-center py-2 px-2">
+                        <div class="pms-payment-audit-stat-label text-muted text-uppercase fw-semibold">Declined</div>
+                        <div class="pms-payment-audit-stat-value fw-bold text-danger">@declinedCount</div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" asp-action="Index" class="mb-3">
+        <div class="card">
+            <div class="card-body py-2">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold mb-1 small">Audit Status</label>
+                        <select name="auditFilter" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="" selected="@(string.IsNullOrEmpty(ViewBag.AuditFilter as string))">All</option>
+                            <option value="Pending"  selected="@(ViewBag.AuditFilter == "Pending")">Pending</option>
+                            <option value="Approved" selected="@(ViewBag.AuditFilter == "Approved")">Approved</option>
+                            <option value="Declined" selected="@(ViewBag.AuditFilter == "Declined")">Declined</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold mb-1 small">Customer ID</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="customerFilter" class="form-control" placeholder="Filter by customer ID" value="@ViewBag.CustomerFilter" />
+                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <a asp-action="Index" class="btn btn-secondary btn-sm"><i class="fas fa-times me-1"></i>Clear</a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</form>
+    </form>
 
-<!-- Payments Table -->
-<div class="card">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle pms-enterprise-table align-middle" id="auditTable">
-                <thead>
-                    <tr>
-                        <th>Payment ID</th>
-                        <th>Customer</th>
-                        <th>Installment</th>
-                        <th class="text-end">Amount (PKR)</th>
-                        <th>Method</th>
-                        <th>Payment Date</th>
-                        <th>Audit Status</th>
-                        <th>Audited By</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var p in Model)
-                    {
-                        var auditStatus = p.AuditStatus ?? "Pending";
-                        var badgeClass  = auditStatus == "Approved" ? "bg-success"
-                                        : auditStatus == "Declined" ? "bg-danger"
-                                        : "bg-warning text-dark";
+    <!-- Payments Table -->
+    <div class="card pms-payment-audit-grid-card">
+        <div class="card-body">
+            <div class="table-responsive pms-payment-audit-grid-wrap">
+                <table class="table table-hover align-middle pms-enterprise-table mb-0" id="auditTable">
+                    <thead>
                         <tr>
-                            <td><code>@p.PaymentID</code></td>
-                            <td>
-                                <div><code>@p.CustomerID</code></div>
-                                <div class="small text-muted">@(p.Customer?.FullName ?? "—")</div>
-                            </td>
-                            <td>
-                                <div class="small">@(p.PaymentSchedule?.PaymentDescription ?? "—")</div>
-                                @if (p.PaymentSchedule?.InstallmentNo != null)
-                                {
-                                    <span class="badge bg-light text-dark border">#@p.PaymentSchedule.InstallmentNo</span>
-                                }
-                            </td>
-                            <td class="text-end fw-semibold">@p.Amount.ToString("N0")</td>
-                            <td>@(p.Method ?? "—")</td>
-                            <td>@p.PaymentDate.ToString("MMM dd, yyyy")</td>
-                            <td><span class="badge @badgeClass">@auditStatus</span></td>
-                            <td>
-                                @if (!string.IsNullOrEmpty(p.AuditedBy))
-                                {
-                                    <div class="small">@(p.AuditedByUser?.UserID ?? p.AuditedBy)</div>
-                                    <div class="small text-muted">@p.AuditedAt?.ToString("MMM dd, yyyy")</div>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small">—</span>
-                                }
-                            </td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    @if (ViewBag.CanEdit == true && auditStatus == "Pending")
+                            <th>Customer</th>
+                            <th>Installment</th>
+                            <th class="text-end">Amount (PKR)</th>
+                            <th>Payment Date</th>
+                            <th>Audit Status</th>
+                            <th>Audited By</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model)
+                        {
+                            var auditStatus = p.AuditStatus ?? "Pending";
+                            var badgeClass  = auditStatus == "Approved" ? "bg-success"
+                                            : auditStatus == "Declined" ? "bg-danger"
+                                            : "bg-warning text-dark";
+                            <tr class="pms-payment-audit-row" data-href="@Url.Action("Audit", new { id = p.PaymentID })" style="cursor:pointer;">
+                                <td>
+                                    <div><code>@p.CustomerID</code></div>
+                                    <div class="small text-muted">@(p.Customer?.FullName ?? "—")</div>
+                                </td>
+                                <td>
+                                    <div class="small">@(p.PaymentSchedule?.PaymentDescription ?? "—")</div>
+                                    @if (p.PaymentSchedule?.InstallmentNo != null)
                                     {
-                                        <a asp-action="Audit" asp-route-id="@p.PaymentID" class="btn btn-sm btn-primary" title="Audit this payment">
-                                            <i class="fas fa-gavel me-1"></i>Audit
-                                        </a>
+                                        <span class="badge bg-light text-dark border">#@p.PaymentSchedule.InstallmentNo</span>
+                                    }
+                                </td>
+                                <td class="text-end fw-semibold">@p.Amount.ToString("N0")</td>
+                                <td>@p.PaymentDate.ToString("MMM dd, yyyy")</td>
+                                <td><span class="badge @badgeClass">@auditStatus</span></td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(p.AuditedBy))
+                                    {
+                                        <div class="small">@(p.AuditedByUser?.UserID ?? p.AuditedBy)</div>
+                                        <div class="small text-muted">@p.AuditedAt?.ToString("MMM dd, yyyy")</div>
                                     }
                                     else
                                     {
-                                        <a asp-action="Audit" asp-route-id="@p.PaymentID" class="btn btn-sm btn-outline-info" title="View audit details">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
+                                        <span class="text-muted small">—</span>
                                     }
-                                    @if (ViewBag.CanAdmin == true && auditStatus != "Pending")
-                                    {
-                                        <form asp-action="ResetAudit" method="post" class="d-inline"
-                                              onsubmit="return confirm('Reset audit status to Pending for @p.PaymentID?')">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="paymentId" value="@p.PaymentID" />
-                                            <button type="submit" class="btn btn-sm btn-outline-secondary" title="Reset to Pending">
-                                                <i class="fas fa-undo"></i>
-                                            </button>
-                                        </form>
-                                    }
-                                </div>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+    .pms-payment-audit-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .pms-payment-audit-stat-card .card-body {
+        min-height: 0;
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+    }
+
+    .pms-payment-audit-stat-label {
+        font-size: 0.68rem;
+        letter-spacing: 0.04em;
+        line-height: 1.2;
+        margin-bottom: 0.1rem;
+    }
+
+    .pms-payment-audit-stat-value {
+        font-size: 1.15rem;
+        line-height: 1.2;
+    }
+
+    .pms-payment-audit-grid-card,
+    .pms-payment-audit-grid-card > .card-body {
+        background: #ffffff !important;
+    }
+
+    .pms-payment-audit-grid-wrap {
+        max-height: calc(100vh - 280px);
+        min-height: 520px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background: #ffffff;
+    }
+
+    .pms-payment-audit-grid-wrap.table-responsive {
+        overflow-x: hidden;
+    }
+
+    .pms-payment-audit-grid-wrap .table {
+        background: #ffffff;
+    }
+
+    .pms-payment-audit-grid-wrap thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: #ffffff !important;
+    }
+
+    .pms-payment-audit-row:hover {
+        background-color: #f1f5f9 !important;
+    }
+
+    .pms-payment-audit .pms-payment-audit-dt-footer {
+        width: 100%;
+        padding: 0.5rem 0.25rem 0.25rem;
+    }
+
+    .pms-payment-audit .pms-payment-audit-dt-footer .dataTables_length,
+    .pms-payment-audit .pms-payment-audit-dt-footer .dataTables_info,
+    .pms-payment-audit .pms-payment-audit-dt-footer .dataTables_paginate {
+        float: none !important;
+        text-align: left;
+        padding-top: 0;
+    }
+
+    .pms-payment-audit .pms-payment-audit-dt-footer .dataTables_paginate {
+        margin-left: auto;
+    }
+</style>
 
 @section Scripts {
 <script>
     $(document).ready(function () {
-        $('#auditTable').DataTable({
+        var table = $('#auditTable').DataTable({
             pageLength: 25,
-            order: [[5, 'desc']],
-            columnDefs: [{ orderable: false, targets: 8 }]
+            order: [[3, 'desc']],
+            searching: false,
+            dom: 'rt<"pms-payment-audit-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>'
+        });
+
+        $('#auditTable tbody').on('click', 'tr.pms-payment-audit-row', function () {
+            var href = $(this).data('href');
+            if (href) {
+                window.location.href = href;
+            }
         });
     });
 </script>

@@ -64,24 +64,8 @@
                     </div>
                 </div>
 
-                <div class="row g-2 pms-registration-4col-row align-items-start">
-                    <div class="col-12 col-lg-2">
-                        <label class="form-label pms-registration-4col-label">Sizes</label>
-                    </div>
-                    <div class="col-12 col-lg-10">
-                        <div class="d-flex gap-2 flex-wrap align-items-center mb-1">
-                            <input type="text" id="sizeInput" class="form-control" placeholder="e.g. 5 Marla" style="max-width: 200px;" />
-                            <button type="button" id="btnAddSize" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-plus me-1"></i>Add
-                            </button>
-                            <button type="button" id="btnAddMoreSize" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-plus-circle me-1"></i>Add more
-                            </button>
-                        </div>
-                        <input type="hidden" asp-for="Sizes" id="sizesValue" />
-                        <div id="sizesList" class="mt-1 d-flex flex-wrap gap-1 d-none"></div>
-                    </div>
-                </div>
+                <input type="hidden" asp-for="Sizes" id="sizesValue" />
+                <div id="sizesList" class="d-none"></div>
 
                 <div class="row g-2 pms-registration-4col-row align-items-start">
                     <div class="col-12 col-lg-2">

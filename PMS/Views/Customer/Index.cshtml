@@ -29,17 +29,17 @@
 
 <div class="pms-customer-listing pms-listing-page">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-        <h5 class="pms-grid-title mb-0">Customers</h5>
+        <h5 class="pms-grid-title pms-customer-page-heading mb-0">Customers</h5>
         <span class="badge rounded-pill pms-record-badge">@customerCount record@(customerCount == 1 ? "" : "s")</span>
     </div>
 
 <form method="get" asp-action="Index" class="mb-2">
-    <div class="pms-customer-search-wrap pms-listing-search-wrap">
-        <div class="row g-1 align-items-end flex-lg-nowrap">
+    <div class="pms-customer-search-wrap pms-listing-search-wrap pms-customer-search-panel">
+        <div class="row g-1 align-items-center flex-lg-nowrap pms-customer-search-fields">
             <div class="col-12 col-md-6 col-lg-3">
                 <div class="pms-compact-field pms-select-dropdown">
-                    <label for="projectFilter" class="form-label">Project</label>
-                    <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()">
+                    <label for="projectFilter" class="visually-hidden">Project</label>
+                    <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()" aria-label="Project">
                         <option value="All" selected="@(ViewBag.ProjectFilter == "All")">All Projects</option>
                         @if (ViewBag.Projects != null)
                         {
@@ -55,8 +55,8 @@
             </div>
             <div class="col-12 col-md-6 col-lg-2">
                 <div class="pms-compact-field pms-select-dropdown">
-                    <label for="statusFilter" class="form-label">Status</label>
-                    <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()">
+                    <label for="statusFilter" class="visually-hidden">Status</label>
+                    <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()" aria-label="Status">
                         <option value="All" selected="@(ViewBag.StatusFilter == "All")">All Status</option>
                         <option value="Active" selected="@(ViewBag.StatusFilter == "Active")">Active</option>
                         <option value="Pending" selected="@(ViewBag.StatusFilter == "Pending")">Pending</option>
@@ -65,19 +65,20 @@
                     </select>
                 </div>
             </div>
-            <div class="col-12 col-lg-3 pms-customer-search-term-field">
+            <div class="col-12 col-lg pms-customer-search-term-field">
                 <div class="pms-compact-field">
-                    <label for="searchTerm" class="form-label">Search</label>
+                    <label for="searchTerm" class="visually-hidden">Search Customer</label>
                     <input type="text"
                            name="searchTerm"
                            id="searchTerm"
                            class="form-control"
+                           placeholder="Search Customer"
+                           aria-label="Search Customer"
                            value="@ViewBag.SearchTerm" />
                 </div>
             </div>
             <div class="col-12 col-lg-auto">
-                <div class="pms-compact-field pms-customer-search-actions">
-                    <label class="form-label d-none d-lg-block" aria-hidden="true">&nbsp;</label>
+                <div class="pms-compact-field pms-customer-search-actions pms-customer-inline-action">
                     <div class="d-flex flex-nowrap gap-2">
                         <button type="submit" class="btn btn-primary btn-sm">
                             <i class="bi bi-search me-1" aria-hidden="true"></i>Search
@@ -124,7 +125,7 @@
             </div>
         </div>
 
-        <div class="card pms-grid-card pms-saas-grid pms-listing-page mb-2">
+        <div class="card pms-grid-card pms-listing-flat pms-customer-listing pms-customer-grid-compact mb-2">
             <div class="card-body py-2">
                 <partial name="_CustomerDataGrid" model="Model" />
             </div>
@@ -133,13 +134,79 @@
 }
 else
 {
-    <div class="card pms-grid-card pms-saas-grid pms-listing-page mb-2">
+    <div class="card pms-grid-card pms-listing-flat pms-customer-listing pms-customer-grid-compact mb-2">
         <div class="card-body py-2">
             <partial name="_CustomerDataGrid" model="Model" />
         </div>
     </div>
 }
 </div>
+
+<style>
+    .pms-customer-page-heading {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .pms-customer-search-panel {
+        padding: 0.75rem 1rem !important;
+        background: #e8eef8 !important;
+        border: 1px solid #c5d0e0 !important;
+        border-radius: 12px;
+    }
+
+    .pms-customer-search-fields {
+        margin-top: 0 !important;
+        align-items: center !important;
+    }
+
+    .pms-customer-listing .pms-customer-search-panel .form-label:not(.visually-hidden) {
+        display: none !important;
+    }
+
+    .pms-customer-inline-action .btn {
+        min-height: var(--pms-listing-control-h, 36px);
+        white-space: nowrap;
+    }
+
+    .pms-customer-grid-compact > .card-body {
+        padding-top: 0.25rem !important;
+    }
+
+    .pms-customer-listing .pms-customer-dt-footer {
+        width: 100%;
+        padding: 0.5rem 0.25rem 0.25rem;
+    }
+
+    .pms-customer-listing .pms-customer-dt-footer .dataTables_length,
+    .pms-customer-listing .pms-customer-dt-footer .dataTables_info,
+    .pms-customer-listing .pms-customer-dt-footer .dataTables_paginate {
+        float: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 0.8125rem;
+        color: #64748b;
+    }
+
+    .pms-customer-listing .pms-customer-dt-footer .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid #94a3b8;
+        padding: 0.2rem 1.75rem 0.2rem 0.5rem;
+        min-height: 32px;
+        height: 32px;
+        font-size: 0.8125rem;
+        margin: 0 0.35rem;
+        background-color: #fff;
+    }
+
+    .pms-customer-listing .pms-customer-dt-footer .dataTables_paginate {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.15rem;
+    }
+</style>
 
 @section Scripts {
     <script>
@@ -149,8 +216,9 @@ else
 
             if ($('#customersTable').length) {
                 PmsListingDataTable.init('#customersTable', {
-                    dom: '<"pms-customer-dt-controls d-flex flex-wrap align-items-center gap-3 mb-2"lf>rtip',
-                    order: [[ customerIdColumnIndex, "desc" ]]
+                    searching: false,
+                    order: [[ customerIdColumnIndex, "desc" ]],
+                    dom: 'rt<"pms-customer-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>'
                 });
                 PmsListingDataTable.bindRowNavigation('#customersTable');
             }

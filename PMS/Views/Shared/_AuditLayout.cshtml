@@ -1,0 +1,10 @@
+@{
+    Layout = "_Layout";
+    ViewData["IsAuditShell"] = true;
+    ViewData["HidePageBanner"] = true;
+}
+@RenderBody()
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}

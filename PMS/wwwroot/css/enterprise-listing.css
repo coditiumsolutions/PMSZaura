@@ -954,12 +954,12 @@
 .pms-registration-details .pms-registration-details-value,
 .pms-customer-details .pms-registration-details-value {
     color: #2563eb;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     font-weight: 500;
-    padding-top: 0.35rem;
-    line-height: 1.35;
+    padding-top: 0;
+    line-height: 1.25;
     margin-bottom: 0;
-    min-height: 1.35rem;
+    min-height: auto;
 }
 
 .pms-registration-details .pms-registration-details-value code,
@@ -974,9 +974,24 @@
 
 .pms-registration-details .pms-registration-4col-form .pms-registration-4col-row,
 .pms-customer-details .pms-registration-4col-form .pms-registration-4col-row {
+    margin-bottom: 0.2rem;
+    padding-top: 0.15rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid #e2e8f0;
+    align-items: center;
+}
+
+.pms-registration-details .pms-registration-4col-form .pms-registration-4col-row:last-child,
+.pms-customer-details .pms-registration-4col-form .pms-registration-4col-row:last-child {
     margin-bottom: 0;
-    padding-bottom: 0.65rem;
-    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.pms-customer-details .pms-registration-4col-label {
+    font-size: 0.72rem;
+    line-height: 1.2;
+    margin-bottom: 0;
 }
 
 .pms-registration-create,

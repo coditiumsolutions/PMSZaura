@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Customer Details";
+    var canEdit = ViewBag.CanEdit as bool? == true;
+    var canDelete = ViewBag.CanDelete as bool? == true;
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -18,9 +20,18 @@
         </div>
     </div>
     <div class="d-flex flex-wrap gap-2">
-        <a asp-action="Edit" asp-route-id="@Model.CustomerID" class="btn btn-primary btn-sm">
-            <i class="fas fa-edit me-1"></i>Edit
-        </a>
+        @if (canEdit)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.CustomerID" class="btn btn-primary btn-sm">
+                <i class="fas fa-edit me-1"></i>Edit
+            </a>
+        }
+        @if (canDelete)
+        {
+            <a asp-action="Delete" asp-route-id="@Model.CustomerID" class="btn btn-outline-danger btn-sm">
+                <i class="fas fa-trash me-1"></i>Delete
+            </a>
+        }
         <a asp-action="AccountStatement" asp-route-id="@Model.CustomerID" target="_blank" class="btn btn-outline-info btn-sm">
             <i class="fas fa-file-invoice-dollar me-1"></i>Account Statement
         </a>
@@ -200,7 +211,7 @@
 
                         @if (Model.PaymentPlan != null)
                         {
-                            <h6 class="mb-3"><i class="fas fa-credit-card me-2"></i>Payment Plan</h6>
+                            <h6 class="mb-3 pms-customer-section-title"><i class="fas fa-credit-card me-2"></i>Payment Plan</h6>
                             <div class="pms-registration-4col-form mb-4">
                                 <div class="row g-2 pms-registration-4col-row align-items-start">
                                     <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Plan Name</div></div>
@@ -242,7 +253,7 @@
                             </div>
                         }
 
-                        <h6 class="mb-3"><i class="fas fa-project-diagram me-2"></i>Project Details</h6>
+                        <h6 class="mb-3 pms-customer-section-title"><i class="fas fa-project-diagram me-2"></i>Project Details</h6>
                         <div class="pms-registration-4col-form @(!string.IsNullOrEmpty(Model.AdditionalInfo) ? "mb-4" : "")">
                             <div class="row g-2 pms-registration-4col-row align-items-start">
                                 <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Sub Project</div></div>
@@ -273,7 +284,7 @@
 
                         @if (!string.IsNullOrEmpty(Model.AdditionalInfo))
                         {
-                            <h6 class="mb-3"><i class="fas fa-sticky-note me-2"></i>Additional Notes</h6>
+                            <h6 class="mb-3 pms-customer-section-title"><i class="fas fa-sticky-note me-2"></i>Additional Notes</h6>
                             <div class="pms-registration-details-value">@Model.AdditionalInfo</div>
                         }
                     </div>
@@ -377,13 +388,13 @@
                         }
                         else
                         {
-                            <div class="card border-primary">
-                                <div class="card-header bg-primary text-white">
-                                    <h5 class="mb-0">
+                            <div class="card border-0 shadow-sm pms-mp-header">
+                                <div class="card-header py-2 pms-mp-header-bar">
+                                    <h6 class="mb-0">
                                         <i class="fas fa-plus-circle me-2"></i>Start Allotment Process
-                                    </h5>
+                                    </h6>
                                 </div>
-                                <div class="card-body">
+                                <div class="card-body py-3 px-3">
                                     <form id="createAllotmentForm">
                                         <input type="hidden" id="customerID" value="@Model.CustomerID" />
                                         <input type="hidden" id="projectID" value="@Model.PaymentPlan.ProjectID" />
@@ -561,41 +572,66 @@
                     <!-- Joint Owners Tab -->
                     <div class="tab-pane fade" id="jointowners" role="tabpanel" aria-labelledby="jointowners-tab">
                         @Html.AntiForgeryToken()
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Joint Owner Name *</label>
-                                <input type="text" id="jointOwnerName" class="form-control" placeholder="Enter joint owner name" />
-                                <small class="text-muted">Letters, spaces, dots and hyphens only.</small>
+                        <div class="pms-registration-4col-form mb-3">
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerName" class="form-label pms-registration-4col-label">Joint Owner Name *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" id="jointOwnerName" class="form-control" placeholder="Enter joint owner name" />
+                                    <small class="text-muted">Letters, spaces, dots and hyphens only.</small>
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerFatherName" class="form-label pms-registration-4col-label">Son /D/W/o</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" id="jointOwnerFatherName" class="form-control" placeholder="Enter father name" />
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Son /D/W/o</label>
-                                <input type="text" id="jointOwnerFatherName" class="form-control" placeholder="Enter father name" />
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerCNIC" class="form-label pms-registration-4col-label">CNIC *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" id="jointOwnerCNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerContact" class="form-label pms-registration-4col-label">Contact *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" id="jointOwnerContact" class="form-control" placeholder="03XXXXXXXXX" />
+                                    <small class="text-muted">Must be 11 to 13 digits.</small>
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">CNIC *</label>
-                                <input type="text" id="jointOwnerCNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerAddress" class="form-label pms-registration-4col-label">Address</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" id="jointOwnerAddress" class="form-control" placeholder="Address" />
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerPercentage" class="form-label pms-registration-4col-label">Percentage</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="number" id="jointOwnerPercentage" class="form-control" min="0" max="100" step="0.01" placeholder="e.g. 50" />
+                                </div>
                             </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Contact *</label>
-                                <input type="text" id="jointOwnerContact" class="form-control" placeholder="03XXXXXXXXX" />
-                                <small class="text-muted">Must be 11 to 13 digits.</small>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerDetails" class="form-label pms-registration-4col-label">Details</label>
+                                </div>
+                                <div class="col-12 col-lg-10">
+                                    <textarea id="jointOwnerDetails" class="form-control" rows="2" placeholder="Any additional details"></textarea>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Address</label>
-                                <input type="text" id="jointOwnerAddress" class="form-control" placeholder="Address" />
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Percentage</label>
-                                <input type="number" id="jointOwnerPercentage" class="form-control" min="0" max="100" step="0.01" placeholder="e.g. 50" />
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label">Details</label>
-                                <textarea id="jointOwnerDetails" class="form-control" rows="2" placeholder="Any additional details"></textarea>
-                            </div>
-                            <div class="col-md-12">
-                                <button type="button" class="btn btn-primary" onclick="addJointOwnerFromDetails()">
-                                    <i class="fas fa-plus me-2"></i>Add Joint Owner
-                                </button>
+                            <div class="row g-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2 d-none d-lg-block"></div>
+                                <div class="col-12 col-lg-10">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="addJointOwnerFromDetails()">
+                                        <i class="fas fa-plus me-1"></i>Add Joint Owner
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="table-responsive">
@@ -625,18 +661,32 @@
                         <div class="row">
                             <div class="col-12">
                                 <h6 class="mb-3"><i class="fas fa-paperclip me-2"></i>Customer Attachments</h6>
-                                
+
                                 <!-- Customer Picture Section -->
                                 <div class="card mb-4" style="border-color: rgb(104, 167, 226);">
                                     <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
                                         <h6 class="mb-0"><i class="fas fa-user-circle me-2"></i>Customer Picture</h6>
                                     </div>
                                     <div class="card-body">
-                                        <div class="text-center" id="customerPicturePreview">
-                                            <img id="customerPictureImg" src="" alt="Customer Picture" class="img-thumbnail" style="max-width: 300px; max-height: 300px; display: none;" />
-                                            <div id="customerPicturePlaceholder" class="text-muted">
-                                                <i class="fas fa-user-circle fa-5x"></i>
-                                                <p class="mt-2">No picture uploaded</p>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="text-center mb-3" id="customerPicturePreview">
+                                                    <img id="customerPictureImg" src="" alt="Customer Picture" class="img-thumbnail" style="max-width: 200px; max-height: 200px; display: none;" />
+                                                    <div id="customerPicturePlaceholder" class="text-muted">
+                                                        <i class="fas fa-user-circle fa-5x"></i>
+                                                        <p class="mt-2">No picture uploaded</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="customerPictureFile">Upload Customer Picture</label>
+                                                    <input type="file" id="customerPictureFile" class="form-control" accept="image/*" />
+                                                    <small class="text-muted">Only image files (JPG, PNG, GIF, BMP). Max size: 8MB</small>
+                                                </div>
+                                                <button type="button" class="btn text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" onclick="uploadAttachment('CustomerPicture', 'customerPictureFile')">
+                                                    <i class="fas fa-upload me-2"></i>Upload Picture
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -648,11 +698,26 @@
                                         <h6 class="mb-0"><i class="fas fa-id-card me-2"></i>Customer ID Card</h6>
                                     </div>
                                     <div class="card-body">
-                                        <div class="text-center" id="idCardPreview">
-                                            <img id="idCardImg" src="" alt="ID Card" class="img-thumbnail" style="max-width: 300px; max-height: 300px; display: none;" />
-                                            <div id="idCardPlaceholder" class="text-muted">
-                                                <i class="fas fa-id-card fa-5x"></i>
-                                                <p class="mt-2">No ID card uploaded</p>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="text-center mb-3" id="idCardPreview">
+                                                    <img id="idCardImg" src="" alt="ID Card" class="img-thumbnail" style="max-width: 200px; max-height: 200px; display: none;" />
+                                                    <div id="idCardPlaceholder" class="text-muted">
+                                                        <i class="fas fa-id-card fa-5x"></i>
+                                                        <p class="mt-2">No ID card uploaded</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="idCardFile">Upload ID Card</label>
+                                                    <input type="file" id="idCardFile" class="form-control" accept="image/*,.pdf" multiple />
+                                                    <small class="text-muted">Image files (JPG, PNG, GIF, BMP) or PDF. Max size: 8MB each. You can upload multiple files (e.g., front and back).</small>
+                                                </div>
+                                                <button type="button" class="btn text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" onclick="uploadAttachment('IDCard', 'idCardFile')">
+                                                    <i class="fas fa-upload me-2"></i>Upload ID Card
+                                                </button>
+                                                <div id="idCardFilesContainer" class="row mt-3"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -664,7 +729,24 @@
                                         <h6 class="mb-0"><i class="fas fa-folder-open me-2"></i>Other Attachments</h6>
                                     </div>
                                     <div class="card-body">
-                                        <div id="attachmentsList">
+                                        <div class="mb-3">
+                                            <label class="form-label">Upload Additional Attachment</label>
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <input type="file" id="otherAttachmentFile" class="form-control" accept="image/*,.pdf" />
+                                                    <small class="text-muted">Image files or PDF. Max size: 8MB</small>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="text" id="otherAttachmentDescription" class="form-control" placeholder="Description (optional)" />
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <button type="button" class="btn text-white w-100" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" onclick="uploadAttachment('Other', 'otherAttachmentFile', 'otherAttachmentDescription')">
+                                                        <i class="fas fa-upload me-2"></i>Upload
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="attachmentsList" class="mt-4">
                                             <h6 class="mb-3">Uploaded Attachments</h6>
                                             <div id="attachmentsContainer" class="row">
                                                 <div class="col-12 text-center text-muted py-3">
@@ -742,11 +824,21 @@
         padding-right: 0;
     }
 
-    /* Tab Styling */
+    /* Tab Styling — keep all tabs on one row */
     .pms-customer-details .customer-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        white-space: nowrap;
         border-bottom: 1px solid #e5e7eb;
         background: transparent;
-        padding: 0.5rem 0 0;
+        padding: 0.35rem 0 0;
+        gap: 0;
+        scrollbar-width: thin;
+    }
+
+    .pms-customer-details .customer-tabs .nav-item {
+        flex: 0 0 auto;
     }
 
     .pms-customer-details .customer-tabs .nav-link {
@@ -754,10 +846,12 @@
         font-weight: 600;
         border: none;
         border-bottom: 2px solid transparent;
-        padding: 0.75rem 1rem;
+        padding: 0.45rem 0.55rem;
         transition: color 0.2s ease, border-color 0.2s ease;
-        font-size: 14px;
+        font-size: 0.78rem;
         background: transparent;
+        white-space: nowrap;
+        line-height: 1.2;
     }
 
     .pms-customer-details .customer-tabs .nav-link:hover {
@@ -774,25 +868,142 @@
     }
 
     .pms-customer-details .customer-tabs .nav-link i {
-        font-size: 13px;
+        font-size: 0.72rem;
+        margin-right: 0.25rem !important;
     }
 
-    /* Tab Content */
-    .tab-content {
-        padding-top: 1rem;
+    .pms-customer-details .customer-tabs .nav-link .badge {
+        font-size: 0.65rem;
+        vertical-align: middle;
     }
 
-    /* Detail fields — full-width horizontal line after each row */
-    .pms-customer-details .tab-pane .row > [class*="col-"]:has(.detail-field) {
-        padding-top: 0.75rem;
-        padding-bottom: 0.75rem;
+    /* Tab Content — compact */
+    .pms-customer-details .tab-content {
+        padding-top: 0.5rem;
+    }
+
+    .pms-customer-details > .card-body {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+
+    /* Compact field / title rows across all tabs */
+    .pms-customer-details .pms-registration-4col-form .pms-registration-4col-row,
+    .pms-customer-details .pms-mp-header .pms-registration-4col-form .pms-registration-4col-row {
+        --bs-gutter-y: 0.15rem;
+        --bs-gutter-x: 0.5rem;
+        margin-bottom: 0.2rem !important;
+        padding-top: 0.15rem !important;
+        padding-bottom: 0.2rem !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        align-items: center !important;
+    }
+
+    .pms-customer-details .pms-registration-4col-form .pms-registration-4col-row:last-child {
         margin-bottom: 0 !important;
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: none;
+        padding-bottom: 0 !important;
+    }
+
+    .pms-customer-details .pms-registration-4col-label {
+        font-size: 0.72rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 0 !important;
+    }
+
+    .pms-customer-details .pms-registration-details-value {
+        font-size: 0.8125rem !important;
+        padding-top: 0 !important;
+        line-height: 1.25 !important;
+        min-height: auto !important;
+        margin-bottom: 0 !important;
+    }
+
+    .pms-customer-details .pms-registration-details-value .badge {
+        font-size: 0.7rem;
+        padding: 0.2em 0.45em;
+    }
+
+    .pms-customer-details .pms-registration-4col-form.mb-4 {
+        margin-bottom: 0.75rem !important;
+    }
+
+    .pms-customer-details .tab-pane h6,
+    .pms-customer-details .tab-pane h6.pms-customer-section-title {
+        margin-top: 0.35rem !important;
+        margin-bottom: 0.4rem !important;
+        padding-bottom: 0.3rem !important;
+    }
+
+    .pms-customer-details .tab-pane h6.pms-customer-section-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .pms-customer-details .tab-pane .alert {
+        margin-bottom: 0.75rem !important;
+        padding: 0.55rem 0.75rem;
+    }
+
+    .pms-customer-details .tab-pane .table {
+        margin-bottom: 0.5rem;
+    }
+
+    .pms-customer-details .tab-pane .table > :not(caption) > * > * {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.8125rem;
+    }
+
+    .pms-customer-details .tab-pane .mb-3 {
+        margin-bottom: 0.5rem !important;
+    }
+
+    .pms-customer-details .tab-pane .mb-4 {
+        margin-bottom: 0.75rem !important;
+    }
+
+    .pms-customer-details .form-label {
+        margin-bottom: 0.2rem !important;
+        font-size: 0.75rem !important;
+        line-height: 1.2;
+    }
+
+    .pms-customer-details .form-control,
+    .pms-customer-details .form-select {
+        min-height: 30px;
+        padding-top: 0.2rem;
+        padding-bottom: 0.2rem;
+        font-size: 0.8125rem;
+    }
+
+    /* Field titles — black like Customer ID / Full Name labels */
+    .pms-customer-details .pms-registration-4col-label,
+    .pms-customer-details .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label,
+    .pms-customer-details .detail-field label,
+    .pms-customer-details .form-label,
+    .pms-customer-details .tab-pane .table thead th {
+        color: #000 !important;
+        font-weight: 600;
+    }
+
+    .pms-customer-details .detail-field label i,
+    .pms-customer-details .form-label i {
+        color: #334155 !important;
+        opacity: 1;
+    }
+
+    /* Detail fields — compact */
+    .pms-customer-details .tab-pane .row > [class*="col-"]:has(.detail-field) {
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+        margin-bottom: 0 !important;
+        border-bottom: 1px solid #e2e8f0;
         background: transparent !important;
     }
 
     .pms-customer-details .tab-pane .row > [class*="col-"]:has(.detail-field):last-child {
-        border-bottom: 1px solid #e5e7eb;
+        border-bottom: 1px solid #e2e8f0;
     }
 
     .pms-customer-details .detail-field {
@@ -812,25 +1023,20 @@
 
     .pms-customer-details .detail-field label {
         display: block;
-        margin-bottom: 0.35rem;
+        margin-bottom: 0.15rem;
         font-size: 0.7rem;
         text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: #64748b;
+        letter-spacing: 0.04em;
         font-weight: 600;
-    }
-
-    .pms-customer-details .detail-field label i {
-        color: #2563eb;
-        opacity: 0.85;
+        line-height: 1.2;
     }
 
     .pms-customer-details .detail-field p {
-        font-size: 0.9375rem;
+        font-size: 0.8125rem;
         color: #0f172a;
         margin-bottom: 0;
         font-weight: 500;
-        line-height: 1.45;
+        line-height: 1.25;
         word-break: break-word;
     }
 
@@ -844,7 +1050,7 @@
         color: #0f172a;
         padding: 0;
         border-radius: 0;
-        font-size: 0.9375rem;
+        font-size: inherit;
         font-weight: 600;
     }
 
@@ -852,8 +1058,8 @@
     .pms-customer-details .tab-pane h6 {
         color: #0f172a;
         font-weight: 700;
-        padding-bottom: 0.5rem;
-        margin-top: 0.5rem;
+        padding-bottom: 0.3rem;
+        margin-top: 0.35rem;
         border-bottom: 1px solid #e5e7eb;
         background: transparent;
     }
@@ -877,14 +1083,22 @@
         border: 1px solid #e5e7eb;
     }
 
-    /* Responsive Tabs */
-    @@media (max-width: 768px) {
-        .customer-tabs .nav-link {
-            padding: 0.5rem 0.75rem;
-            font-size: 12px;
+    .pms-customer-details .tab-pane .card.pms-mp-header {
+        border: 1px solid var(--pms-slate-500, #64748b) !important;
+    }
+
+    .pms-customer-details .tab-pane .card .card-body {
+        padding: 0.65rem 0.75rem !important;
+    }
+
+    /* Responsive Tabs — still one row; allow horizontal scroll */
+    @@media (max-width: 992px) {
+        .pms-customer-details .customer-tabs .nav-link {
+            padding: 0.4rem 0.45rem;
+            font-size: 0.72rem;
         }
 
-        .customer-tabs .nav-link i {
+        .pms-customer-details .customer-tabs .nav-link i {
             display: none;
         }
     }
@@ -1167,14 +1381,11 @@
             var container = $('#attachmentsContainer');
             container.empty();
 
-            if (attachments.length === 0) {
-                container.html('<div class="col-12 text-center text-muted py-3"><i class="fas fa-inbox fa-2x mb-2"></i><p>No attachments uploaded yet</p></div>');
-                return;
-            }
+            attachments = attachments || [];
 
             // Separate attachments by type
             var customerPicture = attachments.find(a => a.attachmentType === 'CustomerPicture');
-            var idCard = attachments.find(a => a.attachmentType === 'IDCard');
+            var idCards = attachments.filter(a => a.attachmentType === 'IDCard');
             var otherAttachments = attachments.filter(a => a.attachmentType === 'Other');
 
             // Display Customer Picture
@@ -1186,18 +1397,51 @@
                 $('#customerPicturePlaceholder').show();
             }
 
-            // Display ID Card
-            if (idCard) {
-                if (idCard.fileType && idCard.fileType.includes('pdf')) {
+            // Display ID Cards (multiple supported)
+            var idCardContainer = $('#idCardFilesContainer');
+            idCardContainer.empty();
+            var primaryIdCard = idCards.length > 0 ? idCards[0] : null;
+            if (primaryIdCard) {
+                if (primaryIdCard.fileType && primaryIdCard.fileType.includes('pdf')) {
                     $('#idCardImg').hide();
-                    $('#idCardPlaceholder').html('<i class="fas fa-file-pdf fa-5x"></i><p class="mt-2">PDF Document</p><a href="' + idCard.filePath + '" target="_blank" class="btn btn-sm text-white mt-2" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);"><i class="fas fa-eye me-1"></i>View PDF</a>').show();
+                    $('#idCardPlaceholder').html('<i class="fas fa-file-pdf fa-5x"></i><p class="mt-2">PDF Document</p>').show();
                 } else {
-                    $('#idCardImg').attr('src', idCard.filePath).show();
+                    $('#idCardImg').attr('src', primaryIdCard.filePath).show();
                     $('#idCardPlaceholder').hide();
                 }
+
+                idCards.forEach(function(idCard) {
+                    var isImage = idCard.fileType && idCard.fileType.startsWith('image/');
+                    var isPdf = idCard.fileType && idCard.fileType.includes('pdf');
+                    var idCardHtml = '<div class="col-md-6 mb-3">' +
+                        '<div class="card h-100">' +
+                        '<div class="card-body text-center">';
+
+                    if (isImage) {
+                        idCardHtml += '<img src="' + idCard.filePath + '" class="img-thumbnail mb-2" style="max-width: 100%; max-height: 180px;" />';
+                    } else if (isPdf) {
+                        idCardHtml += '<i class="fas fa-file-pdf fa-4x text-danger mb-2"></i>';
+                    } else {
+                        idCardHtml += '<i class="fas fa-file fa-4x text-muted mb-2"></i>';
+                    }
+
+                    idCardHtml += '<h6 class="card-title">' + (idCard.fileName || 'ID Card') + '</h6>' +
+                        '<p class="card-text small text-muted">' +
+                        (idCard.fileSize ? formatFileSize(idCard.fileSize) : '') +
+                        ' • ' + idCard.uploadedAt + '</p>' +
+                        '<div class="btn-group" role="group">' +
+                        '<a href="' + idCard.filePath + '" target="_blank" class="btn btn-sm btn-outline-primary">' +
+                        '<i class="fas fa-eye me-1"></i>View</a>' +
+                        '<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteAttachment(\'' + idCard.attachmentID + '\')">' +
+                        '<i class="fas fa-trash me-1"></i>Delete</button>' +
+                        '</div>' +
+                        '</div></div></div>';
+                    idCardContainer.append(idCardHtml);
+                });
             } else {
                 $('#idCardImg').hide();
                 $('#idCardPlaceholder').html('<i class="fas fa-id-card fa-5x"></i><p class="mt-2">No ID card uploaded</p>').show();
+                idCardContainer.append('<div class="col-12 text-center text-muted py-2"><p class="mb-0">No ID card files uploaded yet</p></div>');
             }
 
             // Display Other Attachments
@@ -1205,11 +1449,11 @@
                 otherAttachments.forEach(function(attachment) {
                     var isImage = attachment.fileType && attachment.fileType.startsWith('image/');
                     var isPdf = attachment.fileType && attachment.fileType.includes('pdf');
-                    
+
                     var cardHtml = '<div class="col-md-4 mb-3">' +
                         '<div class="card h-100">' +
                         '<div class="card-body text-center">';
-                    
+
                     if (isImage) {
                         cardHtml += '<img src="' + attachment.filePath + '" class="img-thumbnail mb-2" style="max-width: 100%; max-height: 200px;" />';
                     } else if (isPdf) {
@@ -1217,25 +1461,124 @@
                     } else {
                         cardHtml += '<i class="fas fa-file fa-4x text-muted mb-2"></i>';
                     }
-                    
+
                     cardHtml += '<h6 class="card-title">' + (attachment.fileName || 'Attachment') + '</h6>';
-                    
+
                     if (attachment.description) {
                         cardHtml += '<p class="card-text text-muted small">' + attachment.description + '</p>';
                     }
-                    
-                    cardHtml += '<p class="card-text small text-muted">' + 
-                        (attachment.fileSize ? formatFileSize(attachment.fileSize) : '') + 
+
+                    cardHtml += '<p class="card-text small text-muted">' +
+                        (attachment.fileSize ? formatFileSize(attachment.fileSize) : '') +
                         ' • ' + attachment.uploadedAt + '</p>' +
-                        '<a href="' + attachment.filePath + '" target="_blank" class="btn btn-sm text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">' +
+                        '<div class="btn-group" role="group">' +
+                        '<a href="' + attachment.filePath + '" target="_blank" class="btn btn-sm btn-outline-primary">' +
                         '<i class="fas fa-eye me-1"></i>View</a>' +
+                        '<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteAttachment(\'' + attachment.attachmentID + '\')">' +
+                        '<i class="fas fa-trash me-1"></i>Delete</button>' +
+                        '</div>' +
                         '</div></div></div>';
-                    
+
                     container.append(cardHtml);
                 });
             } else {
-                container.append('<div class="col-12 text-center text-muted py-3"><p>No other attachments</p></div>');
+                container.html('<div class="col-12 text-center text-muted py-3"><i class="fas fa-inbox fa-2x mb-2"></i><p>No other attachments uploaded yet</p></div>');
             }
+        }
+
+        // Upload attachment
+        function uploadSingleAttachment(file, attachmentType, description) {
+            var formData = new FormData();
+            formData.append('customerId', customerId);
+            formData.append('file', file);
+            formData.append('attachmentType', attachmentType);
+            formData.append('description', description || '');
+
+            return new Promise(function(resolve, reject) {
+                $.ajax({
+                    url: '@Url.Action("UploadAttachment", "Customer")',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(xhr) {
+                        reject(xhr);
+                    }
+                });
+            });
+        }
+
+        function uploadAttachment(attachmentType, fileInputId, descriptionInputId) {
+            var fileInput = $('#' + fileInputId)[0];
+            var selectedFiles = Array.from(fileInput.files || []);
+            if (selectedFiles.length === 0) {
+                alert('Please select a file to upload');
+                return;
+            }
+            if (attachmentType !== 'IDCard' && selectedFiles.length > 1) {
+                alert('Please select only one file for this attachment type.');
+                return;
+            }
+            var description = descriptionInputId ? $('#' + descriptionInputId).val() : '';
+            var filesToUpload = attachmentType === 'IDCard' ? selectedFiles : [selectedFiles[0]];
+            var uploadRequests = filesToUpload.map(function(file) {
+                return uploadSingleAttachment(file, attachmentType, description);
+            });
+
+            Promise.all(uploadRequests)
+                .then(function(results) {
+                    var failed = results.filter(function(r) { return !r.success; });
+                    if (failed.length > 0) {
+                        var firstError = failed[0] && failed[0].message ? failed[0].message : 'Some files could not be uploaded.';
+                        alert('Error: ' + firstError);
+                        return;
+                    }
+
+                    if (attachmentType === 'IDCard' && filesToUpload.length > 1) {
+                        alert(filesToUpload.length + ' ID card files uploaded successfully.');
+                    } else {
+                        alert((results[0] && results[0].message) ? results[0].message : 'File uploaded successfully.');
+                    }
+
+                    fileInput.value = '';
+                    if (descriptionInputId) {
+                        $('#' + descriptionInputId).val('');
+                    }
+                    loadAttachments();
+                })
+                .catch(function(xhr) {
+                    var err = xhr && xhr.responseJSON && xhr.responseJSON.message
+                        ? xhr.responseJSON.message
+                        : 'An error occurred while uploading the file';
+                    alert('Error: ' + err);
+                });
+        }
+
+        // Delete attachment
+        function deleteAttachment(attachmentId) {
+            if (!confirm('Are you sure you want to delete this attachment?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("DeleteAttachment", "Customer")',
+                method: 'POST',
+                data: { attachmentId: attachmentId },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        loadAttachments();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while deleting the attachment');
+                }
+            });
         }
 
         // Format file size

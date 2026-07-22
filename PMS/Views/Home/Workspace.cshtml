@@ -2,8 +2,27 @@
     ViewData["Title"] = "Workspace - ZKB Eclipse";
 }
 
+<!-- Module search -->
+<div class="workspace-search-bar mb-3">
+    <div class="workspace-search-input-wrap">
+        <i class="fas fa-search workspace-search-icon"></i>
+        <input type="search"
+               id="workspaceModuleSearch"
+               class="form-control workspace-search-input"
+               placeholder="Search modules (e.g. Transfer)..."
+               autocomplete="off"
+               aria-label="Search modules" />
+        <button type="button" id="workspaceSearchClear" class="workspace-search-clear" title="Clear" aria-label="Clear search" hidden>
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <div id="workspaceSearchEmpty" class="workspace-search-empty" hidden>
+        No modules match your search.
+    </div>
+</div>
+
 <!-- Workspace Tiles Grid -->
-<div class="workspace-grid">
+<div class="workspace-grid" id="workspaceGrid">
     <!-- Dashboard Tile -->
     <a href="@Url.Action("Index", "Home")" class="workspace-tile">
         <div class="tile-icon">
@@ -448,6 +467,46 @@
 
 @section Scripts {
 <script>
+    (function () {
+        var input = document.getElementById('workspaceModuleSearch');
+        var clearBtn = document.getElementById('workspaceSearchClear');
+        var emptyMsg = document.getElementById('workspaceSearchEmpty');
+        var grid = document.getElementById('workspaceGrid');
+        if (!input || !grid) return;
+
+        var tiles = Array.prototype.slice.call(grid.querySelectorAll(':scope > a.workspace-tile'));
+
+        function filterTiles() {
+            var q = (input.value || '').trim().toLowerCase();
+            clearBtn.hidden = !q;
+            var visible = 0;
+
+            tiles.forEach(function (tile) {
+                var labelEl = tile.querySelector('.tile-label');
+                var label = (labelEl ? labelEl.textContent : '').trim().toLowerCase();
+                var match = !q || label.indexOf(q) !== -1;
+                tile.style.display = match ? '' : 'none';
+                if (match) visible++;
+            });
+
+            emptyMsg.hidden = visible > 0 || !q;
+        }
+
+        input.addEventListener('input', filterTiles);
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                input.value = '';
+                filterTiles();
+                input.blur();
+            }
+        });
+        clearBtn.addEventListener('click', function () {
+            input.value = '';
+            filterTiles();
+            input.focus();
+        });
+    })();
+
     // ── Hardcoded seed data (10 rows) ──────────────────────────────────────
     var backupData = [
         { no:"BKP-20260201-001", src:"127.0.0.1", dst:"172.20.228.2", status:"Completed", dt:"Feb 01, 2026 02:00 AM", size:"342 MB", dur:"1m 08s", by:"Scheduler" },
@@ -546,6 +605,67 @@
 }
 
 <style>
+    .workspace-search-bar {
+        max-width: 420px;
+    }
+
+    .workspace-search-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .workspace-search-icon {
+        position: absolute;
+        left: 14px;
+        color: var(--text-secondary);
+        font-size: 13px;
+        pointer-events: none;
+    }
+
+    .workspace-search-input {
+        padding-left: 38px;
+        padding-right: 36px;
+        border-radius: 9px;
+        border: 2px solid var(--border);
+        font-size: 13px;
+        height: 40px;
+        background: white;
+        color: var(--text-primary);
+    }
+
+    .workspace-search-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(156, 106, 222, 0.15);
+    }
+
+    .workspace-search-clear {
+        position: absolute;
+        right: 10px;
+        border: none;
+        background: transparent;
+        color: var(--text-secondary);
+        padding: 4px 6px;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .workspace-search-clear:hover {
+        color: var(--text-primary);
+    }
+
+    .workspace-search-empty {
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--text-secondary);
+    }
+
+    html[data-theme="dark"] .workspace-search-input {
+        background: var(--surface);
+        border-color: var(--border);
+        color: var(--text-primary);
+    }
+
     .workspace-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
