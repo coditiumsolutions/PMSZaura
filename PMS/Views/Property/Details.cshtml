@@ -63,156 +63,108 @@
                 <div class="tab-content" id="propertyTabContent">
                     <!-- Property Info Tab -->
                     <div class="tab-pane fade show active" id="property" role="tabpanel" aria-labelledby="property-tab">
-                        <div class="row">
-                            <!-- Property Details -->
-                            <div class="col-md-8">
-                                <h6 class="mb-3"><i class="fas fa-building me-2"></i>Property Details</h6>
-                                <div class="row">
-                                    <div class="col-md-4 mb-2">
-                                        <div class="detail-field">
-                                            <label><i class="fas fa-id-badge me-2"></i>Property ID</label>
-                                            <p><code>@Model.PropertyID</code></p>
-                                        </div>
+                        <h6 class="mb-3 pms-property-section-title"><i class="fas fa-building me-2"></i>Property Details</h6>
+                        <div class="pms-registration-4col-form pms-property-info-form">
+                            <div class="row g-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Property ID</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box"><code>@Model.PropertyID</code></div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Status</div></div>
+                                <div class="col-12 col-lg-4">
+                                    <div class="pms-registration-details-value pms-property-field-box">
+                                        <span class="badge @(Model.Status == "Available" ? "bg-success" : Model.Status == "Allotted" ? "bg-warning text-dark" : "bg-danger")">
+                                            @Model.Status
+                                        </span>
                                     </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="detail-field">
-                                            <label><i class="fas fa-toggle-on me-2"></i>Status</label>
-                                            <p>
-                                                <span class="badge @(Model.Status == "Available" ? "bg-success" : Model.Status == "Allotted" ? "bg-warning" : "bg-danger")">
-                                                    @Model.Status
-                                                </span>
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="detail-field">
-                                            <label><i class="fas fa-map-marker-alt me-2"></i>Unit No</label>
-                                            <p>@Model.PlotNo</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="detail-field">
-                                            <label><i class="fas fa-sitemap me-2"></i>Subproject</label>
-                                            <p>@(string.IsNullOrWhiteSpace(Model.SubProject) ? "—" : Model.SubProject)</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="detail-field">
-                                            <label><i class="fas fa-th-large me-2"></i>Tower</label>
-                                            <p>@Model.Block</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="detail-field">
-                                            <label><i class="fas fa-layer-group me-2"></i>Floor</label>
-                                            <p>@(Model.Floor ?? "N/A")</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="detail-field">
-                                            <label><i class="fas fa-tag me-2"></i>Unit Type (Category)</label>
-                                            <p>@Model.PlotType</p>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4 mb-2">
-                                        <div class="detail-field">
-                                            <label><i class="fas fa-ruler-combined me-2"></i>Size</label>
-                                            <p>@Model.Size</p>
-                                        </div>
-                                    </div>
-                                    @if (!string.IsNullOrEmpty(Model.AdditionalInfo))
-                                    {
-                                        <div class="col-md-12 mb-2">
-                                            <div class="detail-field">
-                                                <label><i class="fas fa-info-circle me-2"></i>Additional Information</label>
-                                                <p>@Model.AdditionalInfo</p>
-                                            </div>
-                                        </div>
-                                    }
                                 </div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Unit No</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@Model.PlotNo</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Subproject</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@(string.IsNullOrWhiteSpace(Model.SubProject) ? "—" : Model.SubProject)</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Tower</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@Model.Block</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Floor</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@(Model.Floor ?? "N/A")</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Unit Type (Category)</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@(string.IsNullOrWhiteSpace(Model.PlotType) ? "—" : Model.PlotType)</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Size</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@Model.Size</div></div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.AdditionalInfo))
+                            {
+                                <div class="row g-2 pms-registration-4col-row align-items-center">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Additional Information</div></div>
+                                    <div class="col-12 col-lg-10"><div class="pms-registration-details-value pms-property-field-box">@Model.AdditionalInfo</div></div>
+                                </div>
+                            }
+                        </div>
 
-                                <!-- Project Information -->
-                                @if (Model.Project != null)
+                        @if (Model.Project != null)
+                        {
+                            <h6 class="mb-3 mt-4 pms-property-section-title"><i class="fas fa-project-diagram me-2"></i>Project Information</h6>
+                            <div class="pms-registration-4col-form pms-property-info-form">
+                                <div class="row g-2 pms-registration-4col-row align-items-center">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Project Name</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@Model.Project.ProjectName</div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Type</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@(Model.Project.Type ?? "—")</div></div>
+                                </div>
+                                <div class="row g-2 pms-registration-4col-row align-items-center">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Location</div></div>
+                                    <div class="col-12 col-lg-10"><div class="pms-registration-details-value pms-property-field-box">@(Model.Project.Location ?? "—")</div></div>
+                                </div>
+                                @if (!string.IsNullOrEmpty(Model.Project.Description))
                                 {
-                                    <h6 class="mb-3 mt-4"><i class="fas fa-project-diagram me-2"></i>Project Information</h6>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-2">
-                                            <div class="detail-field">
-                                                <label><i class="fas fa-tag me-2"></i>Project Name</label>
-                                                <p>@Model.Project.ProjectName</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <div class="detail-field">
-                                                <label><i class="fas fa-building me-2"></i>Type</label>
-                                                <p>@Model.Project.Type</p>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6 mb-2">
-                                            <div class="detail-field">
-                                                <label><i class="fas fa-map-marker-alt me-2"></i>Location</label>
-                                                <p>@Model.Project.Location</p>
-                                            </div>
-                                        </div>
-                                        @if (!string.IsNullOrEmpty(Model.Project.Description))
-                                        {
-                                            <div class="col-md-12 mb-2">
-                                                <div class="detail-field">
-                                                    <label><i class="fas fa-info-circle me-2"></i>Description</label>
-                                                    <p>@Model.Project.Description</p>
-                                                </div>
-                                            </div>
-                                        }
+                                    <div class="row g-2 pms-registration-4col-row align-items-center">
+                                        <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Description</div></div>
+                                        <div class="col-12 col-lg-10"><div class="pms-registration-details-value pms-property-field-box">@Model.Project.Description</div></div>
                                     </div>
                                 }
                             </div>
+                        }
 
-                            <!-- Sidebar: Stats and Current Owner -->
-                            <div class="col-md-4">
-                                <!-- Property Stats -->
-                                <h6 class="mb-3"><i class="fas fa-chart-bar me-2"></i>Statistics</h6>
-                                <div class="stat-item mb-2">
-                                    <i class="fas fa-users text-primary"></i>
-                                    <span class="stat-label">Allotments:</span>
-                                    <strong>@(Model.Allotments?.Count ?? 0)</strong>
-                                </div>
-                                <div class="stat-item mb-2">
-                                    <i class="fas fa-key text-success"></i>
-                                    <span class="stat-label">Possessions:</span>
-                                    <strong>@(Model.Possessions?.Count ?? 0)</strong>
-                                </div>
-                                <!-- Current Owner -->
-                                @if (Model.Allotments != null && Model.Allotments.Any())
-                                {
-                                    var currentAllotment = Model.Allotments.OrderByDescending(a => a.AllotmentDate).FirstOrDefault();
-                                    if (currentAllotment?.Customer != null)
-                                    {
-                                        <h6 class="mb-3 mt-4"><i class="fas fa-user me-2"></i>Current Owner</h6>
-                                        <div class="owner-card p-3 border rounded">
-                                            <div class="text-center mb-3">
-                                                <i class="fas fa-user-circle fa-2x" style="color: #2563eb;"></i>
-                                            </div>
-                                            <div class="detail-field mb-2">
-                                                <label><i class="fas fa-user me-2"></i>Name</label>
-                                                <p>@currentAllotment.Customer.FullName</p>
-                                            </div>
-                                            <div class="detail-field mb-2">
-                                                <label><i class="fas fa-id-card me-2"></i>Customer ID</label>
-                                                <p><code>@currentAllotment.Customer.CustomerID</code></p>
-                                            </div>
-                                            <div class="detail-field mb-3">
-                                                <label><i class="fas fa-phone me-2"></i>Phone</label>
-                                                <p>@currentAllotment.Customer.Phone</p>
-                                            </div>
-                                            <a asp-controller="Customer" asp-action="Details" asp-route-id="@currentAllotment.Customer.CustomerID" 
-                                               class="btn btn-outline-primary btn-sm w-100">
-                                                <i class="fas fa-eye me-2"></i>View Details
-                                            </a>
-                                        </div>
-                                    }
-                                }
+                        <h6 class="mb-3 mt-4 pms-property-section-title"><i class="fas fa-chart-bar me-2"></i>Statistics</h6>
+                        <div class="pms-registration-4col-form pms-property-info-form">
+                            <div class="row g-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Allotments</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@(Model.Allotments?.Count ?? 0)</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Possessions</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@(Model.Possessions?.Count ?? 0)</div></div>
                             </div>
                         </div>
+
+                        @if (Model.Allotments != null && Model.Allotments.Any())
+                        {
+                            var currentAllotment = Model.Allotments.OrderByDescending(a => a.AllotmentDate).FirstOrDefault();
+                            if (currentAllotment?.Customer != null)
+                            {
+                                <h6 class="mb-3 mt-4 pms-property-section-title"><i class="fas fa-user me-2"></i>Current Owner</h6>
+                                <div class="pms-registration-4col-form pms-property-info-form">
+                                    <div class="row g-2 pms-registration-4col-row align-items-center">
+                                        <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Name</div></div>
+                                        <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@currentAllotment.Customer.FullName</div></div>
+                                        <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Customer ID</div></div>
+                                        <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box"><code>@currentAllotment.Customer.CustomerID</code></div></div>
+                                    </div>
+                                    <div class="row g-2 pms-registration-4col-row align-items-center">
+                                        <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Phone</div></div>
+                                        <div class="col-12 col-lg-4"><div class="pms-registration-details-value pms-property-field-box">@(currentAllotment.Customer.Phone ?? "—")</div></div>
+                                        <div class="col-12 col-lg-2"><div class="pms-registration-4col-label"></div></div>
+                                        <div class="col-12 col-lg-4">
+                                            <a asp-controller="Customer" asp-action="Details" asp-route-id="@currentAllotment.Customer.CustomerID"
+                                               class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye me-1"></i>View Customer
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
                     </div>
 
                     <!-- Allotments Tab -->
@@ -473,12 +425,102 @@
         background: #fff;
     }
 
-    .pms-property-details .tab-pane h6 {
-        color: #334155;
-        font-weight: 600;
-        font-size: 0.8125rem;
-        padding-bottom: 0.35rem;
+    .pms-property-details .tab-pane h6,
+    .pms-property-details .pms-property-section-title {
+        color: #0f172a;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding-bottom: 0.25rem;
+        margin-bottom: 0.4rem !important;
         border-bottom: 1px solid #e5e7eb;
+    }
+
+    .pms-property-details .pms-property-info-form {
+        margin-bottom: 0.35rem;
+    }
+
+    .pms-property-details .pms-property-info-form .pms-registration-4col-row {
+        margin-bottom: 0;
+        padding-top: 0.1rem;
+        padding-bottom: 0.1rem;
+        border-bottom: 1px solid #e8edf3;
+        align-items: center;
+        --bs-gutter-x: 0.25rem;
+        --bs-gutter-y: 0.05rem;
+    }
+
+    .pms-property-details .pms-property-info-form .pms-registration-4col-row:last-child {
+        border-bottom: 1px solid #e8edf3;
+    }
+
+    .pms-property-details .pms-property-info-form .pms-registration-4col-label {
+        color: #000;
+        font-weight: 600;
+        font-size: 0.7rem;
+        margin-bottom: 0;
+        line-height: 1.15;
+        padding-right: 0.1rem;
+    }
+
+    .pms-property-details .pms-property-info-form .pms-registration-details-value,
+    .pms-property-details .pms-property-info-form .pms-property-field-box {
+        color: #2563eb !important;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        line-height: 1.15;
+        margin-bottom: 0;
+        min-height: 22px;
+        max-width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0.05rem 0;
+        border: none !important;
+        border-radius: 0;
+        background: transparent;
+        width: auto;
+        min-width: 0;
+        word-break: break-word;
+        box-shadow: none;
+    }
+
+    /* Keep value boxes from stretching full column width */
+    .pms-property-details .pms-property-info-form .col-lg-4 > .pms-property-field-box,
+    .pms-property-details .pms-property-info-form .col-lg-10 > .pms-property-field-box {
+        display: inline-flex;
+        width: fit-content;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .pms-property-details .pms-property-info-form .col-lg-10 > .pms-property-field-box {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .pms-property-details .pms-property-info-form .pms-property-field-box code {
+        background: transparent;
+        color: #2563eb !important;
+        padding: 0;
+        font-size: inherit;
+        font-weight: 500;
+    }
+
+    /* Slightly tighter label columns so fields sit closer to titles */
+    @@media (min-width: 992px) {
+        .pms-property-details .pms-property-info-form .pms-registration-4col-row > .col-lg-2 {
+            flex: 0 0 12%;
+            max-width: 12%;
+        }
+
+        .pms-property-details .pms-property-info-form .pms-registration-4col-row > .col-lg-4 {
+            flex: 0 0 38%;
+            max-width: 38%;
+        }
+
+        .pms-property-details .pms-property-info-form .pms-registration-4col-row > .col-lg-10 {
+            flex: 0 0 88%;
+            max-width: 88%;
+        }
     }
 
     .pms-property-details .detail-field {
@@ -494,7 +536,7 @@
         font-size: 0.6875rem;
         text-transform: uppercase;
         letter-spacing: 0.03em;
-        color: #64748b;
+        color: #000;
         font-weight: 600;
     }
 
@@ -504,7 +546,7 @@
 
     .pms-property-details .detail-field p {
         font-size: 0.8125rem;
-        color: #1e293b;
+        color: #2563eb;
         margin-bottom: 0;
         font-weight: 500;
     }
@@ -560,7 +602,7 @@
         font-size: 0.8125rem;
     }
 
-  @@media (max-width: 768px) {
+    @@media (max-width: 768px) {
         .pms-property-details .property-tabs .nav-link {
             padding: 0.4rem 0.55rem;
             font-size: 0.75rem;

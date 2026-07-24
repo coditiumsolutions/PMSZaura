@@ -19,7 +19,7 @@
                     <th>Full Name</th>
                     <th>Project</th>
                     <th>Allotment Status</th>
-                    <th>PlanPlan</th>
+                    <th>CNIC</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -28,15 +28,7 @@
                 {
                     var projectName = customer.PaymentPlan?.Project?.ProjectName
                         ?? customer.Project?.ProjectName;
-                    var planName = customer.PaymentPlan?.PlanName;
-                    var planId = customer.PlanID;
                     var custStatus = customer.Status ?? "Active";
-                    var fatherLine = !string.IsNullOrEmpty(customer.FatherName)
-                        ? "S/O " + customer.FatherName
-                        : null;
-                    var formLine = !string.IsNullOrWhiteSpace(customer.FormNo)
-                        ? "Form No: " + customer.FormNo
-                        : null;
                     <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = customer.CustomerID })">
                         @if (showBulkSelection)
                         {
@@ -51,17 +43,11 @@
                         }
                         <td data-label="Customer ID">
                             <a asp-action="Details" asp-route-id="@(customer.CustomerID ?? "")" class="text-decoration-none">
-                                <div class="pms-cell-primary">
-                                    <span class="pms-cell-primary-title">@(customer.CustomerID ?? "—")</span>
-                                    <span class="pms-cell-primary-sub">@(formLine ?? "—")</span>
-                                </div>
+                                <span class="pms-cell-primary-title">@(customer.CustomerID ?? "")</span>
                             </a>
                         </td>
                         <td data-label="Full Name">
-                            <div class="pms-cell-primary">
-                                <span class="pms-cell-primary-title">@customer.FullName</span>
-                                <span class="pms-cell-primary-sub">@(fatherLine ?? "—")</span>
-                            </div>
+                            <span class="pms-cell-primary-title">@customer.FullName</span>
                         </td>
                         <td data-label="Project">
                             @if (!string.IsNullOrWhiteSpace(projectName))
@@ -83,21 +69,8 @@
                                 <span class="pms-pill pms-pill--neutral">Not allotted</span>
                             }
                         </td>
-                        <td data-label="PlanPlan">
-                            @if (!string.IsNullOrWhiteSpace(planName) || !string.IsNullOrWhiteSpace(planId))
-                            {
-                                <div class="pms-cell-primary">
-                                    <span class="pms-cell-primary-title">@(string.IsNullOrWhiteSpace(planName) ? "Unknown plan" : planName)</span>
-                                    @if (!string.IsNullOrWhiteSpace(planId))
-                                    {
-                                        <span class="pms-cell-primary-sub">@planId</span>
-                                    }
-                                </div>
-                            }
-                            else
-                            {
-                                <span class="text-muted small">No plan</span>
-                            }
+                        <td data-label="CNIC">
+                            @(customer.CNIC ?? "")
                         </td>
                         <td data-label="Status">
                             @if (custStatus == "Active")

@@ -1483,12 +1483,14 @@ namespace PMS.Controllers
         {
             var denied = await EnsurePermissionAsync("Read");
             if (denied != null) return denied;
+            regID = (regID ?? string.Empty).Trim();
             if (string.IsNullOrEmpty(regID))
             {
                 return Json(new { success = false, message = "Please enter a Registration ID" });
             }
 
             var registration = await _context.Registrations
+                .AsNoTracking()
                 .Include(r => r.Customers)
                 .FirstOrDefaultAsync(r => r.RegID == regID);
 
@@ -1507,22 +1509,22 @@ namespace PMS.Controllers
                 });
             }
 
-            // Return registration data
+            // Return registration data (pre-fill only — Create save must still use posted form values)
             return Json(new
             {
                 success = true,
                 registration = new
                 {
-                    regID = registration.RegID,
-                    fullName = registration.FullName,
-                    cnic = registration.CNIC,
-                    formNo = registration.FormNo,
-                    phone = registration.Phone,
-                    email = registration.Email,
+                    regID = registration.RegID?.Trim(),
+                    fullName = registration.FullName?.Trim(),
+                    cnic = registration.CNIC?.Trim(),
+                    formNo = registration.FormNo?.Trim(),
+                    phone = registration.Phone?.Trim(),
+                    email = registration.Email?.Trim(),
                     status = registration.Status,
-                    projectID = registration.ProjectID,
-                    size = registration.Size,
-                    subProject = registration.SubProject
+                    projectID = registration.ProjectID?.Trim(),
+                    size = registration.Size?.Trim(),
+                    subProject = registration.SubProject?.Trim()
                 }
             });
         }
@@ -1606,36 +1608,116 @@ namespace PMS.Controllers
                 customer.DealerName = null;
             }
 
+            // Personal fields must come only from the posted Create form.
+            // Never reload / overwrite FullName (or other fields) from Registration.
+            customer.Registration = null;
+            if (!string.IsNullOrWhiteSpace(customer.RegID))
+            {
+                customer.RegID = customer.RegID.Trim();
+                var regExists = await _context.Registrations.AsNoTracking()
+                    .AnyAsync(r => r.RegID == customer.RegID);
+                if (!regExists)
+                {
+                    customer.RegID = null;
+                }
+            }
+            else
+            {
+                customer.RegID = null;
+            }
+
+            customer.FullName = string.IsNullOrWhiteSpace(customer.FullName) ? null : customer.FullName.Trim();
+            customer.FatherName = string.IsNullOrWhiteSpace(customer.FatherName) ? null : customer.FatherName.Trim();
+            customer.CNIC = string.IsNullOrWhiteSpace(customer.CNIC) ? null : customer.CNIC.Trim();
+            customer.PassportNo = string.IsNullOrWhiteSpace(customer.PassportNo) ? null : customer.PassportNo.Trim();
+            customer.Phone = string.IsNullOrWhiteSpace(customer.Phone) ? null : customer.Phone.Trim();
+            customer.MobileNo = string.IsNullOrWhiteSpace(customer.MobileNo) ? null : customer.MobileNo.Trim();
+            customer.Email = string.IsNullOrWhiteSpace(customer.Email) ? null : customer.Email.Trim();
+            customer.FormNo = string.IsNullOrWhiteSpace(customer.FormNo) ? null : customer.FormNo.Trim();
+
+            if (string.IsNullOrWhiteSpace(customer.FullName))
+            {
+                ModelState.AddModelError(nameof(customer.FullName), "Full Name is required.");
+            }
+
             if (ModelState.IsValid)
             {
-                // Generate CustomerID based on selected SubProject Prefix (fallback: legacy project prefix).
-                customer.CustomerID = await GenerateCustomerID(customer.ProjectID, customer.SubProject);
-                customer.CreatedAt = DateTime.Now;
-
-                if (nomineeNICUpload != null && nomineeNICUpload.Length > 0)
+                try
                 {
-                    customer.NomineeNICDocumentPath = await SaveKinFileAsync(customer.CustomerID, nomineeNICUpload, "kin-nic");
-                }
+                    // Generate CustomerID based on selected SubProject Prefix (fallback: legacy project prefix).
+                    customer.CustomerID = await GenerateCustomerID(customer.ProjectID, customer.SubProject);
+                    customer.CreatedAt = DateTime.Now;
 
-                if (nomineePictureUpload != null && nomineePictureUpload.Length > 0)
+                    if (string.IsNullOrWhiteSpace(customer.CustomerID))
+                    {
+                        ModelState.AddModelError(string.Empty, "Customer ID could not be generated. Record was not saved.");
+                        TempData["ErrorMessage"] = "Your record was not saved in the database. Please try again.";
+                    }
+                    else
+                    {
+                        if (nomineeNICUpload != null && nomineeNICUpload.Length > 0)
+                        {
+                            customer.NomineeNICDocumentPath = await SaveKinFileAsync(customer.CustomerID, nomineeNICUpload, "kin-nic");
+                        }
+
+                        if (nomineePictureUpload != null && nomineePictureUpload.Length > 0)
+                        {
+                            customer.NomineePicturePath = await SaveKinFileAsync(customer.CustomerID, nomineePictureUpload, "kin-picture");
+                        }
+
+                        _context.Customers.Add(customer);
+                        var savedCount = await _context.SaveChangesAsync();
+
+                        // Hard check: only continue to attachments if the row actually exists in DB.
+                        var savedCustomerId = customer.CustomerID!.Trim();
+                        var verifiedInDatabase = savedCount > 0
+                            && await _context.Customers.AsNoTracking()
+                                .AnyAsync(c => c.CustomerID == savedCustomerId);
+
+                        if (!verifiedInDatabase)
+                        {
+                            ModelState.AddModelError(string.Empty, "Customer insert did not persist. Record was not saved.");
+                            TempData["ErrorMessage"] = "Your record was not saved in the database. Attachments page was not opened.";
+                        }
+                        else
+                        {
+                            try
+                            {
+                                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                                if (!string.IsNullOrEmpty(userId))
+                                {
+                                    var actionDetail = $"Customer Creation - {customer.FullName ?? "N/A"} (CNIC: {customer.CNIC ?? "N/A"})";
+                                    await LogActivity(userId, actionDetail, "Customer", savedCustomerId);
+                                }
+                            }
+                            catch
+                            {
+                                // Logging failure must not block a verified save.
+                            }
+
+                            TempData["SuccessMessage"] =
+                                $"Your record has been saved in the database. Customer ID: {savedCustomerId}. You can now upload attachments.";
+                            return RedirectToAction(nameof(Edit), new { id = savedCustomerId, showAttachments = true });
+                        }
+                    }
+                }
+                catch (Exception ex)
                 {
-                    customer.NomineePicturePath = await SaveKinFileAsync(customer.CustomerID, nomineePictureUpload, "kin-picture");
+                    ModelState.AddModelError(string.Empty, "Customer could not be saved. " + ex.Message);
+                    TempData["ErrorMessage"] = "Your record was not saved in the database. Attachments page was not opened. " + ex.Message;
                 }
-
-                _context.Customers.Add(customer);
-                await _context.SaveChangesAsync();
-
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (!string.IsNullOrEmpty(userId))
-                {
-                    var actionDetail = $"Customer Creation - {customer.FullName ?? "N/A"} (CNIC: {customer.CNIC ?? "N/A"})";
-                    await LogActivity(userId, actionDetail, "Customer", customer.CustomerID);
-                }
-
-                // Allotment is handled by Allotment module workflow (not from Customer Create/Edit).
-
-                // Redirect to Edit page and open attachments tab first time after create.
-                return RedirectToAction(nameof(Edit), new { id = customer.CustomerID, showAttachments = true });
+            }
+            else
+            {
+                var errors = string.Join(" ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .Distinct()
+                    .Take(5));
+                TempData["ErrorMessage"] = string.IsNullOrWhiteSpace(errors)
+                    ? "Your record was not saved in the database. Please complete all required fields."
+                    : "Your record was not saved in the database. " + errors;
             }
 
             // Reload data on validation error
@@ -1704,7 +1786,10 @@ namespace PMS.Controllers
 
             if (customer == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = showAttachments
+                    ? "Your record was not saved in the database, so the attachments page cannot be opened."
+                    : "Customer record was not found in the database.";
+                return RedirectToAction(showAttachments ? nameof(Create) : nameof(Index));
             }
 
             if (!customer.IsDealerRegistered.HasValue)
@@ -1797,56 +1882,93 @@ namespace PMS.Controllers
             {
                 try
                 {
-                    var existingCustomer = await _context.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.CustomerID == id);
+                    var existingCustomer = await _context.Customers.FirstOrDefaultAsync(c => c.CustomerID == id);
                     if (existingCustomer == null)
                     {
+                        TempData["ErrorMessage"] = "Customer was not saved. Record was not found.";
                         return NotFound();
                     }
+
+                    // Apply only editable fields so unbound columns (e.g. FormNo, RegID) are preserved.
+                    existingCustomer.FullName = customer.FullName;
+                    existingCustomer.FatherName = customer.FatherName;
+                    existingCustomer.CNIC = customer.CNIC;
+                    existingCustomer.PassportNo = customer.PassportNo;
+                    existingCustomer.DOB = customer.DOB;
+                    existingCustomer.Gender = customer.Gender;
+                    existingCustomer.Nationality = customer.Nationality;
+                    existingCustomer.Status = customer.Status;
+                    existingCustomer.Email = customer.Email;
+                    existingCustomer.Phone = customer.Phone;
+                    existingCustomer.MobileNo = customer.MobileNo;
+                    existingCustomer.MobileNo2 = customer.MobileNo2;
+                    existingCustomer.City = customer.City;
+                    existingCustomer.Country = customer.Country;
+                    existingCustomer.MailingAddress = customer.MailingAddress;
+                    existingCustomer.PermanentAddress = customer.PermanentAddress;
+                    existingCustomer.NomineeName = customer.NomineeName;
+                    existingCustomer.NomineeID = customer.NomineeID;
+                    existingCustomer.NomineeRelation = customer.NomineeRelation;
+                    existingCustomer.ProjectID = customer.ProjectID;
+                    existingCustomer.PlanID = customer.PlanID;
+                    existingCustomer.SubProject = customer.SubProject;
+                    existingCustomer.RegisteredSize = customer.RegisteredSize;
+                    existingCustomer.IsDealerRegistered = customer.IsDealerRegistered;
+                    existingCustomer.DealerID = customer.DealerID;
+                    existingCustomer.DealerName = customer.DealerName;
+                    existingCustomer.AdditionalInfo = customer.AdditionalInfo;
 
                     if (nomineeNICUpload != null && nomineeNICUpload.Length > 0)
                     {
                         DeleteKinFileIfExists(existingCustomer.NomineeNICDocumentPath);
-                        customer.NomineeNICDocumentPath = await SaveKinFileAsync(customer.CustomerID, nomineeNICUpload, "kin-nic");
-                    }
-                    else
-                    {
-                        customer.NomineeNICDocumentPath = existingCustomer.NomineeNICDocumentPath;
+                        existingCustomer.NomineeNICDocumentPath = await SaveKinFileAsync(existingCustomer.CustomerID, nomineeNICUpload, "kin-nic");
                     }
 
                     if (nomineePictureUpload != null && nomineePictureUpload.Length > 0)
                     {
                         DeleteKinFileIfExists(existingCustomer.NomineePicturePath);
-                        customer.NomineePicturePath = await SaveKinFileAsync(customer.CustomerID, nomineePictureUpload, "kin-picture");
-                    }
-                    else
-                    {
-                        customer.NomineePicturePath = existingCustomer.NomineePicturePath;
+                        existingCustomer.NomineePicturePath = await SaveKinFileAsync(existingCustomer.CustomerID, nomineePictureUpload, "kin-picture");
                     }
 
-                    _context.Update(customer);
                     await _context.SaveChangesAsync();
 
                     var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                     if (!string.IsNullOrEmpty(userId))
                     {
-                        var actionDetail = $"Customer Updation - {customer.FullName ?? "N/A"} (CNIC: {customer.CNIC ?? "N/A"})";
-                        await LogActivity(userId, actionDetail, "Customer", customer.CustomerID);
+                        var actionDetail = $"Customer Updation - {existingCustomer.FullName ?? "N/A"} (CNIC: {existingCustomer.CNIC ?? "N/A"})";
+                        await LogActivity(userId, actionDetail, "Customer", existingCustomer.CustomerID);
                     }
 
-                    // Allotment is handled by Allotment module workflow (not from Customer Create/Edit).
+                    TempData["SuccessMessage"] = $"Customer '{existingCustomer.FullName}' ({existingCustomer.CustomerID}) saved successfully.";
+                    return RedirectToAction(nameof(Edit), new { id = existingCustomer.CustomerID });
                 }
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!CustomerExists(customer.CustomerID))
                     {
+                        TempData["ErrorMessage"] = "Customer was not saved. Record was not found.";
                         return NotFound();
                     }
-                    else
-                    {
-                        throw;
-                    }
+                    TempData["ErrorMessage"] = "Customer was not saved due to a concurrency conflict. Please reload and try again.";
+                    ModelState.AddModelError(string.Empty, "The record was changed by another user. Please reload and try again.");
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = "Customer was not saved. " + ex.Message;
+                    ModelState.AddModelError(string.Empty, "Customer could not be saved. " + ex.Message);
+                }
+            }
+            else
+            {
+                var errors = string.Join(" ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .Distinct()
+                    .Take(5));
+                TempData["ErrorMessage"] = string.IsNullOrWhiteSpace(errors)
+                    ? "Customer was not saved. Please correct the highlighted fields."
+                    : "Customer was not saved. " + errors;
             }
 
             ViewBag.Registrations = _context.Registrations.ToList();

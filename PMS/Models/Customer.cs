@@ -14,7 +14,7 @@ namespace PMS.Models
         [StringLength(10)]
         public string? RegID { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Payment Plan Required")]
         [StringLength(10)]
         public string? PlanID { get; set; }
 
@@ -179,18 +179,7 @@ namespace PMS.Models
             var cnicValid = Regex.IsMatch(cnicTrimmed, @"^\d{5}-\d{7}-\d$");
             if (!cnicValid)
                 yield return new ValidationResult("National ID (CNIC) is required and must be in format XXXXX-XXXXXXX-X (5 digits, hyphen, 7 digits, hyphen, 1 digit).", new[] { nameof(CNIC) });
-            // Dealer: if IsDealerRegistered=1 then DealerID required; if 0 then DealerName required
-            if (IsDealerRegistered == 1)
-            {
-                if (!DealerID.HasValue || DealerID.Value <= 0)
-                    yield return new ValidationResult("Please select a dealer from the dropdown when dealer is registered.", new[] { nameof(DealerID) });
-            }
-            else if (IsDealerRegistered == 0)
-            {
-                if (string.IsNullOrWhiteSpace(DealerName))
-                    yield return new ValidationResult("Please enter the dealer name when dealer is not registered.", new[] { nameof(DealerName) });
-            }
-
+            // Dealer is optional on create/edit (Select Dealer / Dealer Name).
             // Phone, Mobile, and optional Mobile 2 must be different numbers (digits compared, ignoring formatting)
             var phoneNorm = NormalizePhoneDigits(Phone);
             var mobileNorm = NormalizePhoneDigits(MobileNo);

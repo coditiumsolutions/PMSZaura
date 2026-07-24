@@ -35,16 +35,16 @@
                             <label asp-for="Type" class="form-label pms-registration-4col-label">Project Type *</label>
                         </div>
                         <div class="col-12 col-lg-4">
-                            <select asp-for="Type" class="form-select" required>
-                                <option value="">Select Project Type</option>
+                            <input asp-for="Type" class="form-control" list="projectTypeOptions" placeholder="Select or type project type" required />
+                            <datalist id="projectTypeOptions">
                                 @if (ViewBag.ProjectTypes != null)
                                 {
                                     @foreach (var projectType in ViewBag.ProjectTypes)
                                     {
-                                        <option value="@projectType">@projectType</option>
+                                        <option value="@projectType"></option>
                                     }
                                 }
-                            </select>
+                            </datalist>
                             <span asp-validation-for="Type" class="text-danger"></span>
                         </div>
                     </div>

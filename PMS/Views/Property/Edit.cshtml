@@ -4,162 +4,242 @@
     ViewData["Title"] = "Edit Property";
 }
 
-<div class="row">
-    <div class="col-md-10 mx-auto">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>
-                <i class="fas fa-edit me-2"></i>Edit Property
-            </h2>
-            <div>
-                <a asp-action="Details" asp-route-id="@Model.PropertyID" class="btn btn-outline-info me-2">
-                    <i class="fas fa-eye me-2"></i>View Details
-                </a>
-                <a asp-action="Index" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to List
-                </a>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-body">
-                <form asp-action="Edit" method="post">
-                    <input type="hidden" asp-for="PropertyID" />
-                    <input type="hidden" asp-for="CreatedAt" />
-                    <input type="hidden" asp-for="Street" />
-                    <input type="hidden" asp-for="PropertyType" />
-
-                    <div class="row">
-                        <!-- Property Basic Information -->
-                        <div class="col-md-6">
-                            <h5 class="text-primary mb-3">
-                                <i class="fas fa-info-circle me-2"></i>Basic Information
-                            </h5>
-
-                            <div class="mb-3">
-                                <label asp-for="ProjectID" class="form-label">Project</label>
-                                <select asp-for="ProjectID" class="form-select">
-                                    <option value="">Select Project</option>
-                                    @if (ViewBag.Projects != null)
-                                    {
-                                        @foreach (var project in ViewBag.Projects)
-                                        {
-                                            <option value="@project.ProjectID">@project.ProjectName</option>
-                                        }
-                                    }
-                                </select>
-                                <span asp-validation-for="ProjectID" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="SubProject" class="form-label">Subproject *</label>
-                                <select asp-for="SubProject" class="form-select" required id="subProject">
-                                    <option value="">Select Project first</option>
-                                </select>
-                                <span asp-validation-for="SubProject" class="text-danger"></span>
-                                <small class="text-muted">Options come from the selected project SubProjects list.</small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="PlotNo" class="form-label">Unit No *</label>
-                                <input asp-for="PlotNo" class="form-control" required />
-                                <span asp-validation-for="PlotNo" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Block" class="form-label">Tower *</label>
-                                <input asp-for="Block" class="form-control" required />
-                                <span asp-validation-for="Block" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Floor" class="form-label">Floor</label>
-                                <input asp-for="Floor" class="form-control" placeholder="e.g. G, 1, 2, Basement" />
-                                <span asp-validation-for="Floor" class="text-danger"></span>
-                            </div>
-                        </div>
-
-                        <!-- Property Details -->
-                        <div class="col-md-6">
-                            <h5 class="text-primary mb-3">
-                                <i class="fas fa-list-alt me-2"></i>Property Details
-                            </h5>
-
-                            <div class="mb-3">
-                                <label asp-for="PlotType" class="form-label">Unit Type (Category)</label>
-                                <input asp-for="PlotType" class="form-control" id="plotType" placeholder="Enter Unit Type (Category)" />
-                                <small class="text-muted">Free text value, not restricted to predefined options.</small>
-                                <span asp-validation-for="PlotType" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Size" class="form-label">Size *</label>
-                                <input asp-for="Size" class="form-control" required id="size" type="number" step="0.01" inputmode="decimal" placeholder="Enter size" />
-                                <datalist id="sizeOptions"></datalist>
-                                <small class="text-muted">Choose from list or type custom size.</small>
-                                <span asp-validation-for="Size" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Status" class="form-label">Status</label>
-                                <select asp-for="Status" class="form-select">
-                                    <option value="Available">Available</option>
-                                    <option value="Allotted">Allotted</option>
-                                    <option value="Sold">Sold</option>
-                                    <option value="Reserved">Reserved</option>
-                                    <option value="Blocked">Blocked</option>
-                                </select>
-                                <span asp-validation-for="Status" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="DealerID" class="form-label">Dealer *</label>
-                                <select asp-for="DealerID" class="form-select" required>
-                                    <option value="">Select Dealer</option>
-                                    @if (ViewBag.Dealers != null)
-                                    {
-                                        @foreach (var dealer in ViewBag.Dealers)
-                                        {
-                                            <option value="@dealer.DealerID">@dealer.DealershipName</option>
-                                        }
-                                    }
-                                </select>
-                                <span asp-validation-for="DealerID" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="mb-3">
-                                <label asp-for="AdditionalInfo" class="form-label">Additional Information</label>
-                                <textarea asp-for="AdditionalInfo" class="form-control" rows="4" placeholder="Enter any additional notes or details about the property"></textarea>
-                                <span asp-validation-for="AdditionalInfo" class="text-danger"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <hr>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary me-2">
-                                    <i class="fas fa-save me-2"></i>Save Changes
-                                </button>
-                                <a asp-action="Details" asp-route-id="@Model.PropertyID" class="btn btn-outline-info me-2">
-                                    <i class="fas fa-eye me-2"></i>View Details
-                                </a>
-                                <a asp-action="Index" class="btn btn-secondary">
-                                    <i class="fas fa-times me-2"></i>Cancel
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="d-flex justify-content-between align-items-center mb-4 mt-2">
+    <h2 class="mb-0 pms-registration-page-title">Edit Property</h2>
+    <div class="d-flex flex-wrap gap-2">
+        <button type="submit" form="propertyEditForm" class="btn btn-primary btn-sm">
+            <i class="fas fa-save me-1"></i>Save Changes
+        </button>
+        <a asp-action="Details" asp-route-id="@Model.PropertyID" class="btn btn-outline-info btn-sm">
+            <i class="fas fa-eye me-1"></i>View Details
+        </a>
+        <a asp-action="Index" class="btn btn-outline-primary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
+        </a>
     </div>
 </div>
+
+<div class="card pms-listing-flat pms-customer-create pms-property-edit">
+    <div class="card-body px-0 pt-3">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <form id="propertyEditForm" asp-action="Edit" method="post">
+            <input type="hidden" asp-for="PropertyID" />
+            <input type="hidden" asp-for="CreatedAt" />
+            <input type="hidden" asp-for="Street" />
+            <input type="hidden" asp-for="PropertyType" />
+
+            <div class="pms-customer-4col-form pms-registration-4col-form">
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="ProjectID" class="form-label pms-registration-4col-label">Project</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <select asp-for="ProjectID" id="ProjectID" class="form-select">
+                            <option value="">Select Project</option>
+                            @if (ViewBag.Projects != null)
+                            {
+                                @foreach (var project in ViewBag.Projects)
+                                {
+                                    <option value="@project.ProjectID">@project.ProjectName</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="ProjectID" class="text-danger"></span>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="SubProject" class="form-label pms-registration-4col-label">Subproject *</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <select asp-for="SubProject" class="form-select" required id="subProject">
+                            <option value="">Select Project first</option>
+                        </select>
+                        <span asp-validation-for="SubProject" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="PlotNo" class="form-label pms-registration-4col-label">Unit No *</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="PlotNo" class="form-control" required />
+                        <span asp-validation-for="PlotNo" class="text-danger"></span>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="Block" class="form-label pms-registration-4col-label">Tower *</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="Block" class="form-control" required />
+                        <span asp-validation-for="Block" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="Floor" class="form-label pms-registration-4col-label">Floor</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="Floor" class="form-control" placeholder="e.g. G, 1, 2, Basement" />
+                        <span asp-validation-for="Floor" class="text-danger"></span>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="PlotType" class="form-label pms-registration-4col-label">Unit Type (Category)</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="PlotType" class="form-control" id="plotType" placeholder="Enter Unit Type (Category)" />
+                        <span asp-validation-for="PlotType" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="Size" class="form-label pms-registration-4col-label">Size *</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <input asp-for="Size" class="form-control" required id="size" type="number" step="0.01" inputmode="decimal" placeholder="Enter size" list="sizeOptions" />
+                        <datalist id="sizeOptions"></datalist>
+                        <span asp-validation-for="Size" class="text-danger"></span>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="Status" class="form-label pms-registration-4col-label">Status</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <select asp-for="Status" class="form-select">
+                            <option value="Available">Available</option>
+                            <option value="Allotted">Allotted</option>
+                            <option value="Sold">Sold</option>
+                            <option value="Reserved">Reserved</option>
+                            <option value="Blocked">Blocked</option>
+                        </select>
+                        <span asp-validation-for="Status" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="DealerID" class="form-label pms-registration-4col-label">Dealer *</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <select asp-for="DealerID" class="form-select" required>
+                            <option value="">Select Dealer</option>
+                            @if (ViewBag.Dealers != null)
+                            {
+                                @foreach (var dealer in ViewBag.Dealers)
+                                {
+                                    <option value="@dealer.DealerID">@dealer.DealershipName</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="DealerID" class="text-danger"></span>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label class="form-label pms-registration-4col-label">Property ID</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <input type="text" class="form-control" value="@Model.PropertyID" readonly />
+                    </div>
+                </div>
+
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label asp-for="AdditionalInfo" class="form-label pms-registration-4col-label">Additional Information</label>
+                    </div>
+                    <div class="col-12 col-lg-10">
+                        <textarea asp-for="AdditionalInfo" class="form-control" rows="3" placeholder="Enter any additional notes or details about the property"></textarea>
+                        <span asp-validation-for="AdditionalInfo" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-3 px-1">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </a>
+                <a asp-action="Details" asp-route-id="@Model.PropertyID" class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-eye me-1"></i>View Details
+                </a>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save me-1"></i>Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .pms-property-edit {
+        padding-top: 0.75rem;
+    }
+
+    .pms-property-edit > .card-body {
+        padding-top: 1.25rem !important;
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+
+    .pms-property-edit .pms-registration-4col-form {
+        margin-top: 0.5rem;
+    }
+
+    .pms-property-edit .pms-registration-4col-row {
+        margin-top: 0.35rem;
+        margin-bottom: 0.35rem;
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+    }
+
+    .pms-property-edit .pms-registration-4col-label,
+    .pms-property-edit .form-label.pms-registration-4col-label {
+        color: #000 !important;
+        font-weight: 700 !important;
+    }
+
+    .pms-property-edit .form-control,
+    .pms-property-edit .form-select {
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: #f8fafc;
+        color: #2563eb !important;
+        font-weight: 500;
+    }
+
+    .pms-property-edit .form-control:focus,
+    .pms-property-edit .form-select:focus {
+        border: 0 !important;
+        box-shadow: none !important;
+        outline: none;
+        background: #f1f5f9;
+        color: #2563eb !important;
+    }
+
+    .pms-property-edit .form-control::placeholder {
+        color: #93c5fd;
+        opacity: 1;
+    }
+
+    .pms-property-edit .form-select option {
+        color: #0f172a;
+    }
+
+    .pms-property-edit textarea.form-control {
+        border: 1px solid #94a3b8 !important;
+        border-radius: 4px !important;
+        min-height: auto;
+        height: auto;
+        color: #2563eb !important;
+        background: #fff !important;
+        padding: 0.5rem 0.65rem;
+    }
+
+    .pms-property-edit textarea.form-control:focus {
+        border-color: #2563eb !important;
+        box-shadow: none !important;
+        outline: none;
+        background: #fff !important;
+    }
+</style>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
@@ -239,4 +319,3 @@
         })();
     </script>
 }
-

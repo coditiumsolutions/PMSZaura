@@ -26,6 +26,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             }
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
             <div class="d-flex justify-content-between align-items-center mb-0 pms-customer-wizard-progress">
                 <span id="wizardStepIndicator" class="small text-muted">Step 1 of 3</span>
@@ -67,14 +75,14 @@
                                 <label asp-for="FullName" class="form-label pms-registration-4col-label">Full Name *</label>
                             </div>
                             <div class="col-12 col-lg-4">
-                                <input asp-for="FullName" class="form-control" id="FullName" required />
+                                <input asp-for="FullName" class="form-control" id="FullName" required autocomplete="off" />
                                 <span asp-validation-for="FullName" class="text-danger"></span>
                             </div>
                             <div class="col-12 col-lg-2">
                                 <label asp-for="FatherName" class="form-label pms-registration-4col-label">S/D/W/O</label>
                             </div>
                             <div class="col-12 col-lg-4">
-                                <input asp-for="FatherName" class="form-control" />
+                                <input asp-for="FatherName" id="FatherName" class="form-control" autocomplete="off" />
                             </div>
                         </div>
 
@@ -392,7 +400,7 @@
 
                         <div class="row g-2 pms-registration-4col-row align-items-start" id="dealerDropdownWrap">
                             <div class="col-12 col-lg-2">
-                                <label asp-for="DealerID" class="form-label pms-registration-4col-label">Select Dealer *</label>
+                                <label asp-for="DealerID" class="form-label pms-registration-4col-label">Select Dealer</label>
                             </div>
                             <div class="col-12 col-lg-4">
                                 <select asp-for="DealerID" id="DealerID" class="form-select">
@@ -411,7 +419,7 @@
 
                         <div class="row g-2 pms-registration-4col-row align-items-start" id="dealerNameWrap" style="display:none;">
                             <div class="col-12 col-lg-2">
-                                <label asp-for="DealerName" class="form-label pms-registration-4col-label">Dealer Name *</label>
+                                <label asp-for="DealerName" class="form-label pms-registration-4col-label">Dealer Name</label>
                             </div>
                             <div class="col-12 col-lg-4">
                                 <input asp-for="DealerName" id="DealerName" class="form-control" placeholder="Enter dealer name manually" maxlength="200" />
@@ -557,6 +565,10 @@
                 return;
             }
 
+            if (currentStep === 1 || currentStep === 2) {
+                captureCustomerFormSnapshot();
+            }
+
             if (currentStep < totalSteps) {
                 currentStep++;
                 updateWizardUI();
@@ -691,21 +703,66 @@
         });
         $('#SubProject').on('change', function() { updateCustomerIdPreview(); });
 
-        // Registration Search - pre-fill from registration
+        // Registration Search - pre-fill from registration (Step 1 only; save still uses current form values)
+        var registrationSearchSeq = 0;
+        var customerFormSnapshot = {};
+
+        function captureCustomerFormSnapshot() {
+            customerFormSnapshot = {
+                RegID: ($('#RegID').val() || '').trim(),
+                FullName: ($('#FullName').val() || '').trim(),
+                FatherName: ($('#FatherName').val() || '').trim(),
+                CNIC: ($('#CNIC').val() || '').trim(),
+                PassportNo: ($('#PassportNo').val() || '').trim(),
+                DOB: ($('#DOB').val() || '').trim(),
+                Gender: ($('#Gender').val() || '').trim(),
+                Nationality: ($('#Nationality').val() || '').trim(),
+                FormNo: ($('#FormNo').val() || '').trim(),
+                Email: ($('#Email').val() || '').trim(),
+                Phone: ($('#Phone').val() || '').trim(),
+                MobileNo: ($('#MobileNo').val() || '').trim(),
+                MobileNo2: ($('#MobileNo2').val() || '').trim(),
+                City: ($('#City').val() || '').trim(),
+                Country: ($('#Country').val() || '').trim(),
+                MailingAddress: ($('#MailingAddress').val() || '').trim(),
+                PermanentAddress: ($('#PermanentAddress').val() || '').trim(),
+                NomineeName: ($('#NomineeName').val() || '').trim(),
+                NomineeID: ($('#NomineeID').val() || '').trim(),
+                NomineeRelation: ($('#NomineeRelation').val() || '').trim()
+            };
+        }
+
+        function restoreCustomerFormSnapshot() {
+            if (!customerFormSnapshot || !customerFormSnapshot.FullName) return;
+            Object.keys(customerFormSnapshot).forEach(function (key) {
+                var $el = $('#' + key);
+                if ($el.length) {
+                    $el.val(customerFormSnapshot[key] || '');
+                }
+            });
+        }
+
+        $('#step1, #step2').on('input change', 'input, select, textarea', function () {
+            captureCustomerFormSnapshot();
+        });
+
         $('#btnSearchRegistration').on('click', function() {
             var regID = $('#registrationSearchInput').val().trim();
             var $msg = $('#registrationSearchMessage');
+            var seq = ++registrationSearchSeq;
             $msg.removeClass('text-success text-danger').text('');
-            $('#RegID').val('');
             if (!regID) {
                 $msg.addClass('text-danger').text('Please enter a Registration ID.');
                 return;
             }
             $.post('@Url.Action("SearchRegistration", "Customer")', { regID: regID, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() })
                 .done(function(data) {
+                    // Ignore stale responses from an older search.
+                    if (seq !== registrationSearchSeq) return;
+
                     if (data.success && data.registration) {
                         var r = data.registration;
-                        $('#RegID').val(r.regID);
+                        $('#RegID').val(r.regID || '');
                         $('#FullName').val(r.fullName || '');
                         $('#CNIC').val(r.cnic || '');
                         $('#FormNo').val(r.formNo || '');
@@ -718,12 +775,14 @@
                             loadSubProjects(r.projectID, r.subProject || '');
                         }
 
-                        $msg.addClass('text-success').text('Registration found. Details pre-filled.');
+                        captureCustomerFormSnapshot();
+                        $msg.addClass('text-success').text('Registration ' + (r.regID || '') + ' loaded. Full Name: ' + (r.fullName || '(blank)') + '. Edit fields if needed before Create.');
                     } else {
                         $msg.addClass('text-danger').text(data.message || 'Registration not found.');
                     }
                 })
                 .fail(function() {
+                    if (seq !== registrationSearchSeq) return;
                     $msg.addClass('text-danger').text('Search failed. Please try again.');
                 });
         });
@@ -1031,6 +1090,14 @@
                 $('html, body').animate({ scrollTop: $('#step3').offset().top - 100 }, 300);
                 return false;
             }
+
+            // Disabled fields are not posted — re-enable required Step 3 fields before submit.
+            $('#SubProject, #RegisteredSize').prop('disabled', false);
+
+            // Ensure the values currently captured from Steps 1/2 are what get posted
+            // (prevents stale Registration AJAX / browser autofill overwriting FullName).
+            captureCustomerFormSnapshot();
+            restoreCustomerFormSnapshot();
             
             // If validation passes, allow form submission
             // Show loading state

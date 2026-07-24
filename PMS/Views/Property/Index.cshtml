@@ -120,14 +120,12 @@
                 <table class="table pms-saas-table" id="propertiesTable">
                     <thead>
                         <tr>
-                            <th>Property ID</th>
                             <th>Project</th>
                             <th>SubProject</th>
                             <th>Tower</th>
                             <th>Floor</th>
                             <th>Unit No</th>
                             <th>Size</th>
-                            <th>Unit Type (Category)</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -143,11 +141,6 @@
                                 _ => "pms-pill--danger"
                             };
                             <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = property.PropertyID })">
-                                <td data-label="Property ID">
-                                    <a asp-action="Details" asp-route-id="@property.PropertyID" class="text-decoration-none">
-                                        <span class="badge bg-secondary">@property.PropertyID</span>
-                                    </a>
-                                </td>
                                 <td data-label="Project">
                                     @if (property.Project != null)
                                     {
@@ -163,7 +156,6 @@
                                 <td data-label="Floor">@(property.Floor ?? "—")</td>
                                 <td data-label="Unit No"><strong>@property.PlotNo</strong></td>
                                 <td data-label="Size">@property.Size</td>
-                                <td data-label="Unit Type">@(string.IsNullOrWhiteSpace(property.PlotType) ? "—" : property.PlotType)</td>
                                 <td data-label="Status"><span class="pms-pill @statusPill">@property.Status</span></td>
                             </tr>
                         }
@@ -174,11 +166,55 @@
     </div>
 </div>
 
+<style>
+    .pms-property-listing .pms-grid-title {
+        font-size: 1rem !important;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .pms-property-listing .pms-property-dt-footer {
+        width: 100%;
+        padding: 0.5rem 0.25rem 0.25rem;
+    }
+
+    .pms-property-listing .pms-property-dt-footer .dataTables_length,
+    .pms-property-listing .pms-property-dt-footer .dataTables_info,
+    .pms-property-listing .pms-property-dt-footer .dataTables_paginate {
+        float: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 0.8125rem;
+        color: #64748b;
+    }
+
+    .pms-property-listing .pms-property-dt-footer .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid #94a3b8;
+        padding: 0.2rem 1.75rem 0.2rem 0.5rem;
+        min-height: 32px;
+        height: 32px;
+        font-size: 0.8125rem;
+        margin: 0 0.35rem;
+        background-color: #fff;
+    }
+
+    .pms-property-listing .pms-property-dt-footer .dataTables_paginate {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.15rem;
+    }
+</style>
+
 @section Scripts {
     <script>
         $(document).ready(function() {
             PmsListingDataTable.init('#propertiesTable', {
-                order: [[5, 'asc']]
+                searching: false,
+                pageLength: 20,
+                order: [[4, 'asc']],
+                dom: 'rt<"pms-property-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>'
             });
             PmsListingDataTable.bindRowNavigation('#propertiesTable');
         });

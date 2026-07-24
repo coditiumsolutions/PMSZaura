@@ -92,16 +92,28 @@ namespace PMS.Controllers
             return View(project);
         }
 
+        private List<string> GetProjectTypes(string? includeType = null)
+        {
+            var projectTypesConfig = _context.Configurations
+                .FirstOrDefault(c => c.ConfigKey == "projecttypes");
+            var types = projectTypesConfig != null
+                ? projectTypesConfig.ConfigValue.Split(',').Select(s => s.Trim()).Where(s => !string.IsNullOrWhiteSpace(s)).ToList()
+                : new List<string> { "Residential", "Commercial", "Mixed", "Industrial" };
+
+            if (!string.IsNullOrWhiteSpace(includeType)
+                && !types.Any(t => string.Equals(t, includeType, StringComparison.OrdinalIgnoreCase)))
+            {
+                types.Insert(0, includeType.Trim());
+            }
+
+            return types;
+        }
+
         public async Task<IActionResult> Create()
         {
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
-            // Load project types from Configuration table
-            var projectTypesConfig = _context.Configurations
-                .FirstOrDefault(c => c.ConfigKey == "projecttypes");
-            ViewBag.ProjectTypes = projectTypesConfig != null 
-                ? projectTypesConfig.ConfigValue.Split(',').Select(s => s.Trim()).ToList()
-                : new List<string> { "Residential", "Commercial", "Mixed", "Industrial" };
+            ViewBag.ProjectTypes = GetProjectTypes();
             
             return View();
         }
@@ -145,13 +157,7 @@ namespace PMS.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Reload project types for validation errors
-            var projectTypesConfig = _context.Configurations
-                .FirstOrDefault(c => c.ConfigKey == "projecttypes");
-            ViewBag.ProjectTypes = projectTypesConfig != null 
-                ? projectTypesConfig.ConfigValue.Split(',').Select(s => s.Trim()).ToList()
-                : new List<string> { "Residential", "Commercial", "Mixed", "Industrial" };
-
+            ViewBag.ProjectTypes = GetProjectTypes(project.Type);
             return View(project);
         }
 
@@ -189,13 +195,7 @@ namespace PMS.Controllers
                 project.SubProjects = string.Join(",", legacyNames);
             }
 
-            // Load project types from Configuration table
-            var projectTypesConfig = _context.Configurations
-                .FirstOrDefault(c => c.ConfigKey == "projecttypes");
-            ViewBag.ProjectTypes = projectTypesConfig != null 
-                ? projectTypesConfig.ConfigValue.Split(',').Select(s => s.Trim()).ToList()
-                : new List<string> { "Residential", "Commercial", "Mixed", "Industrial" };
-
+            ViewBag.ProjectTypes = GetProjectTypes(project.Type);
             return View(project);
         }
 
@@ -253,13 +253,7 @@ namespace PMS.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Reload project types for validation errors
-            var projectTypesConfig = _context.Configurations
-                .FirstOrDefault(c => c.ConfigKey == "projecttypes");
-            ViewBag.ProjectTypes = projectTypesConfig != null 
-                ? projectTypesConfig.ConfigValue.Split(',').Select(s => s.Trim()).ToList()
-                : new List<string> { "Residential", "Commercial", "Mixed", "Industrial" };
-
+            ViewBag.ProjectTypes = GetProjectTypes(project.Type);
             return View(project);
         }
 
