@@ -1,4 +1,5 @@
 name: Deploy PMS to GCP
+# Retrigger deploy after SSH setup
 
 on:
   push:
