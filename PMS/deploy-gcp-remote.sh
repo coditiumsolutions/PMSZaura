@@ -7,13 +7,18 @@ SERVICE_NAME="${SERVICE_NAME:-pms}"
 APP_PORT="${APP_PORT:-8080}"
 APP_USER="${APP_USER:-www-data}"
 SERVER_NAME="${SERVER_NAME:-34.131.132.158}"
+DOMAIN_NAME="${DOMAIN_NAME:-pms.coditium.com}"
+# Prefer env override from CI; keep quoted for systemd (semicolons/spaces).
+DB_CONNECTION="${DB_CONNECTION:-Server=34.131.132.158;Database=PMSAbbas;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;}"
 DOTNET_BIN="$(command -v dotnet)"
 
 echo "Using dotnet: $DOTNET_BIN"
 "$DOTNET_BIN" --version
 echo "Server: $SERVER_NAME"
+echo "Domain: $DOMAIN_NAME"
 echo "App dir: $APP_DIR"
 echo "Service: $SERVICE_NAME"
+echo "App port: $APP_PORT"
 
 sudo systemctl stop "$SERVICE_NAME" 2>/dev/null || true
 sudo systemctl unmask "$SERVICE_NAME" 2>/dev/null || true
@@ -42,12 +47,13 @@ Environment=DOTNET_ROLL_FORWARD=LatestMajor
 Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
 Environment=AllowedHosts=*
 Environment=DataProtection__KeysPath=${KEYS_DIR}
-Environment=ConnectionStrings__DefaultConnection=Server=34.131.132.158;Database=PMSAbbas;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;
+Environment="ConnectionStrings__DefaultConnection=${DB_CONNECTION}"
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
+# IP-based site (optional / fallback)
 sudo tee /etc/nginx/sites-available/pms > /dev/null <<NGINX
 server {
     listen 80;
@@ -71,6 +77,13 @@ NGINX
 
 sudo ln -sfn /etc/nginx/sites-available/pms /etc/nginx/sites-enabled/pms
 sudo rm -f /etc/nginx/sites-enabled/default
+
+# Keep existing certbot SSL site in sync with Kestrel port
+if [ -f "/etc/nginx/sites-available/${DOMAIN_NAME}" ]; then
+  sudo sed -i -E "s|proxy_pass http://127\\.0\\.0\\.1:[0-9]+;|proxy_pass http://127.0.0.1:${APP_PORT};|g" \
+    "/etc/nginx/sites-available/${DOMAIN_NAME}"
+fi
+
 sudo nginx -t
 sudo systemctl daemon-reload
 sudo systemctl enable nginx
@@ -78,11 +91,15 @@ sudo systemctl restart nginx
 sudo systemctl enable "$SERVICE_NAME"
 sudo systemctl restart "$SERVICE_NAME"
 
-sleep 5
+sleep 8
 echo "=== service active ==="
 systemctl is-active "$SERVICE_NAME" || true
 echo "=== local curls ==="
-curl -s -o /dev/null -w 'app8080:%{http_code}\n' "http://127.0.0.1:${APP_PORT}/" || true
+curl -s -o /dev/null -w "app${APP_PORT}:%{http_code}\n" "http://127.0.0.1:${APP_PORT}/" || true
 curl -s -o /dev/null -w 'nginx80:%{http_code}\n' http://127.0.0.1/ || true
+if [ -f "/etc/nginx/sites-available/${DOMAIN_NAME}" ]; then
+  curl -sk -o /dev/null -w "https_${DOMAIN_NAME}:%{http_code}\n" \
+    --resolve "${DOMAIN_NAME}:443:127.0.0.1" "https://${DOMAIN_NAME}/" || true
+fi
 echo "=== recent logs ==="
 journalctl -u "$SERVICE_NAME" -n 25 --no-pager || true
