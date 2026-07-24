@@ -55,11 +55,7 @@ jobs:
 
       - name: Restore
         working-directory: PMS
-        run: dotnet restore PMS.csproj
-
-      - name: Build
-        working-directory: PMS
-        run: dotnet build PMS.csproj --configuration Release --no-restore
+        run: dotnet restore PMS.csproj --runtime linux-x64
 
       - name: Publish (linux-x64)
         working-directory: PMS
@@ -68,7 +64,7 @@ jobs:
             --configuration Release \
             --runtime linux-x64 \
             --self-contained false \
-            --no-build \
+            --no-restore \
             --output ./publish-out/linux-x64
 
       - name: Verify publish output
