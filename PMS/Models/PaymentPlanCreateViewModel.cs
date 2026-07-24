@@ -13,7 +13,6 @@ namespace PMS.Models
         public string? PlanName { get; set; }
         [Required(ErrorMessage = "Project is required.")]
         public string? ProjectID { get; set; }
-        [Required(ErrorMessage = "Size is required.")]
         public string? RegisteredSize { get; set; }
         [Required(ErrorMessage = "SubProject is required.")]
         public string? SubProject { get; set; }

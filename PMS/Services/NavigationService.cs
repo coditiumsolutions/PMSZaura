@@ -91,7 +91,7 @@ public sealed class NavigationService : INavigationService
             {
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Customer Payments",
+                    Label = "Paid Payments",
                     Controller = "Payment",
                     Action = "CustomerPayments",
                     IconClass = "fas fa-money-bill-wave me-2",

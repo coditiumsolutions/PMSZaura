@@ -10,92 +10,115 @@
     var balanceState = balancePkr > 0.0000001m ? "positive" : balancePkr < -0.0000001m ? "negative" : "zero";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>
-        <i class="fas fa-file-invoice-dollar me-2"></i>
-    </h2>
-    <div>
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <h5 class="mb-0">
+        <i class="fas fa-file-invoice-dollar me-1"></i>Payment Plan Details
+    </h5>
+    <div class="d-flex gap-1">
         @if (ViewBag.CanCreate == true)
         {
-        <a asp-action="CreatePaymentSchedule" asp-route-planId="@Model.PlanID" class="btn btn-primary me-2">
-            <i class="fas fa-plus me-2"></i>Add Installment
+        <a asp-action="CreatePaymentSchedule" asp-route-planId="@Model.PlanID" class="btn btn-sm btn-primary py-0 px-2">
+            <i class="fas fa-plus me-1"></i>Add Installment
         </a>
         }
-        <a asp-action="PaymentPlans" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Back to Plans
+        <a asp-action="PaymentPlans" class="btn btn-sm btn-outline-secondary py-0 px-2">
+            <i class="fas fa-arrow-left me-1"></i>Back to Plans
         </a>
     </div>
 </div>
 
+<div id="pmsSaveSuccessAlert" class="alert alert-success alert-dismissible fade show d-none py-2 mb-2" role="alert">
+    <i class="fas fa-check-circle me-1"></i>
+    <span id="pmsSaveSuccessText"></span>
+    <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
 <!-- Payment Plan Details -->
-<div class="card mb-4">
-    <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-        <h5 class="mb-0 text-white">
+<div class="card border-0 shadow-sm pms-mp-header pms-ps-plan-card mb-3">
+    <div class="card-header py-2 pms-mp-header-bar pms-ps-header-bar">
+        <h6 class="mb-0">
             <i class="fas fa-file-invoice-dollar me-2"></i>@Model.PlanName
-        </h5>
+        </h6>
     </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-3">
-                <small class="text-muted">Total Amount (PKR)</small>
-                <p class="fw-bold" style="color: #9C6ADE; font-size: 1.2rem;">
-                    @Model.TotalAmount.ToString("N0", EnUs)
-                </p>
-            </div>
-            <div class="col-md-3">
-                <small class="text-muted">Primary Currency</small>
-                <p class="fw-bold text-uppercase">@Model.Currency</p>
-            </div>
-        </div>
-        <div class="plan-balance-callout plan-balance--@balanceState mt-3" role="region" aria-label="Plan balance">
-            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3">
-                <div class="flex-grow-1">
-                    <div class="plan-balance-callout-title">
-                        <i class="fas fa-scale-balanced me-2" aria-hidden="true"></i>Balance (unallocated)
-                    </div>
-                    <div class="plan-balance-callout-pkr">
-                        @balancePkr.ToString("N0", EnUs)
-                        <span class="plan-balance-callout-currency">PKR</span>
-                    </div>
-                    <div class="plan-balance-callout-hint">Plan total minus the sum of all installment amounts on this plan.</div>
+    <div class="card-body py-2 px-3 pms-ps-plan-body">
+        <div class="pms-registration-4col-form pms-ps-4col">
+            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Total Amount (PKR)</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field pms-ps-field-amount">@Model.TotalAmount.ToString("N0", EnUs)</div>
+                </div>
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Primary Currency</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field text-uppercase">@Model.Currency</div>
                 </div>
             </div>
+
+            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Balance (unallocated)</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field plan-balance-inline plan-balance--@balanceState" title="Plan total minus the sum of all installment amounts on this plan.">
+                        @balancePkr.ToString("N0", EnUs) <span class="pms-ps-field-unit">PKR</span>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Duration</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field">@(Model.DurationMonths?.ToString() ?? "N/A") Months</div>
+                </div>
+            </div>
+
+            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Frequency</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field">@(string.IsNullOrWhiteSpace(Model.Frequency) ? "—" : Model.Frequency)</div>
+                </div>
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Total Schedules</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field">@(Model.PaymentSchedules?.Count ?? 0)</div>
+                </div>
+            </div>
+
+            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Customers on this plan</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field">@customersOnPlan</div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="col-12 col-lg-2">
+                        <div class="form-label pms-registration-4col-label mb-0">Description</div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="pms-ps-field">@Model.Description</div>
+                    </div>
+                }
+            </div>
         </div>
-        <div class="row mt-3">
-            <div class="col-md-4">
-                <small class="text-muted">Duration</small>
-                <p class="fw-bold">@(Model.DurationMonths?.ToString() ?? "N/A") Months</p>
-            </div>
-            <div class="col-md-4">
-                <small class="text-muted">Frequency</small>
-                <p class="fw-bold">@Model.Frequency</p>
-            </div>
-            <div class="col-md-4">
-                <small class="text-muted">Total Schedules</small>
-                <p class="fw-bold">@(Model.PaymentSchedules?.Count ?? 0)</p>
-            </div>
-            <div class="col-md-4">
-                <small class="text-muted">Customers on this plan</small>
-                <p class="fw-bold">@customersOnPlan</p>
-            </div>
-        </div>
-        @if (!string.IsNullOrEmpty(Model.Description))
-        {
-            <hr>
-            <small class="text-muted">Description</small>
-            <p class="mb-0">@Model.Description</p>
-        }
+        <div class="pms-ps-balance-hint text-muted">Plan total minus the sum of all installment amounts on this plan.</div>
     </div>
 </div>
 
 <!-- Payment Schedules Table -->
-<div class="card">
-    <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-        <h5 class="mb-0 text-white">
+<div class="card border-0 shadow-sm pms-mp-header pms-ps-schedule-card mb-3">
+    <div class="card-header py-2 pms-mp-header-bar pms-ps-header-bar">
+        <h6 class="mb-0">
             <i class="fas fa-list-alt me-2"></i>Installment Schedule
-        </h5>
+        </h6>
     </div>
-    <div class="card-body">
+    <div class="card-body py-2 px-3 pms-ps-schedule-body">
         @if (Model.PaymentSchedules != null && Model.PaymentSchedules.Any())
         {
             <div class="table-responsive">
@@ -139,7 +162,7 @@
                                     }
                                 </td>
                                 <td>
-                                    <strong style="color: #9C6ADE;">
+                                    <strong style="color: #1d4ed8;">
                                         PKR @schedule.Amount.ToString("N0", EnUs)
                                     </strong>
                                     @if (totalPaid > 0)
@@ -412,14 +435,14 @@
         }
         else
         {
-            <div class="text-center py-5">
-                <i class="fas fa-calendar-plus fa-4x mb-3 text-muted"></i>
-                <h5 class="text-muted">No Installments Added Yet</h5>
-                <p class="text-muted">Create installment schedules for this payment plan.</p>
+            <div class="text-center py-3">
+                <i class="fas fa-calendar-plus fa-2x mb-2 text-muted"></i>
+                <h6 class="text-muted mb-1">No Installments Added Yet</h6>
+                <p class="text-muted small mb-2">Create installment schedules for this payment plan.</p>
                 @if (ViewBag.CanCreate == true)
                 {
-                <a asp-action="CreatePaymentSchedule" asp-route-planId="@Model.PlanID" class="btn btn-primary">
-                    <i class="fas fa-plus me-2"></i>Add First Installment
+                <a asp-action="CreatePaymentSchedule" asp-route-planId="@Model.PlanID" class="btn btn-sm btn-primary py-0 px-2">
+                    <i class="fas fa-plus me-1"></i>Add First Installment
                 </a>
                 }
             </div>
@@ -435,19 +458,127 @@
 
 <style>
     code {
-        background: rgba(156, 106, 222, 0.1);
-        color: var(--primary);
+        background: rgba(37, 99, 235, 0.08);
+        color: #1e40af;
         padding: 4px 8px;
         border-radius: 6px;
         font-size: 12px;
         font-weight: 600;
     }
 
+    /* Mildly lighter section headers vs solid primary purple */
+    .pms-ps-header-bar {
+        background: linear-gradient(
+            180deg,
+            #dbeafe 0%,
+            #eef2ff 55%,
+            #f1f5f9 100%
+        ) !important;
+        border-bottom: 1px solid #cbd5e1;
+        color: #1e3a8a;
+    }
+
+    .pms-ps-header-bar h6 {
+        color: #1e3a8a !important;
+        font-size: 0.9rem;
+        font-weight: 650;
+    }
+
+    .pms-ps-plan-body,
+    .pms-ps-schedule-body {
+        background: #f8fafc;
+    }
+
+    .pms-ps-4col .pms-registration-4col-row {
+        padding-bottom: 0.35rem;
+        margin-bottom: 0.35rem !important;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-ps-4col .pms-registration-4col-row:last-child {
+        border-bottom: 0;
+        margin-bottom: 0 !important;
+        padding-bottom: 0;
+    }
+
+    .pms-ps-4col .pms-registration-4col-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.2;
+    }
+
+    .pms-ps-field {
+        min-height: 1.85rem;
+        padding: 0.25rem 0.5rem;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        color: #1d4ed8;
+        font-size: 0.875rem;
+        font-weight: 650;
+        line-height: 1.35;
+    }
+
+    .pms-ps-field-amount {
+        font-size: 0.95rem;
+    }
+
+    .pms-ps-field-unit {
+        font-size: 0.75rem;
+        font-weight: 700;
+        opacity: 0.85;
+    }
+
+    .pms-ps-balance-hint {
+        font-size: 0.72rem;
+        margin-top: 0.35rem;
+    }
+
+    .plan-balance-inline.plan-balance--positive {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #047857;
+    }
+
+    .plan-balance-inline.plan-balance--negative {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #b91c1c;
+    }
+
+    .plan-balance-inline.plan-balance--zero {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1d4ed8;
+    }
+
+    .pms-ps-schedule-body .table {
+        background: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 0;
+        font-size: 0.85rem;
+    }
+
+    .pms-ps-schedule-body .table > :not(caption) > * > * {
+        padding: 0.4rem 0.55rem;
+    }
+
+    .pms-ps-schedule-body .table thead th {
+        background: #f1f5f9;
+        border-bottom-color: #e2e8f0;
+        color: #334155;
+        font-weight: 650;
+        font-size: 0.78rem;
+        white-space: nowrap;
+    }
+
     .plan-balance-callout {
         border-radius: 12px;
         padding: 1rem 1.25rem;
-        border: 1px solid rgba(0, 0, 0, 0.08);
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
     }
 
     .plan-balance-callout-title {
@@ -494,8 +625,8 @@
     }
 
     .plan-balance--positive {
-        background: linear-gradient(135deg, rgba(16, 185, 129, 0.18) 0%, rgba(52, 211, 153, 0.12) 100%);
-        border-left: 5px solid #10b981;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(236, 253, 245, 0.9) 100%);
+        border-left: 4px solid #34d399;
     }
 
     .plan-balance--positive .plan-balance-callout-title,
@@ -504,8 +635,8 @@
     }
 
     .plan-balance--negative {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.16) 0%, rgba(252, 165, 165, 0.1) 100%);
-        border-left: 5px solid #ef4444;
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(254, 242, 242, 0.95) 100%);
+        border-left: 4px solid #f87171;
     }
 
     .plan-balance--negative .plan-balance-callout-title,
@@ -514,13 +645,13 @@
     }
 
     .plan-balance--zero {
-        background: linear-gradient(135deg, rgba(156, 106, 222, 0.14) 0%, rgba(167, 139, 250, 0.08) 100%);
-        border-left: 5px solid #9C6ADE;
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(239, 246, 255, 0.95) 100%);
+        border-left: 4px solid #60a5fa;
     }
 
     .plan-balance--zero .plan-balance-callout-title,
     .plan-balance--zero .plan-balance-callout-pkr {
-        color: #6b21a8;
+        color: #1d4ed8;
     }
 
     /* Remove backdrop completely */
@@ -588,6 +719,26 @@
 
         // Remove backdrop and ensure modals display properly
         document.addEventListener('DOMContentLoaded', function() {
+            try {
+                var flash = sessionStorage.getItem('pmsPaymentPlanSaveSuccess');
+                if (flash) {
+                    sessionStorage.removeItem('pmsPaymentPlanSaveSuccess');
+                    var alertEl = document.getElementById('pmsSaveSuccessAlert');
+                    var textEl = document.getElementById('pmsSaveSuccessText');
+                    if (alertEl && textEl) {
+                        textEl.textContent = flash;
+                        alertEl.classList.remove('d-none');
+                    }
+                } else if (new URLSearchParams(window.location.search).get('created') === '1') {
+                    var alertEl2 = document.getElementById('pmsSaveSuccessAlert');
+                    var textEl2 = document.getElementById('pmsSaveSuccessText');
+                    if (alertEl2 && textEl2) {
+                        textEl2.textContent = 'Payment plan and schedules were saved successfully.';
+                        alertEl2.classList.remove('d-none');
+                    }
+                }
+            } catch (e) { /* ignore */ }
+
             // Function to remove backdrops
             function removeBackdrops() {
                 var backdrops = document.querySelectorAll('.modal-backdrop');

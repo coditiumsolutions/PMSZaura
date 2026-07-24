@@ -3,6 +3,80 @@
     var preCustomerId = ViewBag.PreSelectedCustomerId as string ?? "";
 }
 
+<style>
+    .pms-mp-installments-card {
+        background: #ffffff;
+        border: 1px solid #cbd5e1 !important;
+    }
+
+    .pms-mp-installments-header {
+        background: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0;
+        color: #0f172a;
+    }
+
+    .pms-mp-installments-header h6 {
+        color: #0f172a !important;
+        font-weight: 700;
+    }
+
+    #installmentsTable {
+        background: #ffffff;
+        color: #0f172a;
+        --bs-table-bg: #ffffff;
+        --bs-table-color: #0f172a;
+        --bs-table-hover-bg: #f8fafc;
+        --bs-table-hover-color: #0f172a;
+        --bs-table-striped-bg: #ffffff;
+    }
+
+    #installmentsTable thead th {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        font-weight: 700;
+        border-bottom: 1px solid #cbd5e1;
+        font-size: 0.82rem;
+    }
+
+    #installmentsTable tbody td {
+        background: #ffffff !important;
+        color: #0f172a;
+        border-color: #e2e8f0;
+        vertical-align: middle;
+    }
+
+    #installmentsTable tfoot td {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        border-top: 1px solid #cbd5e1;
+    }
+
+    .pms-mp-grid-text {
+        color: #0f172a !important;
+    }
+
+    .pms-mp-grid-muted {
+        color: #334155 !important;
+    }
+
+    .pms-mp-grid-amount {
+        color: #1d4ed8 !important;
+    }
+
+    #footPayNow,
+    #footPayNowTotal,
+    #footOutstanding {
+        color: #1d4ed8 !important;
+    }
+
+    #installmentsTable .pay-now-input {
+        color: #0f172a;
+        font-weight: 600;
+        background: #ffffff;
+        border-color: #94a3b8;
+    }
+</style>
+
 <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
     <h5 class="mb-0">Multiple Payments</h5>
     <a asp-action="CustomerPayments" class="btn btn-outline-secondary btn-sm py-0 px-2">
@@ -189,10 +263,10 @@
 
     <!-- Installments — below Payment Header -->
     <div class="col-12">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-                <h6 class="mb-0 text-white"><i class="fas fa-list-ol me-2"></i>Installments</h6>
-                <button type="button" id="btnAutoDistribute" class="btn btn-sm btn-light" style="display:none;" title="Auto-fill amounts starting from oldest overdue">
+        <div class="card border-0 shadow-sm pms-mp-installments-card">
+            <div class="card-header d-flex justify-content-between align-items-center py-2 pms-mp-installments-header">
+                <h6 class="mb-0"><i class="fas fa-list-ol me-2"></i>Installments</h6>
+                <button type="button" id="btnAutoDistribute" class="btn btn-sm btn-outline-primary py-0 px-2" style="display:none;" title="Auto-fill amounts starting from oldest overdue">
                     <i class="fas fa-magic me-1"></i>Auto-distribute
                 </button>
             </div>
@@ -200,26 +274,26 @@
             <!-- Not searched yet -->
             <div id="noSearchState" class="card-body text-center py-5">
                 <i class="fas fa-search fa-3x mb-3 text-muted"></i>
-                <p class="text-muted mb-0">Enter a Customer ID and click Search to load outstanding installments.</p>
+                <p class="mb-0 pms-mp-grid-muted">Enter a Customer ID and click Search to load outstanding installments.</p>
             </div>
 
             <!-- Loading -->
             <div id="loadingState" class="card-body text-center py-5" style="display:none;">
                 <div class="spinner-border text-primary mb-3" role="status"></div>
-                <p class="text-muted mb-0">Loading installments…</p>
+                <p class="mb-0 pms-mp-grid-muted">Loading installments…</p>
             </div>
 
             <!-- No installments -->
             <div id="emptyState" class="card-body text-center py-5" style="display:none;">
                 <i class="fas fa-check-double fa-3x mb-3 text-success"></i>
-                <p class="text-muted mb-0">This customer has no outstanding installments.</p>
+                <p class="mb-0 pms-mp-grid-muted">This customer has no outstanding installments.</p>
             </div>
 
             <!-- Table -->
             <div id="tableState" style="display:none;">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0" id="installmentsTable">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <th style="width:42px;">
                                     <input type="checkbox" id="chkAll" class="form-check-input" title="Select/deselect all" />
@@ -235,23 +309,23 @@
                         </thead>
                         <tbody id="installmentsTbody">
                         </tbody>
-                        <tfoot class="table-light fw-semibold">
+                        <tfoot class="fw-semibold">
                             <tr>
-                                <td colspan="6" class="text-end text-muted">Selected Outstanding:</td>
+                                <td colspan="6" class="text-end">Selected Outstanding:</td>
                                 <td class="text-end" id="footOutstanding">PKR 0</td>
-                                <td class="text-end" style="color:var(--primary);" id="footPayNow">PKR 0</td>
+                                <td class="text-end" id="footPayNow">PKR 0</td>
                             </tr>
                             <tr>
-                                <td colspan="7" class="text-end text-muted">Total Paying Now:</td>
-                                <td class="text-end fw-bold" id="footPayNowTotal" style="color:var(--primary);">PKR 0</td>
+                                <td colspan="7" class="text-end">Total Paying Now:</td>
+                                <td class="text-end fw-bold" id="footPayNowTotal">PKR 0</td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
 
-                <div class="card-footer d-flex justify-content-between align-items-center py-3">
-                    <small class="text-muted"><span id="selectedCount">0</span> installment(s) selected</small>
-                    <button type="button" id="btnClearAmounts" class="btn btn-sm btn-outline-secondary">
+                <div class="card-footer d-flex justify-content-between align-items-center py-2 bg-transparent border-top">
+                    <small class="pms-mp-grid-muted"><span id="selectedCount">0</span> installment(s) selected</small>
+                    <button type="button" id="btnClearAmounts" class="btn btn-sm btn-outline-secondary py-0 px-2">
                         <i class="fas fa-eraser me-1"></i>Clear amounts
                     </button>
                 </div>
@@ -259,7 +333,7 @@
         </div>
 
         <!-- Info box -->
-        <div class="alert alert-info mt-3 small" style="background:rgba(156,106,222,0.07);border:1px solid rgba(156,106,222,0.2);">
+        <div class="alert alert-info mt-3 small">
             <i class="fas fa-info-circle me-2"></i>
             <strong>How it works:</strong> Enter a total payment amount, then distribute it across one or more outstanding installments.
             Partial payments are allowed — an installment doesn't need to be fully paid.
@@ -431,23 +505,23 @@ $(function () {
 
             row.html(
                 '<td><input type="checkbox" class="form-check-input row-checkbox" checked /></td>' +
-                '<td><span class="badge bg-secondary">#' + (s.installmentNo != null ? s.installmentNo : 'T') + '</span></td>' +
+                '<td><span class="badge text-bg-dark">#' + (s.installmentNo != null ? s.installmentNo : 'T') + '</span></td>' +
                 '<td>' +
-                    '<div class="fw-semibold small">' + (s.paymentDescription || 'Installment') + '</div>' +
-                    '<small class="text-muted">' + (s.planName || '') + '</small>' +
+                    '<div class="fw-semibold small pms-mp-grid-text">' + (s.paymentDescription || 'Installment') + '</div>' +
+                    '<small class="pms-mp-grid-muted">' + (s.planName || '') + '</small>' +
                 '</td>' +
                 '<td>' +
-                    '<div class="small">' + (s.dueDate || '') + '</div>' +
+                    '<div class="small pms-mp-grid-text">' + (s.dueDate || '') + '</div>' +
                     overdueBadge +
                 '</td>' +
-                '<td class="text-end small">PKR ' + fmtN(s.amount) + '</td>' +
-                '<td class="text-end small text-muted">PKR ' + fmtN(s.paid) + '</td>' +
-                '<td class="text-end small fw-semibold" style="color:var(--primary);">PKR ' + fmtN(s.outstanding) + '</td>' +
+                '<td class="text-end small pms-mp-grid-text">PKR ' + fmtN(s.amount) + '</td>' +
+                '<td class="text-end small pms-mp-grid-muted">PKR ' + fmtN(s.paid) + '</td>' +
+                '<td class="text-end small fw-bold pms-mp-grid-amount">PKR ' + fmtN(s.outstanding) + '</td>' +
                 '<td class="text-end">' +
                     '<input type="text" class="form-control form-control-sm text-end pay-now-input" inputmode="numeric" ' +
                            'data-max="' + s.outstanding + '" ' +
                            'placeholder="0" value="" />' +
-                    '<small class="text-muted d-block mt-1 outstanding-hint">max PKR ' + fmtWhole(s.outstanding) + '</small>' +
+                    '<small class="pms-mp-grid-muted d-block mt-1 outstanding-hint">max PKR ' + fmtWhole(s.outstanding) + '</small>' +
                 '</td>'
             );
 

@@ -1196,25 +1196,44 @@ namespace PMS.Controllers
         public async Task<IActionResult> CreatePaymentPlan([FromBody] PaymentPlanCreateViewModel viewModel)
         {
             var denied = await EnsurePermissionAsync("Edit");
-            if (denied != null) return denied;
+            if (denied != null)
+            {
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest"
+                    || string.Equals(Request.ContentType, "application/json", StringComparison.OrdinalIgnoreCase)
+                    || (Request.ContentType?.StartsWith("application/json", StringComparison.OrdinalIgnoreCase) ?? false))
+                {
+                    return Json(new { success = false, message = "You do not have permission to create a payment plan." });
+                }
+                return denied;
+            }
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    var modelErrors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => string.IsNullOrWhiteSpace(e.ErrorMessage) ? e.Exception?.Message : e.ErrorMessage)
+                        .Where(m => !string.IsNullOrWhiteSpace(m))
+                        .Distinct()
+                        .ToList();
+                    var modelMessage = modelErrors.Count > 0
+                        ? string.Join(" ", modelErrors)
+                        : "Validation failed. Please check the form and try again.";
+                    return Json(new { success = false, message = modelMessage });
+                }
+
                 const decimal MaxAmountPkr = 1_000_000_000m; // 100 crores
                 static bool IsWholeAmount(decimal amount) => decimal.Truncate(amount) == amount;
 
                 if (viewModel?.PaymentPlan == null || viewModel?.PaymentSchedules == null)
                 {
-                    return Json(new { success = false, message = "Invalid data provided" });
+                    return Json(new { success = false, message = "Invalid data provided. Payment plan or schedule data is missing." });
                 }
 
                 var planData = viewModel.PaymentPlan;
                 if (string.IsNullOrWhiteSpace(planData.ProjectID))
                 {
                     return Json(new { success = false, message = "Project is required." });
-                }
-                if (string.IsNullOrWhiteSpace(planData.RegisteredSize))
-                {
-                    return Json(new { success = false, message = "Size is required." });
                 }
                 if (string.IsNullOrWhiteSpace(planData.SubProject))
                 {
@@ -1225,17 +1244,11 @@ namespace PMS.Controllers
                 var projectMeta = await _context.Projects
                     .AsNoTracking()
                     .Where(p => p.ProjectID == planData.ProjectID)
-                    .Select(p => new { p.Sizes, p.SubProjects })
+                    .Select(p => new { p.SubProjects })
                     .FirstOrDefaultAsync();
                 if (projectMeta == null)
                 {
                     return Json(new { success = false, message = "Selected project was not found." });
-                }
-
-                var allowedSizes = SplitCsvValues(projectMeta.Sizes);
-                if (allowedSizes.Count > 0 && !allowedSizes.Contains(planData.RegisteredSize.Trim(), StringComparer.OrdinalIgnoreCase))
-                {
-                    return Json(new { success = false, message = "Selected size is not available for this project." });
                 }
 
                 var allowedSubProjects = SplitCsvValues(projectMeta.SubProjects);
@@ -1359,7 +1372,8 @@ namespace PMS.Controllers
                     PlanID = GenerateID(),
                     PlanName = planData.PlanName,
                     ProjectID = string.IsNullOrEmpty(planData.ProjectID) ? null : planData.ProjectID,
-                    RegisteredSize = planData.RegisteredSize?.Trim(),
+                    // Size remains on the CreatePaymentPlan UI but is not used when saving the plan.
+                    RegisteredSize = null,
                     SubProject = planData.SubProject?.Trim(),
                     TotalAmount = planData.TotalAmount,
                     TotalAmountUSD = hasExchangeRate
@@ -1478,11 +1492,19 @@ namespace PMS.Controllers
                     await LogActivityAsync(userId, "Create Payment Plan", "PaymentPlan", paymentPlan.PlanID);
                 }
 
-                return Json(new { success = true, planId = paymentPlan.PlanID });
+                return Json(new
+                {
+                    success = true,
+                    planId = paymentPlan.PlanID,
+                    planName = paymentPlan.PlanName,
+                    scheduleCount = schedules.Count,
+                    message = $"Payment plan \"{paymentPlan.PlanName}\" saved successfully with {schedules.Count} schedule(s)."
+                });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                var detail = ex.InnerException?.Message ?? ex.Message;
+                return Json(new { success = false, message = "Could not save payment plan: " + detail });
             }
         }
 

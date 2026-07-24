@@ -21,6 +21,10 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add<AmsViewBagFilter>();
     options.Filters.Add<NavigationModuleFilter>();
 });
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
 builder.Services.AddScoped<AmsAccessService>();
 
 // Add Entity Framework
