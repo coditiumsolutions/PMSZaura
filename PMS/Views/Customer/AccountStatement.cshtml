@@ -37,7 +37,7 @@
     <h3 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Account Statement</h3>
     <div class="d-flex gap-2">
         <button class="btn btn-outline-secondary btn-sm" onclick="window.print()"><i class="fas fa-print me-1"></i>Print</button>
-        <a class="btn btn-outline-primary btn-sm" href="#" onclick="downloadPDF(event)"><i class="fas fa-file-pdf me-1"></i>Download PDF</a>
+        <a class="btn btn-outline-primary btn-sm" asp-controller="Report" asp-action="AccountStatement" asp-route-accountNo="@Model.CustomerID" target="_blank"><i class="fas fa-file-pdf me-1"></i>Download PDF</a>
     </div>
 </div>
 
@@ -302,12 +302,6 @@
     </div>
 </div>
 
-<script>
-    function downloadPDF(e) {
-        e.preventDefault();
-        window.print();
-    }
-</script>
 
 <style>
     /* A4 Paper Size Styling */

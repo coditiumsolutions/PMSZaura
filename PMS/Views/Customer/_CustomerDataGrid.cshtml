@@ -9,6 +9,9 @@
         <table class="table pms-saas-table" id="customersTable">
             <thead>
                 <tr>
+                    <th class="pms-saas-th-check" style="width: 2.5rem;">
+                        <span class="visually-hidden">Select</span>
+                    </th>
                     @if (showBulkSelection)
                     {
                         <th class="pms-saas-th-check">
@@ -29,21 +32,32 @@
                     var projectName = customer.PaymentPlan?.Project?.ProjectName
                         ?? customer.Project?.ProjectName;
                     var custStatus = customer.Status ?? "Active";
-                    <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = customer.CustomerID })">
+                    var customerId = customer.CustomerID ?? "";
+                    <tr class="pms-listing-row pms-customer-selectable-row"
+                        data-customer-id="@customerId"
+                        data-href="@Url.Action("Details", new { id = customer.CustomerID })">
+                        <td class="pms-saas-td-check" data-label="Select">
+                            <input type="radio"
+                                   class="customer-report-radio pms-saas-checkbox"
+                                   name="selectedCustomerForReport"
+                                   value="@customerId"
+                                   aria-label="Select customer @customerId for Account Report"
+                                   @(string.IsNullOrWhiteSpace(customerId) ? "disabled" : "") />
+                        </td>
                         @if (showBulkSelection)
                         {
-                            <td class="pms-saas-td-check" data-label="Select">
+                            <td class="pms-saas-td-check" data-label="Bulk Select">
                                 <input type="checkbox"
                                        class="pending-customer-checkbox pms-saas-checkbox"
                                        name="selectedCustomerIds"
-                                       value="@(customer.CustomerID ?? "")"
-                                       aria-label="Select customer @(customer.CustomerID)"
-                                       @(string.IsNullOrWhiteSpace(customer.CustomerID) ? "disabled" : "") />
+                                       value="@customerId"
+                                       aria-label="Select customer @customerId"
+                                       @(string.IsNullOrWhiteSpace(customerId) ? "disabled" : "") />
                             </td>
                         }
                         <td data-label="Customer ID">
-                            <a asp-action="Details" asp-route-id="@(customer.CustomerID ?? "")" class="text-decoration-none">
-                                <span class="pms-cell-primary-title">@(customer.CustomerID ?? "")</span>
+                            <a asp-action="Details" asp-route-id="@customerId" class="text-decoration-none">
+                                <span class="pms-cell-primary-title">@customerId</span>
                             </a>
                         </td>
                         <td data-label="Full Name">

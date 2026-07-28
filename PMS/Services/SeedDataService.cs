@@ -268,7 +268,9 @@ namespace PMS.Services
 
         private async Task SeedAdminUser()
         {
-            if (!await _context.Users.AnyAsync(u => u.Email == "admin@jubasmartcity.com"))
+            // CHAR(10) UserID is space-padded in SQL; check both ID and email to avoid PK collisions
+            // when the row already exists under a different email.
+            if (!await UserExistsAsync("USER00001", "admin@jubasmartcity.com"))
             {
                 var adminUser = new User
                 {
@@ -289,7 +291,7 @@ namespace PMS.Services
             }
 
             // Seed additional admin user: abbas@pms.com
-            if (!await _context.Users.AnyAsync(u => u.Email == "abbas@pms.com"))
+            if (!await UserExistsAsync("USER00002", "abbas@pms.com"))
             {
                 var abbasUser = new User
                 {
@@ -308,6 +310,15 @@ namespace PMS.Services
                 _context.Users.Add(abbasUser);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        private async Task<bool> UserExistsAsync(string userId, string email)
+        {
+            var paddedId = userId.PadRight(10);
+            return await _context.Users.AnyAsync(u =>
+                u.UserID == userId ||
+                u.UserID == paddedId ||
+                u.Email == email);
         }
 
         private async Task SeedProjects()

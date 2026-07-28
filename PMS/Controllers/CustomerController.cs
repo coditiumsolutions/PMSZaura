@@ -19,7 +19,7 @@ namespace PMS.Controllers
         private const string ModuleKey = "Customer";
         private readonly PMSDbContext _context;
         private readonly IModulePermissionService _modulePermission;
-        private readonly ISurchargeService _surchargeService;
+        private readonly IAccountStatementService _accountStatementService;
 
         private static readonly string[] _allowedKinFileExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".pdf" };
         private const long _maxKinFileSize = 8 * 1024 * 1024; // 8MB
@@ -37,11 +37,11 @@ namespace PMS.Controllers
         public CustomerController(
             PMSDbContext context,
             IModulePermissionService modulePermission,
-            ISurchargeService surchargeService)
+            IAccountStatementService accountStatementService)
         {
             _context = context;
             _modulePermission = modulePermission;
-            _surchargeService = surchargeService;
+            _accountStatementService = accountStatementService;
         }
 
         private async Task<IActionResult?> EnsurePermissionAsync(string requiredLevel)
@@ -1364,81 +1364,16 @@ namespace PMS.Controllers
             {
                 return NotFound();
             }
-            var customerIdTrimmed = id.Trim();
 
-            var paymentsTableExists = false;
-            try
-            {
-                var tableExists = await _context.Database
-                    .SqlQueryRaw<int>("SELECT COUNT(*) AS [Value] FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Payments'")
-                    .FirstOrDefaultAsync();
-                paymentsTableExists = tableExists > 0;
-            }
-            catch
-            {
-                paymentsTableExists = false;
-            }
-
-            Customer? customer;
-            if (paymentsTableExists)
-            {
-                customer = await _context.Customers
-                    .Include(c => c.Project)
-                    .Include(c => c.PaymentPlan)
-                        .ThenInclude(pp => pp.Project)
-                    .Include(c => c.PaymentPlan)
-                        .ThenInclude(pp => pp.PaymentSchedules)
-                            .ThenInclude(ps => ps.Payments)
-                    .Include(c => c.JointOwners)
-                    .Include(c => c.Allotments)
-                        .ThenInclude(a => a.Property)
-                    .FirstOrDefaultAsync(c => c.CustomerID == customerIdTrimmed);
-            }
-            else
-            {
-                customer = await _context.Customers
-                    .Include(c => c.Project)
-                    .Include(c => c.PaymentPlan)
-                        .ThenInclude(pp => pp.Project)
-                    .Include(c => c.PaymentPlan)
-                        .ThenInclude(pp => pp.PaymentSchedules)
-                    .Include(c => c.JointOwners)
-                    .Include(c => c.Allotments)
-                        .ThenInclude(a => a.Property)
-                    .FirstOrDefaultAsync(c => c.CustomerID == customerIdTrimmed);
-            }
-
-            if (customer == null)
+            var data = await _accountStatementService.GetAsync(id);
+            if (data == null)
             {
                 return NotFound();
             }
 
-            var schedules = customer.PaymentPlan?.PaymentSchedules ?? new List<PaymentSchedule>();
-            ViewBag.SurchargeBySchedule = _surchargeService.ComputeBySchedule(
-                schedules,
-                customer.CustomerID,
-                DateTime.Now.Date);
-
-            List<Payment> otherPayments = new();
-            if (paymentsTableExists)
-            {
-                var otherPaymentsRaw = await _context.Payments
-                    .AsNoTracking()
-                    .Where(p => p.CustomerID == customer.CustomerID
-                        && p.ScheduleID == null
-                        && p.AuditStatus == "Approved")
-                    .OrderBy(p => p.PaymentDate)
-                    .ToListAsync();
-                otherPayments = otherPaymentsRaw
-                    .Where(p =>
-                        p.Amount < 0
-                        || string.Equals((p.AccountHead ?? string.Empty).Trim(), "Surcharge Payment", StringComparison.OrdinalIgnoreCase)
-                        || (p.Remarks ?? string.Empty).Contains("Surcharge payment", StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            }
-            ViewBag.OtherAccountHeadPayments = otherPayments;
-
-            return View(customer);
+            ViewBag.SurchargeBySchedule = data.SurchargeBySchedule;
+            ViewBag.OtherAccountHeadPayments = data.OtherAccountHeadPayments;
+            return View(data.Customer);
         }
 
         /// <summary>

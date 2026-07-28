@@ -41,6 +41,8 @@ builder.Services.AddSingleton<PMS.Services.TotpSecretProtector>();
 builder.Services.AddSingleton<PMS.Services.ITotpAuthenticatorService, PMS.Services.TotpAuthenticatorService>();
 builder.Services.AddScoped<PMS.Services.ITwoFactorConfigService, PMS.Services.TwoFactorConfigService>();
 builder.Services.AddScoped<ISurchargeService, SurchargeService>();
+builder.Services.AddScoped<IAccountStatementService, AccountStatementService>();
+builder.Services.AddScoped<IAccountStatementReportService, AccountStatementReportService>();
 builder.Services.Configure<AmsPmsIntegrationOptions>(builder.Configuration.GetSection(AmsPmsIntegrationOptions.SectionName));
 builder.Services.AddScoped<IAmsPmsIntegrationService, AmsPmsIntegrationService>();
 builder.Services.AddScoped<AmsExportService>();
@@ -183,7 +185,17 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Initialize database
-await PMS.Services.DatabaseInitializer.InitializeAsync(app.Services);
+// Start Kestrel first, then initialize DB in the background so HTTPS binds even when SQL is unreachable.
+_ = Task.Run(async () =>
+{
+    try
+    {
+        await PMS.Services.DatabaseInitializer.InitializeAsync(app.Services);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Database initialization error: {ex.GetBaseException().Message}");
+    }
+});
 
 app.Run();

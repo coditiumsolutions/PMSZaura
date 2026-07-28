@@ -16,6 +16,15 @@ namespace PMS.Services
 
             try
             {
+                // Fail fast when SQL is unreachable (e.g. VPN down) so startup is not blocked for minutes.
+                if (!await context.Database.CanConnectAsync())
+                {
+                    Console.WriteLine(
+                        "Database initialization skipped: cannot connect to SQL Server. " +
+                        "Check VPN / network and ConnectionStrings:DefaultConnection.");
+                    return;
+                }
+
                 // Apply pending migrations and create database if it doesn't exist
                 context.Database.Migrate();
                 await EnsureClientCertificateSecurityTablesAsync(context);
@@ -28,9 +37,8 @@ namespace PMS.Services
             }
             catch (Exception ex)
             {
-                // Log error or handle as needed
-                Console.WriteLine($"Database initialization error: {ex}");
-                throw;
+                // Log and continue so Kestrel can still bind (HTTPS/HTTP). Seeding must not block the web server.
+                Console.WriteLine($"Database initialization error: {ex.GetBaseException().Message}");
             }
         }
 

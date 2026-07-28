@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using PMS.Data;
@@ -82,45 +83,72 @@ namespace PMS.Controllers
                 return View(cfg);
             }
 
-            // Case-insensitive email comparison
-            var user = await _context.Users
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == email.ToLower() && u.IsActive);
-
-            if (user != null && !string.IsNullOrEmpty(user.PasswordHash) && BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            try
             {
-                var enforce2Fa = await _twoFactorConfig.IsEnforce2FAAsync();
-                var require2Fa = enforce2Fa || user.TwoFactorEnabled;
+                // Case-insensitive email comparison
+                var user = await _context.Users
+                    .Include(u => u.Role)
+                    .FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == email.ToLower() && u.IsActive);
 
-                if (!require2Fa)
-                    return await CompleteSignInAsync(user);
-
-                var rateKey = TwoFactorRateKey(user.UserID);
-                if (IsTwoFactorLockedOut(rateKey))
+                if (user != null && !string.IsNullOrEmpty(user.PasswordHash) && BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
                 {
-                    ViewBag.Error = "Too many failed attempts. Try again later or contact an administrator.";
-                    var cfgLocked = await _siteConfigService.GetAsync();
-                    return View(cfgLocked);
-                }
+                    var enforce2Fa = await _twoFactorConfig.IsEnforce2FAAsync();
+                    var require2Fa = enforce2Fa || user.TwoFactorEnabled;
 
-                AppendTwoFactorPendingCookie(user.UserID);
-
-                if (!user.TwoFactorEnabled)
-                {
-                    if (!enforce2Fa)
-                    {
-                        ClearTwoFactorCookies();
+                    if (!require2Fa)
                         return await CompleteSignInAsync(user);
+
+                    var rateKey = TwoFactorRateKey(user.UserID);
+                    if (IsTwoFactorLockedOut(rateKey))
+                    {
+                        ViewBag.Error = "Too many failed attempts. Try again later or contact an administrator.";
+                        var cfgLocked = await _siteConfigService.GetAsync();
+                        return View(cfgLocked);
                     }
-                    return RedirectToAction(nameof(TwoFactorSetup));
+
+                    AppendTwoFactorPendingCookie(user.UserID);
+
+                    if (!user.TwoFactorEnabled)
+                    {
+                        if (!enforce2Fa)
+                        {
+                            ClearTwoFactorCookies();
+                            return await CompleteSignInAsync(user);
+                        }
+                        return RedirectToAction(nameof(TwoFactorSetup));
+                    }
+
+                    return RedirectToAction(nameof(TwoFactorVerify));
                 }
 
-                return RedirectToAction(nameof(TwoFactorVerify));
+                ViewBag.Error = "Invalid email or password.";
+                var siteConfig = await _siteConfigService.GetAsync();
+                return View(siteConfig);
             }
+            catch (Exception ex) when (IsDatabaseConnectivityFailure(ex))
+            {
+                ViewBag.Error = "Cannot reach the database server. Connect OpenVPN (or check network/firewall), then try again.";
+                var cfgDb = await _siteConfigService.GetAsync();
+                return View(cfgDb);
+            }
+        }
 
-            ViewBag.Error = "Invalid email or password.";
-            var siteConfig = await _siteConfigService.GetAsync();
-            return View(siteConfig);
+        private static bool IsDatabaseConnectivityFailure(Exception ex)
+        {
+            for (var e = ex; e != null; e = e.InnerException)
+            {
+                if (e is System.ComponentModel.Win32Exception)
+                    return true;
+                if (e is System.Net.Sockets.SocketException)
+                    return true;
+                if (e is SqlException sqlEx &&
+                    (sqlEx.Number == -2 || sqlEx.Number == 53 || sqlEx.Number == 40 ||
+                     sqlEx.Message.Contains("network-related", StringComparison.OrdinalIgnoreCase) ||
+                     sqlEx.Message.Contains("timeout", StringComparison.OrdinalIgnoreCase) ||
+                     sqlEx.Message.Contains("could not open", StringComparison.OrdinalIgnoreCase)))
+                    return true;
+            }
+            return false;
         }
 
         [HttpGet]

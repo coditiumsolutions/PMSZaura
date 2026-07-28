@@ -125,6 +125,17 @@
             </div>
         </div>
 
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+            <button type="button"
+                    id="btnAccountReport"
+                    class="btn btn-outline-primary btn-sm"
+                    disabled
+                    title="Select a customer row first">
+                <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Account Report
+            </button>
+            <small class="text-muted">Select one row, then open Account Report.</small>
+        </div>
+
         <div class="card pms-grid-card pms-listing-flat pms-customer-listing pms-customer-grid-compact mb-2">
             <div class="card-body py-2">
                 <partial name="_CustomerDataGrid" model="Model" />
@@ -134,6 +145,17 @@
 }
 else
 {
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+        <button type="button"
+                id="btnAccountReport"
+                class="btn btn-outline-primary btn-sm"
+                disabled
+                title="Select a customer row first">
+            <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Account Report
+        </button>
+        <small class="text-muted">Select one row, then open Account Report.</small>
+    </div>
+
     <div class="card pms-grid-card pms-listing-flat pms-customer-listing pms-customer-grid-compact mb-2">
         <div class="card-body py-2">
             <partial name="_CustomerDataGrid" model="Model" />
@@ -226,22 +248,82 @@ else
     .pms-customer-listing .pms-saas-table tbody td[data-label="Customer ID"] .pms-cell-primary-title {
         color: #0d6efd !important;
     }
+
+    .pms-customer-listing .pms-customer-selectable-row {
+        cursor: pointer;
+    }
+
+    .pms-customer-listing .pms-customer-selectable-row.pms-row-selected,
+    .pms-customer-listing .pms-customer-selectable-row.pms-row-selected > td {
+        background-color: #e7f1ff !important;
+    }
 </style>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
             var showBulkSelection = @showBulkSelection.ToString().ToLowerInvariant();
-            var customerIdColumnIndex = showBulkSelection ? 1 : 0;
+            // Col 0 = report radio; optional bulk checkbox; then Customer ID
+            var customerIdColumnIndex = showBulkSelection ? 2 : 1;
+            var accountReportUrl = '@Url.Action("AccountStatement", "Report")';
+            var $accountReportBtn = $('#btnAccountReport');
+            var selectedCustomerId = null;
+
+            function setSelectedCustomer(customerId) {
+                selectedCustomerId = (customerId || '').trim() || null;
+                $('#customersTable tbody tr.pms-customer-selectable-row').removeClass('pms-row-selected');
+                if (selectedCustomerId) {
+                    var $row = $('#customersTable tbody tr.pms-customer-selectable-row').filter(function() {
+                        return String($(this).data('customer-id') || '') === selectedCustomerId;
+                    }).first();
+                    $row.addClass('pms-row-selected');
+                    $row.find('.customer-report-radio').prop('checked', true);
+                    $accountReportBtn.prop('disabled', false).attr('title', 'Open Account Report for ' + selectedCustomerId);
+                } else {
+                    $('.customer-report-radio').prop('checked', false);
+                    $accountReportBtn.prop('disabled', true).attr('title', 'Select a customer row first');
+                }
+            }
 
             if ($('#customersTable').length) {
                 PmsListingDataTable.init('#customersTable', {
                     searching: false,
                     order: [[ customerIdColumnIndex, "desc" ]],
+                    columnDefs: [
+                        { orderable: false, targets: showBulkSelection ? [0, 1] : [0] }
+                    ],
                     dom: 'rt<"pms-customer-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>'
                 });
-                PmsListingDataTable.bindRowNavigation('#customersTable');
+
+                // Single-row selection (do not navigate on row click; use Customer ID link for details).
+                $('#customersTable tbody').on('click', 'tr.pms-customer-selectable-row', function (e) {
+                    if ($(e.target).closest('a, button, form, select, textarea').length) {
+                        return;
+                    }
+                    // Keep pending bulk checkboxes independent of report selection.
+                    if ($(e.target).closest('.pending-customer-checkbox').length) {
+                        return;
+                    }
+                    var id = String($(this).data('customer-id') || '');
+                    if (id) {
+                        setSelectedCustomer(id);
+                    }
+                });
+
+                $('#customersTable tbody').on('change', '.customer-report-radio', function () {
+                    setSelectedCustomer($(this).val());
+                });
             }
+
+            $accountReportBtn.on('click', function () {
+                if (!selectedCustomerId) {
+                    alert('Please select a customer row first.');
+                    return;
+                }
+                var url = accountReportUrl + (accountReportUrl.indexOf('?') >= 0 ? '&' : '?')
+                    + 'accountNo=' + encodeURIComponent(selectedCustomerId);
+                window.open(url, '_blank', 'noopener');
+            });
 
             if (showBulkSelection) {
                 var $selectAll = $('#selectAllPendingCustomers');
