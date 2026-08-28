@@ -1,169 +1,129 @@
 @model PMS.Models.AccountsDashboardViewModel
-
 @{
     ViewData["Title"] = "Accounts Management";
+    ViewData["HidePageBanner"] = true;
 }
 
-<p class="small text-muted mb-2">
-    <a class="btn btn-sm btn-outline-primary" asp-controller="AmsCoa" asp-action="Index"><i class="fas fa-book me-1"></i>Open full accounting</a>
-</p>
+<div class="pms-ams-dashboard">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h5 class="mb-0 pms-ams-page-title">Accounts Management</h5>
+        <a class="btn btn-sm btn-outline-primary py-0 px-2" asp-controller="AmsCoa" asp-action="Index">
+            <i class="fas fa-book me-1"></i>Open full accounting
+        </a>
+    </div>
 
-<partial name="_Nav" />
+    <partial name="_Nav" />
 
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="avatar-sm rounded-circle bg-success bg-soft text-success">
-                            <i class="fas fa-coins font-size-24"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-1 text-muted">Collected Today</h6>
-                        <h4 class="mb-0">@Model.TotalCollectedToday.ToString("N0")</h4>
-                    </div>
-                </div>
+    <div class="row g-2 mb-3 ams-stats-compact">
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">@Model.TotalCollectedToday.ToString("N0")</div>
+                <div class="stats-label">Collected Today</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">@Model.TotalCollectedThisMonth.ToString("N0")</div>
+                <div class="stats-label">Collected This Month</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">@Model.TotalReceivableThisMonth.ToString("N0")</div>
+                <div class="stats-label">Receivable This Month</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">@Model.TotalOverdueReceivable.ToString("N0")</div>
+                <div class="stats-label">Overdue Outstanding</div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="avatar-sm rounded-circle bg-primary bg-soft text-primary">
-                            <i class="fas fa-money-bill-wave font-size-24"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-1 text-muted">Collected This Month</h6>
-                        <h4 class="mb-0">@Model.TotalCollectedThisMonth.ToString("N0")</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="avatar-sm rounded-circle bg-warning bg-soft text-warning">
-                            <i class="fas fa-calendar-check font-size-24"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-1 text-muted">Receivable This Month</h6>
-                        <h4 class="mb-0">@Model.TotalReceivableThisMonth.ToString("N0")</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="avatar-sm rounded-circle bg-danger bg-soft text-danger">
-                            <i class="fas fa-exclamation-triangle font-size-24"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="mb-1 text-muted">Overdue Outstanding</h6>
-                        <h4 class="mb-0">@Model.TotalOverdueReceivable.ToString("N0")</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row g-3">
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-                <h5 class="mb-0 text-white"><i class="fas fa-layer-group me-2"></i>Collections by Method (This Month)</h5>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Method</th>
-                                <th class="text-end">Count</th>
-                                <th class="text-end">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var m in Model.CollectionsByMethodThisMonth)
-                            {
-                                <tr>
-                                    <td><span class="badge bg-secondary">@m.Method</span></td>
-                                    <td class="text-end">@m.Count</td>
-                                    <td class="text-end"><strong>@m.TotalAmount.ToString("N0")</strong></td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+    <div class="row g-2">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header py-1 px-3 pms-ams-card-header">
+                    <h6 class="mb-0">Collections by Method (This Month)</h6>
                 </div>
-                <div class="mt-3">
-                    <a class="btn btn-sm btn-outline-primary" asp-action="BankWiseCollections">
-                        <i class="fas fa-university me-1"></i>Open Bank-wise Report
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-                <h5 class="mb-0 text-white"><i class="fas fa-university me-2"></i>Bank-wise Collections (Top)</h5>
-            </div>
-            <div class="card-body">
-                @if (Model.BankWiseCollectionsThisMonth.Any())
-                {
+                <div class="card-body py-2 px-3 bg-white">
                     <div class="table-responsive">
-                        <table class="table table-sm table-hover align-middle mb-0">
-                            <thead class="table-light">
+                        <table class="table table-sm align-middle mb-0 pms-ams-table">
+                            <thead>
                                 <tr>
-                                    <th>Bank (inferred)</th>
+                                    <th>Method</th>
                                     <th class="text-end">Count</th>
                                     <th class="text-end">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var b in Model.BankWiseCollectionsThisMonth)
+                                @foreach (var m in Model.CollectionsByMethodThisMonth)
                                 {
                                     <tr>
-                                        <td><span class="badge bg-info">@b.Bank</span></td>
-                                        <td class="text-end">@b.Count</td>
-                                        <td class="text-end"><strong>@b.TotalAmount.ToString("N0")</strong></td>
+                                        <td><span class="pms-pill pms-pill--neutral">@m.Method</span></td>
+                                        <td class="text-end">@m.Count</td>
+                                        <td class="text-end fw-semibold">@m.TotalAmount.ToString("N0")</td>
                                     </tr>
                                 }
                             </tbody>
                         </table>
                     </div>
-                    <div class="text-muted small mt-2">
-                        Bank name is inferred from payment reference/remarks for “Bank Transfer” payments.
+                    <div class="mt-2">
+                        <a class="btn btn-sm btn-outline-primary py-0 px-2" asp-action="BankWiseCollections">
+                            <i class="fas fa-university me-1"></i>Bank-wise Report
+                        </a>
                     </div>
-                }
-                else
-                {
-                    <div class="text-center py-4 text-muted">
-                        <i class="fas fa-university fa-3x mb-2"></i>
-                        <div>No bank transfer payments found for this month.</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header py-1 px-3 pms-ams-card-header">
+                    <h6 class="mb-0">Bank-wise Collections (Top)</h6>
+                </div>
+                <div class="card-body py-2 px-3 bg-white">
+                    @if (Model.BankWiseCollectionsThisMonth.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle mb-0 pms-ams-table">
+                                <thead>
+                                    <tr>
+                                        <th>Bank</th>
+                                        <th class="text-end">Count</th>
+                                        <th class="text-end">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var b in Model.BankWiseCollectionsThisMonth)
+                                    {
+                                        <tr>
+                                            <td><span class="pms-pill pms-pill--info">@b.Bank</span></td>
+                                            <td class="text-end">@b.Count</td>
+                                            <td class="text-end fw-semibold">@b.TotalAmount.ToString("N0")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-muted small mt-1">
+                            Bank name is inferred from payment reference/remarks for Bank Transfer payments.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-3 text-muted small">
+                            No bank transfer payments found for this month.
+                        </div>
+                    }
+                    <div class="mt-2 d-flex flex-wrap gap-1">
+                        <a class="btn btn-sm btn-outline-primary py-0 px-2" asp-action="ReceivablesThisMonth">
+                            <i class="fas fa-calendar-check me-1"></i>Receivables This Month
+                        </a>
+                        <a class="btn btn-sm btn-outline-danger py-0 px-2" asp-action="OverdueAging">
+                            <i class="fas fa-hourglass-half me-1"></i>Overdue Aging
+                        </a>
                     </div>
-                }
-                <div class="mt-3">
-                    <a class="btn btn-sm btn-outline-primary" asp-action="ReceivablesThisMonth">
-                        <i class="fas fa-calendar-check me-1"></i>Open Receivables This Month
-                    </a>
-                    <a class="btn btn-sm btn-outline-danger ms-1" asp-action="OverdueAging">
-                        <i class="fas fa-hourglass-half me-1"></i>Open Overdue Aging
-                    </a>
                 </div>
             </div>
         </div>
@@ -171,14 +131,68 @@
 </div>
 
 <style>
-    .avatar-sm {
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .pms-ams-page-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #334155;
+        letter-spacing: 0.01em;
     }
-    .font-size-24 { font-size: 24px; }
-    .bg-soft { background-color: rgba(var(--bs-primary-rgb), 0.1) !important; }
-</style>
 
+    .pms-ams-card-header {
+        background: #E8EAE4 !important;
+        border-bottom: 1px solid #d1d5db;
+    }
+
+    .pms-ams-card-header h6 {
+        color: #000 !important;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .ams-stats-compact .stats-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 0.65rem 0.75rem;
+        text-align: center;
+        min-height: 0;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+
+    .ams-stats-compact .stats-number {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #000;
+        margin-bottom: 0.15rem;
+        line-height: 1.2;
+    }
+
+    .ams-stats-compact .stats-label {
+        font-size: 10px;
+        color: #000;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.35px;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .pms-ams-table thead th {
+        background: #E8EAE4 !important;
+        color: #334155 !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        border-bottom: 1px solid #d1d5db !important;
+        white-space: nowrap;
+    }
+
+    .pms-ams-table tbody td {
+        color: #000 !important;
+        font-size: 0.8125rem;
+    }
+
+    .pms-ams-table tbody td:first-child {
+        color: #1e3a8a !important;
+        font-weight: 600;
+    }
+</style>

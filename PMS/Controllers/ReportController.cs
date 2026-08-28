@@ -10,45 +10,67 @@ namespace PMS.Controllers
     {
         private const string CustomerModuleKey = "Customer";
 
-        private readonly IAccountStatementReportService _accountStatementReportService;
+        private readonly IReportServiceClient _reportService;
         private readonly IModulePermissionService _modulePermission;
+        private readonly ILogger<ReportController> _logger;
 
         public ReportController(
-            IAccountStatementReportService accountStatementReportService,
-            IModulePermissionService modulePermission)
+            IReportServiceClient reportService,
+            IModulePermissionService modulePermission,
+            ILogger<ReportController> logger)
         {
-            _accountStatementReportService = accountStatementReportService;
+            _reportService = reportService;
             _modulePermission = modulePermission;
+            _logger = logger;
         }
 
         /// <summary>
-        /// Renders Account Statement as PDF using the same data as /Customer/AccountStatement/{accountNo}.
+        /// Proxies Account Statement PDF from the Coditium Python report service.
+        /// API: GET /api/reports/account-statement?customerId=…
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> AccountStatement(string accountNo, CancellationToken cancellationToken)
+        public async Task<IActionResult> AccountStatement(string accountNo, string? customerId, CancellationToken cancellationToken)
         {
             var denied = await EnsureCustomerReadAsync();
             if (denied != null) return denied;
 
-            if (string.IsNullOrWhiteSpace(accountNo))
+            var id = (customerId ?? accountNo)?.Trim();
+            if (string.IsNullOrWhiteSpace(id))
                 return NotFound();
 
-            byte[]? pdf;
             try
             {
-                pdf = await _accountStatementReportService.RenderPdfAsync(accountNo.Trim(), cancellationToken);
+                var pdf = await _reportService.GetAccountStatementPdfAsync(id, cancellationToken);
+                if (pdf == null || pdf.Length == 0)
+                    return NotFound();
+
+                var fileName = $"AccountStatement_{id}.pdf";
+                Response.Headers["Content-Disposition"] = $"inline; filename=\"{fileName}\"";
+                return File(pdf, "application/pdf");
             }
-            catch (FileNotFoundException ex)
+            catch (KeyNotFoundException)
             {
-                return Problem(detail: ex.Message, statusCode: StatusCodes.Status500InternalServerError);
-            }
-
-            if (pdf == null || pdf.Length == 0)
                 return NotFound();
-
-            var fileName = $"AccountStatement_{accountNo.Trim()}.pdf";
-            Response.Headers["Content-Disposition"] = $"inline; filename=\"{fileName}\"";
-            return File(pdf, "application/pdf");
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Account statement PDF unavailable for {CustomerId}", id);
+                return Problem(detail: ex.Message, statusCode: StatusCodes.Status502BadGateway);
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Report service unreachable for {CustomerId}", id);
+                return Problem(
+                    detail: "Report service is unreachable. Please try again later.",
+                    statusCode: StatusCodes.Status502BadGateway);
+            }
+            catch (TaskCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+            {
+                _logger.LogError(ex, "Report service timed out for {CustomerId}", id);
+                return Problem(
+                    detail: "Report service timed out while generating the PDF.",
+                    statusCode: StatusCodes.Status504GatewayTimeout);
+            }
         }
 
         private async Task<IActionResult?> EnsureCustomerReadAsync()

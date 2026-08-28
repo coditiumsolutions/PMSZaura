@@ -289,9 +289,10 @@
 
                         <!-- Property Allotments Tab -->
                         <div class="tab-pane fade" id="allotments" role="tabpanel" aria-labelledby="allotments-tab">
-                            <div class="row g-3 mb-4">
-                                <div class="col-12 col-md-6 col-xl-3">
-                                        <label asp-for="ProjectID" class="form-label">Project *</label>
+                            <div class="pms-customer-4col-form pms-registration-4col-form">
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="ProjectID" class="form-label pms-registration-4col-label">Project *</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <select asp-for="ProjectID" id="ProjectID" class="form-select" required>
                                             <option value="">Select Project</option>
                                             @if (ViewBag.Projects != null)
@@ -303,27 +304,71 @@
                                             }
                                         </select>
                                         <span asp-validation-for="ProjectID" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-12 col-lg-2"><label asp-for="PlanID" class="form-label pms-registration-4col-label">Payment Plan</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <select asp-for="PlanID" class="form-select">
+                                            <option value="">Select Payment Plan</option>
+                                            @if (ViewBag.PaymentPlans != null)
+                                            {
+                                                @foreach (var plan in ViewBag.PaymentPlans)
+                                                {
+                                                    <option value="@plan.PlanID">@plan.PlanName - PKR @plan.TotalAmount.ToString("N0")</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="col-12 col-md-6 col-xl-3">
-                                    <label asp-for="RegisteredSize" class="form-label">Registered Size</label>
-                                    <input asp-for="RegisteredSize" id="RegisteredSize" class="form-control" type="number" step="0.01" inputmode="decimal" placeholder="Enter size" />
-                                    <datalist id="RegisteredSizeOptions"></datalist>
-                                    <small class="text-muted">Sizes are suggested from selected project, or type your own value.</small>
+
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="SubProject" class="form-label pms-registration-4col-label">Sub Project</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <select asp-for="SubProject" id="SubProject" class="form-select">
+                                            @if (!string.IsNullOrWhiteSpace(Model.SubProject))
+                                            {
+                                                <option value="@Model.SubProject" selected>@Model.SubProject</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="">@(string.IsNullOrEmpty(Model.ProjectID) ? "Select Project first" : "Select Sub Project")</option>
+                                            }
+                                        </select>
+                                        <small class="text-muted d-block">Sub projects are loaded from the selected project (same as Create).</small>
+                                    </div>
+                                    <div class="col-12 col-lg-2"><label asp-for="RegisteredSize" class="form-label pms-registration-4col-label">Registered Size</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <input asp-for="RegisteredSize" id="RegisteredSize" class="form-control" type="number" step="0.01" inputmode="decimal" placeholder="Enter size" />
+                                        <datalist id="RegisteredSizeOptions"></datalist>
+                                        <small class="text-muted d-block">Sizes are suggested from selected project, or type your own value.</small>
+                                    </div>
                                 </div>
-                                <div class="col-12 col-md-6 col-xl-3">
-                                    <label class="form-label">Is Dealer Registered?</label>
-                                    <div class="d-flex gap-3 mb-2">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="IsDealerRegistered" id="dealerRegYes" value="1" @(Model?.IsDealerRegistered != 0 ? "checked" : null)>
-                                            <label class="form-check-label" for="dealerRegYes">Yes</label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="IsDealerRegistered" id="dealerRegNo" value="0" @(Model?.IsDealerRegistered == 0 ? "checked" : null)>
-                                            <label class="form-check-label" for="dealerRegNo">No</label>
+
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label">Is Dealer Registered?</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <div class="d-flex gap-3 pt-lg-1">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="IsDealerRegistered" id="dealerRegYes" value="1" @(Model?.IsDealerRegistered != 0 ? "checked" : null)>
+                                                <label class="form-check-label" for="dealerRegYes">Yes</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="IsDealerRegistered" id="dealerRegNo" value="0" @(Model?.IsDealerRegistered == 0 ? "checked" : null)>
+                                                <label class="form-check-label" for="dealerRegNo">No</label>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div id="dealerDropdownWrap">
-                                        <label asp-for="DealerID" class="form-label">Select Dealer</label>
+                                    <div class="col-12 col-lg-2"><span class="form-label pms-registration-4col-label">Allotment Workflow</span></div>
+                                    <div class="col-12 col-lg-4">
+                                        <div class="alert alert-info small mb-0 py-2">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Allotment is managed from the Allotment module (workflow).
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row g-2 pms-registration-4col-row align-items-start" id="dealerDropdownWrap">
+                                    <div class="col-12 col-lg-2"><label asp-for="DealerID" class="form-label pms-registration-4col-label">Select Dealer</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <select asp-for="DealerID" id="DealerID" class="form-select">
                                             <option value="">Select Dealer</option>
                                             @if (ViewBag.Dealers != null)
@@ -336,126 +381,95 @@
                                         </select>
                                         <span asp-validation-for="DealerID" class="text-danger"></span>
                                     </div>
-                                    <div id="dealerNameWrap" style="display:none;">
-                                        <label asp-for="DealerName" class="form-label">Dealer Name</label>
+                                </div>
+
+                                <div class="row g-2 pms-registration-4col-row align-items-start" id="dealerNameWrap" style="display:none;">
+                                    <div class="col-12 col-lg-2"><label asp-for="DealerName" class="form-label pms-registration-4col-label">Dealer Name</label></div>
+                                    <div class="col-12 col-lg-4">
                                         <input asp-for="DealerName" id="DealerName" class="form-control" placeholder="Enter dealer name manually" maxlength="200" />
                                         <span asp-validation-for="DealerName" class="text-danger"></span>
                                     </div>
                                 </div>
-                                    </div>
 
-                            <div class="row g-3 mb-4">
-                                <div class="col-12 col-md-6 col-xl-3">
-                                        <label asp-for="PlanID" class="form-label">Payment Plan</label>
-                                        <select asp-for="PlanID" class="form-select">
-                                            <option value="">Select Payment Plan</option>
-                                            @if (ViewBag.PaymentPlans != null)
-                                            {
-                                                @foreach (var plan in ViewBag.PaymentPlans)
-                                                {
-                                                    <option value="@plan.PlanID">@plan.PlanName - PKR @plan.TotalAmount.ToString("N0")</option>
-                                                }
-                                            }
-                                        </select>
-                                    </div>
-                                <div class="col-12 col-md-6 col-xl-3">
-                                        <label asp-for="SubProject" class="form-label">Sub Project</label>
-                                        <select asp-for="SubProject" id="SubProject" class="form-select">
-                                            @if (!string.IsNullOrWhiteSpace(Model.SubProject))
-                                            {
-                                                <option value="@Model.SubProject" selected>@Model.SubProject</option>
-                                            }
-                                            else
-                                            {
-                                                <option value="">@(string.IsNullOrEmpty(Model.ProjectID) ? "Select Project first" : "Select Sub Project")</option>
-                                            }
-                                        </select>
-                                        <small class="text-muted">Sub projects are loaded from the selected project (same as Create).</small>
-                                    </div>
-                                <div class="col-12 col-md-6 col-xl-3">
-                                    <div class="alert alert-info mb-0 h-100 d-flex align-items-center">
-                                        <i class="fas fa-info-circle me-2"></i>
-                                        <strong>Allotment is managed from the Allotment module</strong> (workflow).
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label asp-for="AdditionalInfo" class="form-label pms-registration-4col-label">Additional Notes</label></div>
+                                    <div class="col-12 col-lg-10">
+                                        <textarea asp-for="AdditionalInfo" class="form-control" rows="4" placeholder="Enter any additional information about the customer..."></textarea>
                                     </div>
                                 </div>
-                                </div>
-
-                            <div class="mb-4">
-                                        <label asp-for="AdditionalInfo" class="form-label">Additional Notes</label>
-                                <textarea asp-for="AdditionalInfo" class="form-control" rows="4" placeholder="Enter any additional information about the customer..."></textarea>
-                        </div>
+                            </div>
 
                             @if (Model.Allotments != null && Model.Allotments.Any())
                             {
-                            <div class="table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Allotment ID</th>
-                                            <th>Plot No</th>
-                                            <th>Block</th>
-                                            <th>Size</th>
-                                            <th>Type</th>
-                                            <th>Date</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (var allotment in Model.Allotments)
-                                        {
+                                <div class="table-responsive mt-3">
+                                    <table class="table table-hover">
+                                        <thead>
                                             <tr>
-                                                <td><code>@allotment.AllotmentID</code></td>
-                                                <td>@allotment.Property?.PlotNo</td>
-                                                <td>@allotment.Property?.Block</td>
-                                                <td>@allotment.Property?.Size</td>
-                                                <td>@allotment.AllottmentType</td>
-                                                <td>@allotment.AllotmentDate.ToString("MMM dd, yyyy")</td>
-                                                <td>
-                                                    @if (allotment.WorkFlowStatus == "Approved")
-                                                    {
-                                                        <span class="badge bg-success">@allotment.WorkFlowStatus</span>
-                                                    }
-                                                    else if (allotment.WorkFlowStatus == "Pending" || allotment.WorkFlowStatus == "Pending Approval")
-                                                    {
-                                                        <span class="badge bg-warning">@allotment.WorkFlowStatus</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-primary">@allotment.WorkFlowStatus</span>
-                                                    }
-                                                </td>
-                                                <td>
-                                                    <div class="btn-group" role="group">
-                                                        <a asp-controller="Allotment" asp-action="Details" asp-route-id="@allotment.AllotmentID" 
-                                                           class="btn btn-sm btn-outline-info" title="View Allotment" onclick="event.stopPropagation();">
-                                                            <i class="fas fa-eye"></i>
-                                                        </a>
-                                                        @if (allotment.WorkFlowStatus == "Pending" || allotment.WorkFlowStatus == "Pending Approval")
+                                                <th>Allotment ID</th>
+                                                <th>Plot No</th>
+                                                <th>Block</th>
+                                                <th>Size</th>
+                                                <th>Type</th>
+                                                <th>Date</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var allotment in Model.Allotments)
+                                            {
+                                                <tr>
+                                                    <td><code>@allotment.AllotmentID</code></td>
+                                                    <td>@allotment.Property?.PlotNo</td>
+                                                    <td>@allotment.Property?.Block</td>
+                                                    <td>@allotment.Property?.Size</td>
+                                                    <td>@allotment.AllottmentType</td>
+                                                    <td>@allotment.AllotmentDate.ToString("MMM dd, yyyy")</td>
+                                                    <td>
+                                                        @if (allotment.WorkFlowStatus == "Approved")
                                                         {
-                                                            <a asp-controller="Allotment" asp-action="Details" asp-route-id="@allotment.AllotmentID" 
-                                                               class="btn btn-sm btn-outline-primary" title="Edit Allotment" onclick="event.stopPropagation();">
-                                                                <i class="fas fa-edit"></i>
-                                                            </a>
+                                                            <span class="badge bg-success">@allotment.WorkFlowStatus</span>
+                                                        }
+                                                        else if (allotment.WorkFlowStatus == "Pending" || allotment.WorkFlowStatus == "Pending Approval")
+                                                        {
+                                                            <span class="badge bg-warning">@allotment.WorkFlowStatus</span>
                                                         }
                                                         else
                                                         {
-                                                           <a href="@Url.Action("UnAllot", "Allotment")" 
-                                                               class="btn btn-sm btn-outline-danger" title="Un-Allot Property" onclick="event.stopPropagation();">
-                                                                <i class="fas fa-undo"></i>
-                                                            </a>
+                                                            <span class="badge bg-primary">@allotment.WorkFlowStatus</span>
                                                         }
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        }
-                        else
-                        {
-                                <div class="alert alert-info">
+                                                    </td>
+                                                    <td>
+                                                        <div class="btn-group" role="group">
+                                                            <a asp-controller="Allotment" asp-action="Details" asp-route-id="@allotment.AllotmentID"
+                                                               class="btn btn-sm btn-outline-info" title="View Allotment" onclick="event.stopPropagation();">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                            @if (allotment.WorkFlowStatus == "Pending" || allotment.WorkFlowStatus == "Pending Approval")
+                                                            {
+                                                                <a asp-controller="Allotment" asp-action="Details" asp-route-id="@allotment.AllotmentID"
+                                                                   class="btn btn-sm btn-outline-primary" title="Edit Allotment" onclick="event.stopPropagation();">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </a>
+                                                            }
+                                                            else
+                                                            {
+                                                                <a href="@Url.Action("UnAllot", "Allotment")"
+                                                                   class="btn btn-sm btn-outline-danger" title="Un-Allot Property" onclick="event.stopPropagation();">
+                                                                    <i class="fas fa-undo"></i>
+                                                                </a>
+                                                            }
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info mt-3 mb-0">
                                     <i class="fas fa-info-circle me-2"></i>
                                     <strong>No allotment found.</strong> Create a new allotment from the <em>Allotment</em> module.
                                 </div>
@@ -464,45 +478,60 @@
 
                         <!-- Joint Owners Tab -->
                         <div class="tab-pane fade" id="jointowners" role="tabpanel" aria-labelledby="jointowners-tab">
-                            <div class="row g-3 pms-form-fields-row">
-                                <div class="col-12 col-md-6 col-xl-6">
-                                    <label class="form-label">Joint Owner Name *</label>
-                                    <input type="text" id="jointOwnerName" class="form-control" placeholder="Enter joint owner name" />
-                                    <small class="text-muted">Letters, spaces, dots and hyphens only.</small>
+                            <div class="pms-customer-4col-form pms-registration-4col-form">
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="jointOwnerName">Joint Owner Name *</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <input type="text" id="jointOwnerName" class="form-control" placeholder="Enter joint owner name" />
+                                        <small class="text-muted d-block">Letters, spaces, dots and hyphens only.</small>
+                                    </div>
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="jointOwnerFatherName">Son /D/W/o</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <input type="text" id="jointOwnerFatherName" class="form-control" placeholder="Enter father name" />
+                                    </div>
                                 </div>
-                                <div class="col-12 col-md-6 col-xl-3">
-                                    <label class="form-label">Son /D/W/o</label>
-                                    <input type="text" id="jointOwnerFatherName" class="form-control" placeholder="Enter father name" />
+
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="jointOwnerCNIC">CNIC *</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <input type="text" id="jointOwnerCNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+                                    </div>
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="jointOwnerContact">Contact *</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <input type="text" id="jointOwnerContact" class="form-control" placeholder="03XXXXXXXXX" />
+                                        <small class="text-muted d-block">Must be 11 to 13 digits.</small>
+                                    </div>
                                 </div>
-                                <div class="col-12 col-md-6 col-xl-3">
-                                    <label class="form-label">CNIC *</label>
-                                    <input type="text" id="jointOwnerCNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="jointOwnerAddress">Address</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <input type="text" id="jointOwnerAddress" class="form-control" placeholder="Address" />
+                                    </div>
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="jointOwnerPercentage">Percentage</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <input type="number" id="jointOwnerPercentage" class="form-control" min="0" max="100" step="0.01" placeholder="e.g. 50" />
+                                    </div>
                                 </div>
-                                <div class="col-12 col-md-6 col-xl-3">
-                                    <label class="form-label">Contact *</label>
-                                    <input type="text" id="jointOwnerContact" class="form-control" placeholder="03XXXXXXXXX" />
-                                    <small class="text-muted">Must be 11 to 13 digits.</small>
+
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="jointOwnerDetails">Details</label></div>
+                                    <div class="col-12 col-lg-10">
+                                        <textarea id="jointOwnerDetails" class="form-control" rows="2" placeholder="Any additional details"></textarea>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Address</label>
-                                    <input type="text" id="jointOwnerAddress" class="form-control" placeholder="Address" />
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label">Percentage</label>
-                                    <input type="number" id="jointOwnerPercentage" class="form-control" min="0" max="100" step="0.01" placeholder="e.g. 50" />
-                                </div>
-                                <div class="col-md-12">
-                                    <label class="form-label">Details</label>
-                                    <textarea id="jointOwnerDetails" class="form-control" rows="2" placeholder="Any additional details"></textarea>
-                                </div>
-                                <div class="col-md-12">
-                                    <button type="button" class="btn btn-primary" onclick="addJointOwnerFromTab()">
-                                        <i class="fas fa-plus me-2"></i>Add Joint Owner
-                                    </button>
+
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"></div>
+                                    <div class="col-12 col-lg-4">
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="addJointOwnerFromTab()">
+                                            <i class="fas fa-plus me-1"></i>Add Joint Owner
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <hr />
-                            <div class="table-responsive">
+
+                            <div class="table-responsive mt-3">
                                 <table class="table table-sm table-hover" id="jointOwnersTable">
                                     <thead>
                                         <tr>

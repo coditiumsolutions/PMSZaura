@@ -1,0 +1,255 @@
+================================================================================
+Coditium Report Service - API Reference
+Service : coditium-report-service
+Version: 1.0 | Last Updated: 23/07/2026
+Database: PMSAbbas
+Local Base URL:  http://127.0.0.1:8000/
+Deployed Base URL: http://34.131.132.158:8000/
+Server: 34.131.132.158,8000
+Format: REST (PDF reports for ASP.NET Core / any HTTP client)
+Auth: None (internal service on same GCP account)
+
+Purpose: Authoritative source of truth for this project's backend API contract.
+Read this file before implementing, modifying, or debugging any API integration
+(report endpoints, request/response models, and API client code).
+
+MAINTENANCE RULES:
+1. Mirror every change to: d:\Python\PMS-API-Reports\api.txt
+2. List only active/in-use APIs - remove entries for deprecated/unused endpoints
+3. Mention APIs with both local and deployed base URLs
+4. Every endpoint must include: Request Body, Success response, and all Fail responses
+5. Bump Version and Last Updated above whenever this file changes
+================================================================================
+
+================================================================================
+COMMON RESPONSE WRAPPER (most APIs)
+================================================================================
+{
+  "success": true|false,
+  "message": "string",
+  "data": { ... } | null
+}
+
+================================================================================
+
+BASE URL (local)
+  http://127.0.0.1:8000
+
+BASE URL (production - GCP VM)
+  http://34.131.132.158:8000
+
+Deploy path
+  /var/www/pmsprint_python_api
+
+Systemd service
+  coditium-report.service
+
+Interactive docs
+  GET  /docs
+  GET  /redoc
+  GET  /openapi.json
+
+--------------------------------------------------------------------------------
+1) HEALTH CHECK
+--------------------------------------------------------------------------------
+
+  GET /health
+
+  Response : application/json
+  Status   : 200
+
+  {
+    "status": "Healthy",
+    "database": "Connected",
+    "version": "1.0.0"
+  }
+
+  database values:
+    - "Connected"
+    - "Not connected"
+    - "Not configured"
+
+  Examples
+    Local      : http://127.0.0.1:8000/health
+    Production : http://34.131.132.158:8000/health
+
+--------------------------------------------------------------------------------
+2) ACCOUNT STATEMENT (PDF)
+--------------------------------------------------------------------------------
+
+  GET /api/reports/account-statement
+
+  Query parameters
+    customerId  string   preferred   PMS Customers.CustomerID
+    accountNo   string   alias       Same as customerId (legacy ASP.NET name)
+
+  At least one of customerId or accountNo is required.
+
+  Examples
+    Local:
+      GET http://127.0.0.1:8000/api/reports/account-statement?customerId=CK00004
+
+    Production:
+      GET http://34.131.132.158:8000/api/reports/account-statement?customerId=CK00004
+
+    Legacy alias:
+      GET http://34.131.132.158:8000/api/reports/account-statement?accountNo=CK00004
+
+  Success
+    Status       : 200
+    Content-Type : application/pdf
+    Headers      : Content-Disposition: inline; filename="AccountStatement_{customerId}.pdf"
+    Body         : PDF binary
+
+  Not found
+    Status       : 404
+    Content-Type : application/json
+
+    {
+      "success": false,
+      "message": "Customer not found: CK00004"
+    }
+
+  Error
+    Status       : 500
+    Content-Type : application/json
+
+    {
+      "success": false,
+      "message": "Report generation failed"
+    }
+
+  Validation error (missing customerId/accountNo)
+    Status       : 422
+    Content-Type : application/json
+
+    {
+      "success": false,
+      "message": "customerId is required"
+    }
+
+  Business logic
+    - Load Customer + Project + PaymentPlan schedules + Payments
+    - Attach payments by ScheduleID + CustomerID
+    - Compute surcharge per schedule (same rules as ASP.NET SurchargeService)
+    - Include other ScheduleID-null surcharge payments
+    - Render RDLC-equivalent PDF (logo, header, schedule table, totals, footer)
+
+--------------------------------------------------------------------------------
+3) INVOICE (PDF) — NOT IMPLEMENTED YET
+--------------------------------------------------------------------------------
+
+  GET /api/reports/invoice
+
+  Status : 501
+  {
+    "success": false,
+    "message": "Invoice report is not implemented yet"
+  }
+
+--------------------------------------------------------------------------------
+4) RECEIPT (PDF) — NOT IMPLEMENTED YET
+--------------------------------------------------------------------------------
+
+  GET /api/reports/receipt
+
+  Status : 501
+  {
+    "success": false,
+    "message": "Receipt report is not implemented yet"
+  }
+
+--------------------------------------------------------------------------------
+COMMON ERROR JSON
+--------------------------------------------------------------------------------
+
+  {
+    "success": false,
+    "message": "Report generation failed"
+  }
+
+  Notes
+    - Stack traces are never returned to clients
+    - On success, Content-Type is application/pdf
+    - On failure, Content-Type is application/json
+
+--------------------------------------------------------------------------------
+ASP.NET CORE — HttpClient EXAMPLE
+--------------------------------------------------------------------------------
+
+  // appsettings.json
+  // Local:
+  // "ReportService": { "BaseUrl": "http://127.0.0.1:8000" }
+  // Production (same GCP account):
+  // "ReportService": { "BaseUrl": "http://34.131.132.158:8000" }
+
+  // Program.cs / DI
+  // builder.Services.AddHttpClient("ReportService", c =>
+  // {
+  //     c.BaseAddress = new Uri(builder.Configuration["ReportService:BaseUrl"]!);
+  //     c.Timeout = TimeSpan.FromSeconds(60);
+  // });
+
+  public async Task<byte[]> GetAccountStatementPdfAsync(string customerId, CancellationToken ct = default)
+  {
+      var url = $"/api/reports/account-statement?customerId={Uri.EscapeDataString(customerId)}";
+
+      using var response = await _httpClient.GetAsync(url, ct);
+
+      if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+          throw new KeyNotFoundException($"Customer not found: {customerId}");
+
+      response.EnsureSuccessStatusCode();
+
+      var contentType = response.Content.Headers.ContentType?.MediaType;
+      if (!string.Equals(contentType, "application/pdf", StringComparison.OrdinalIgnoreCase))
+          throw new InvalidOperationException("Report service did not return a PDF.");
+
+      return await response.Content.ReadAsByteArrayAsync(ct);
+  }
+
+  // MVC / API controller usage
+  // return File(pdfBytes, "application/pdf", $"AccountStatement_{customerId}.pdf");
+  // or inline:
+  // return File(pdfBytes, "application/pdf");
+
+--------------------------------------------------------------------------------
+CURL EXAMPLES
+--------------------------------------------------------------------------------
+
+  curl -i http://34.131.132.158:8000/health
+
+  curl -L -o AccountStatement_CK00004.pdf \
+    "http://34.131.132.158:8000/api/reports/account-statement?customerId=CK00004"
+
+  # Windows CMD
+  curl -L -o AccountStatement_CK00004.pdf ^
+    "http://34.131.132.158:8000/api/reports/account-statement?customerId=CK00004"
+
+--------------------------------------------------------------------------------
+ENDPOINT SUMMARY
+--------------------------------------------------------------------------------
+
+  Method  Path                                              Returns
+  ------  ------------------------------------------------  -----------------
+  GET     /health                                           JSON
+  GET     /api/reports/account-statement?customerId=        application/pdf
+  GET     /api/reports/invoice                              JSON (501)
+  GET     /api/reports/receipt                              JSON (501)
+
+--------------------------------------------------------------------------------
+SERVER OPS (GCP VM)
+--------------------------------------------------------------------------------
+
+  Deploy folder : /var/www/pmsprint_python_api
+  Service name  : coditium-report.service
+  Listen        : 0.0.0.0:8000
+
+  sudo systemctl status coditium-report
+  sudo systemctl restart coditium-report
+  sudo journalctl -u coditium-report -f
+  tail -f /var/www/pmsprint_python_api/logs/app.log
+
+================================================================================
+End of api.txt
+================================================================================

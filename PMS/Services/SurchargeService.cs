@@ -11,6 +11,7 @@ namespace PMS.Services
         {
             var result = new Dictionary<string, SurchargeComputationRow>(StringComparer.OrdinalIgnoreCase);
             var customerIdTrimmed = (customerId ?? string.Empty).Trim();
+            var asOf = asOfDate.Date;
 
             foreach (var schedule in schedules)
             {
@@ -20,9 +21,9 @@ namespace PMS.Services
                 }
 
                 var payments = (schedule.Payments ?? new List<Payment>())
-                    .Where(p => string.Equals(p.AuditStatus, "Approved", StringComparison.OrdinalIgnoreCase)
-                        && string.Equals((p.CustomerID ?? string.Empty).Trim(), customerIdTrimmed, StringComparison.OrdinalIgnoreCase)
-                        && !string.Equals(p.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+                    .Where(p => string.Equals((p.CustomerID ?? string.Empty).Trim(), customerIdTrimmed, StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(p.Status, "Pending", StringComparison.OrdinalIgnoreCase)
+                        && !string.Equals(p.AuditStatus, "Declined", StringComparison.OrdinalIgnoreCase))
                     .OrderBy(p => p.PaymentDate)
                     .ToList();
 
@@ -33,11 +34,15 @@ namespace PMS.Services
                 var dailyRatePercent = 0m;
                 var dailySurchargeAmount = 0m;
 
-                if (schedule.SurchargeApplied)
+                // Surcharge only when due date has passed.
+                // Formula: Amount × (SurchargeRate × DaysPast / 100)
+                // e.g. rate 0.05, days 50 → Amount × (0.05 × 50 / 100)
+                if (schedule.SurchargeApplied && schedule.SurchargeRate > 0m)
                 {
                     var dueDate = schedule.DueDate.Date;
-                    var endDate = asOfDate.Date;
+                    var endDate = asOf;
 
+                    // If installment is fully paid, stop accruing after the clearing payment date.
                     if (amountPaid >= schedule.Amount && payments.Count > 0)
                     {
                         endDate = payments[^1].PaymentDate.Date;
@@ -46,19 +51,30 @@ namespace PMS.Services
                     if (endDate > dueDate)
                     {
                         daysOverdue = (int)(endDate - dueDate).TotalDays;
-                        var isOldFormat = schedule.SurchargeRate > 1m;
-                        var dailyRateDecimal = isOldFormat ? schedule.SurchargeRate / 100m : schedule.SurchargeRate;
-                        dailyRatePercent = isOldFormat ? schedule.SurchargeRate : (schedule.SurchargeRate * 100m);
+                        if (daysOverdue > 0)
+                        {
+                            var amountForSurcharge = amountPaid >= schedule.Amount
+                                ? schedule.Amount
+                                : outstanding;
 
-                        var amountForSurcharge = amountPaid >= schedule.Amount ? schedule.Amount : outstanding;
-                        dailySurchargeAmount = amountForSurcharge * dailyRateDecimal;
-                        surcharge = Math.Round(dailySurchargeAmount * daysOverdue, 2, MidpointRounding.AwayFromZero);
+                            // rate × days / 100  (user-specified factor)
+                            var factor = schedule.SurchargeRate * daysOverdue / 100m;
+                            surcharge = Math.Round(amountForSurcharge * factor, 2, MidpointRounding.AwayFromZero);
+
+                            dailyRatePercent = schedule.SurchargeRate > 1m
+                                ? schedule.SurchargeRate
+                                : schedule.SurchargeRate * 100m;
+                            dailySurchargeAmount = daysOverdue > 0
+                                ? Math.Round(surcharge / daysOverdue, 4, MidpointRounding.AwayFromZero)
+                                : 0m;
+                        }
                     }
                 }
 
-                result[schedule.ScheduleID] = new SurchargeComputationRow
+                var key = schedule.ScheduleID.Trim();
+                result[key] = new SurchargeComputationRow
                 {
-                    ScheduleID = schedule.ScheduleID,
+                    ScheduleID = key,
                     AmountPaid = amountPaid,
                     Outstanding = outstanding,
                     Surcharge = surcharge,

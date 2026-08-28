@@ -90,6 +90,7 @@
                             <th>Cust.</th>
                             <th>Sched.</th>
                             <th class="text-end">Balance</th>
+                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -100,7 +101,13 @@
                             var hasBalanceRemaining = balancePkr > 0.0000001m;
                             <tr class="@(hasBalanceRemaining ? "plan-balance-remaining" : null)">
                                 <td data-label="Plan Name">
-                                    <div>@plan.PlanName</div>
+                                    <div>
+                                        <a asp-action="PaymentSchedule"
+                                           asp-route-planId="@plan.PlanID"
+                                           class="text-decoration-none fw-semibold">
+                                            @plan.PlanName
+                                        </a>
+                                    </div>
                                     @if (!string.IsNullOrEmpty(plan.Description))
                                     {
                                         <div class="small text-muted">@(plan.Description.Length > 40 ? plan.Description.Substring(0, 40) + "…" : plan.Description)</div>
@@ -138,6 +145,14 @@
                                     <span class="fw-semibold @(hasBalanceRemaining ? "text-success" : balancePkr < -0.0000001m ? "text-danger" : "text-muted")">
                                         @balancePkr.ToString("N0", EnUs)
                                     </span>
+                                </td>
+                                <td class="text-center" data-label="Actions">
+                                    <a asp-action="PaymentSchedule"
+                                       asp-route-planId="@plan.PlanID"
+                                       class="btn btn-sm btn-outline-primary py-0 px-2"
+                                       title="Edit plan and view installments">
+                                        <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Edit
+                                    </a>
                                 </td>
                             </tr>
                         }
@@ -210,15 +225,16 @@
                 scrollX: false,
                 autoWidth: false,
                 columnDefs: [
-                    { width: '22%', targets: 0 },  // Plan Name
-                    { width: '18%', targets: 1 },  // Project
-                    { width: '14%', targets: 2 },  // Total
-                    { width: '8%', targets: 3 },   // Curr.
-                    { width: '10%', targets: 4 },  // Duration
-                    { width: '9%', targets: 5 },   // Freq.
-                    { width: '7%', targets: 6 },   // Cust.
-                    { width: '7%', targets: 7 },   // Sched.
-                    { width: '10%', targets: 8 }   // Balance
+                    { width: '18%', targets: 0 },  // Plan Name
+                    { width: '14%', targets: 1 },  // Project
+                    { width: '12%', targets: 2 },  // Total
+                    { width: '7%', targets: 3 },   // Curr.
+                    { width: '8%', targets: 4 },   // Duration
+                    { width: '8%', targets: 5 },   // Freq.
+                    { width: '6%', targets: 6 },   // Cust.
+                    { width: '6%', targets: 7 },   // Sched.
+                    { width: '10%', targets: 8 },  // Balance
+                    { width: '11%', orderable: false, targets: 9 }  // Actions
                 ],
                 language: {
                     search: 'Search:',

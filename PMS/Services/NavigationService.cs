@@ -99,6 +99,14 @@ public sealed class NavigationService : INavigationService
                 },
                 new NavigationMenuItemViewModel
                 {
+                    Label = "Add Payment",
+                    Controller = "Payment",
+                    Action = "AddPayment",
+                    IconClass = "fas fa-plus-circle me-2",
+                    ActiveActions = new[] { "AddPayment", "RecordPayment", "RecordPaymentv", "RecordPayments", "MultiplePayments" }
+                },
+                new NavigationMenuItemViewModel
+                {
                     Label = "Payment Plans",
                     Controller = "Payment",
                     Action = "PaymentPlans",

@@ -19,14 +19,14 @@ public sealed class NavigationController : Controller
     public IActionResult SelectModule(string module)
     {
         if (!_navigationService.TrySetActiveModule(HttpContext, module))
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Coditium", "Home");
 
         if (string.Equals(module, NavigationModuleKeys.OtherLinks, StringComparison.OrdinalIgnoreCase))
             return RedirectToAction("Workspace", "Home");
 
         var firstItem = _navigationService.GetFirstNavigableItem(module);
         if (firstItem == null)
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Coditium", "Home");
 
         if (!string.IsNullOrEmpty(firstItem.RouteId))
         {

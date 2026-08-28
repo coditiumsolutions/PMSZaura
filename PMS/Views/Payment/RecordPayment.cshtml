@@ -1,58 +1,67 @@
 @using System.Globalization
 @using System.Linq
 @{
-    ViewData["Title"] = "Record Payment";
-    var preSelectedCustomerId = ViewBag.PreSelectedCustomerId as string;
+    ViewData["Title"] = "Add Payment";
+    var preSelectedCustomerId = (ViewBag.PreSelectedCustomerId as string)?.Trim();
     var preSelectedScheduleId = ViewBag.PreSelectedScheduleId as string;
     var schedule = ViewBag.Schedule as PMS.Models.PaymentSchedule;
     decimal scheduleOutstanding = ViewBag.ScheduleOutstanding != null ? (decimal)ViewBag.ScheduleOutstanding : 0m;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-    <h5 class="mb-0">Record Payment</h5>
-    <a asp-action="CustomerPayments" class="btn btn-outline-secondary btn-sm py-0 px-2">
-        <i class="fas fa-arrow-left me-1"></i>Back to Payments
-    </a>
-</div>
+<div class="pms-record-payment">
+    <div class="d-flex justify-content-end align-items-center mb-2 flex-wrap gap-2">
+        <a asp-action="AddPayment" class="btn btn-outline-secondary btn-sm py-0 px-2">
+            <i class="fas fa-users me-1"></i>Select Customer
+        </a>
+        <a asp-action="CustomerPayments" class="btn btn-outline-secondary btn-sm py-0 px-2">
+            <i class="fas fa-arrow-left me-1"></i>Back to Payments
+        </a>
+    </div>
 
-<div class="row">
-    <div class="col-md-10 mx-auto">
-        
-        <!-- Pre-selected Schedule Info -->
-        @if (schedule != null)
-        {
-            <div class="card border-0 shadow-sm pms-mp-header mb-3">
-                <div class="card-header py-2 pms-mp-header-bar">
-                    <h6 class="mb-0">
-                        <i class="fas fa-calendar-alt me-2"></i>Installment #@(schedule.InstallmentNo?.ToString() ?? "N/A") - @schedule.PaymentDescription
-                    </h6>
-                </div>
-                <div class="card-body py-3 px-3">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <small class="text-muted">Plan Name</small>
-                            <p class="fw-bold mb-0">@schedule.PaymentPlan?.PlanName</p>
-                            <small class="text-muted">@schedule.PlanID</small>
+    @if (schedule != null)
+    {
+        <div class="card border-0 shadow-sm pms-mp-header mb-3">
+            <div class="card-header py-1 px-3 pms-mp-header-bar">
+                <h6 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>Installment #@(schedule.InstallmentNo?.ToString() ?? "N/A") - @schedule.PaymentDescription
+                </h6>
+            </div>
+            <div class="card-body py-2 px-3">
+                <div class="pms-registration-4col-form">
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <div class="form-label pms-registration-4col-label mb-0">Plan Name</div>
                         </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Due Date</small>
-                            <p class="fw-bold mb-0 @(schedule.DueDate < DateTime.Now ? "text-danger" : "text-success")">
+                        <div class="col-12 col-lg-4">
+                            <div class="fw-semibold small">@schedule.PaymentPlan?.PlanName <span class="text-muted">(@schedule.PlanID)</span></div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="form-label pms-registration-4col-label mb-0">Due Date</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="fw-semibold small @(schedule.DueDate < DateTime.Now ? "text-danger" : "text-success")">
                                 @schedule.DueDate.ToString("dd-MM-yyyy")
-                            </p>
-                            @if (schedule.DueDate < DateTime.Now)
-                            {
-                                <small class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Overdue by @((DateTime.Now - schedule.DueDate).Days) days</small>
-                            }
+                                @if (schedule.DueDate < DateTime.Now)
+                                {
+                                    <span class="text-danger"> — Overdue by @((DateTime.Now - schedule.DueDate).Days) days</span>
+                                }
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Outstanding Amount</small>
-                            <p class="fw-bold mb-0" style="color: #9C6ADE; font-size: 1.3rem;">PKR @scheduleOutstanding.ToString("N0")</p>
-                            <small class="text-muted d-block">Total: PKR @schedule.Amount.ToString("N0")</small>
-                            <small class="text-muted d-block">Paid: PKR @((schedule.Amount - scheduleOutstanding).ToString("N0"))</small>
+                    </div>
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <div class="form-label pms-registration-4col-label mb-0">Outstanding</div>
                         </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">Surcharge Rate</small>
-                            <p class="fw-bold mb-0">
+                        <div class="col-12 col-lg-4">
+                            <div class="fw-semibold small text-primary">PKR @scheduleOutstanding.ToString("N0")
+                                <span class="text-muted fw-normal">(Total @schedule.Amount.ToString("N0") / Paid @((schedule.Amount - scheduleOutstanding).ToString("N0")))</span>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="form-label pms-registration-4col-label mb-0">Surcharge Rate</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="fw-semibold small">
                                 @if (schedule.SurchargeApplied && schedule.DueDate < DateTime.Now)
                                 {
                                     <span class="text-warning">@((schedule.SurchargeRate * 100).ToString("N1"))%</span>
@@ -61,126 +70,102 @@
                                 {
                                     <span class="text-muted">N/A</span>
                                 }
-                            </p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        }
+        </div>
+    }
 
-        <!-- Payment Form -->
-        <div class="card border-0 shadow-sm pms-mp-header mb-3">
-            <div class="card-header py-2 pms-mp-header-bar">
-                <h6 class="mb-0">
-                    <i class="fas fa-receipt me-2"></i>Payment Details
-                </h6>
-            </div>
-            <div class="card-body py-3 px-3">
-                @if (TempData["Error"] != null)
-                {
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                }
+    <div class="card border-0 shadow-sm pms-mp-header mb-3">
+        <div class="card-body py-2 px-3">
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show py-2 small" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                    <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+                </div>
+            }
 
-                <form asp-action="RecordPayment" method="post" id="paymentForm" enctype="multipart/form-data">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" id="preSelectedScheduleId" value="@(preSelectedScheduleId ?? "")" />
+            <form asp-action="RecordPayment" method="post" id="paymentForm" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="preSelectedScheduleId" value="@(preSelectedScheduleId ?? "")" />
 
-                    <div class="row g-3">
-                        <!-- Customer ID Search (required first step) -->
-                        <div class="col-md-6">
-                            <label for="customerIdInput" class="form-label fw-semibold">
-                                <i class="fas fa-user me-1" style="color: #9C6ADE;"></i>Customer ID *
-                            </label>
-                            <div class="d-flex gap-2">
-                                <input type="text" id="customerIdInput" class="form-control" placeholder="Enter Customer ID" value="@preSelectedCustomerId" autocomplete="off" />
-                                <button type="button" id="btnSearchCustomer" class="btn btn-primary flex-shrink-0">
-                                    <i class="fas fa-search me-1"></i>Search
+                <div class="pms-registration-4col-form pms-record-payment-form">
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-auto pms-rp-label">
+                            <label for="customerIdInput" class="form-label pms-registration-4col-label mb-0">Customer ID *</label>
+                        </div>
+                        <div class="col-auto pms-rp-field">
+                            <div class="d-flex gap-1 align-items-center">
+                                <input type="text" id="customerIdInput" class="form-control form-control-sm" placeholder="Enter Customer ID" value="@preSelectedCustomerId" autocomplete="off" />
+                                <button type="button" id="btnSearchCustomer" class="btn btn-primary btn-sm flex-shrink-0 py-0">
+                                    <i class="fas fa-search"></i>
                                 </button>
                             </div>
                             <input type="hidden" name="customerId" id="customerId" value="" />
-                            <div id="customerSearchMessage" class="small mt-1"></div>
-                            <div id="customerNameDisplay" class="alert alert-success py-2 mt-2 mb-0" style="display: none;">
-                                <i class="fas fa-check-circle me-1"></i><strong id="customerNameText"></strong>
-                            </div>
-                            <small class="text-muted">Enter Customer ID and click Search. Installments will load for this customer only.</small>
                         </div>
-
-                        <!-- Schedule/Installment Selection (populated after search) -->
-                        <div class="col-md-6">
-                            <label for="scheduleId" class="form-label fw-semibold">
-                                <i class="fas fa-calendar-check me-1" style="color: #9C6ADE;"></i>Installment/Schedule *
-                            </label>
-                            <select name="scheduleId" id="scheduleId" class="form-select" required disabled>
+                        <div class="col-auto pms-rp-label">
+                            <label for="scheduleId" class="form-label pms-registration-4col-label mb-0">Installment *</label>
+                        </div>
+                        <div class="col-auto pms-rp-field pms-rp-field-wide">
+                            <select name="scheduleId" id="scheduleId" class="form-select form-select-sm" required disabled>
                                 <option value="">Search by Customer ID first</option>
                             </select>
-                            <small class="text-muted" id="scheduleHint">Select customer first to see due installments</small>
                         </div>
+                    </div>
 
-                        <!-- Amount (editable for partial payments; must not exceed Total Due) -->
-                        <div class="col-md-6">
-                            <label for="amount" class="form-label fw-semibold">
-                                <i class="fas fa-coins me-1" style="color: #9C6ADE;"></i>Amount Received (PKR) *
-                            </label>
-                            <input type="text" name="amount" id="amount" class="form-control" 
-                                   placeholder="Enter amount" value="" required disabled 
-                                   inputmode="numeric" />
-                            <small class="text-muted" id="amountHint">You can enter a partial amount (e.g. two payments of 500 for 1000)</small>
+                    <div class="row g-0 pms-registration-4col-row pms-rp-status-row align-items-center">
+                        <div class="col-12">
+                            <div id="customerStatusRow" class="pms-rp-status-space small mb-0">
+                                <span id="customerSearchMessage" class="fw-semibold text-success"></span>
+                                <span id="customerNameDisplay" class="text-success" style="display: none;">
+                                    <span id="customerNameText"></span>
+                                    <span id="customerPlanText" class="ms-1 text-primary fw-semibold"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-auto pms-rp-label">
+                            <label for="amount" class="form-label pms-registration-4col-label mb-0">Amount (PKR) *</label>
+                        </div>
+                        <div class="col-auto pms-rp-field">
+                            <input type="text" name="amount" id="amount" class="form-control form-control-sm"
+                                   placeholder="Enter amount" value="" required disabled inputmode="numeric" />
                             <div id="amountValidationError" class="invalid-feedback d-block" style="display: none !important;"></div>
                         </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                <i class="fas fa-plus-circle me-1" style="color: #9C6ADE;"></i>Extra Payment
-                            </label>
-                            <div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" id="addExtraPayment" name="addExtraPayment" value="true" />
-                                <label class="form-check-label" for="addExtraPayment">
-                                    Add extra payment beyond selected installment
-                                </label>
-                            </div>
-                            <div class="input-group">
-                                <span class="input-group-text">PKR</span>
-                                <input type="text" name="extraAmount" id="extraAmount" class="form-control"
-                                       inputmode="numeric"
-                                       placeholder="Extra amount" disabled />
-                            </div>
-                            <small class="text-muted d-block mt-1">Use this when customer pays more than installment due (e.g. due 9,990, paid 10,000 -> extra 10).</small>
+                        <div class="col-auto pms-rp-label">
+                            <label for="method" class="form-label pms-registration-4col-label mb-0">Payment Method *</label>
                         </div>
-
-                        <!-- Payment Method -->
-                        <div class="col-md-6">
-                            <label for="method" class="form-label fw-semibold">
-                                <i class="fas fa-credit-card me-1" style="color: #9C6ADE;"></i>Payment Method *
-                            </label>
-                            <select name="method" id="method" class="form-select" required>
+                        <div class="col-auto pms-rp-field">
+                            <select name="method" id="method" class="form-select form-select-sm" required>
                                 <option value="">Select Payment Method</option>
                                 <option value="DD/DS" selected>DD/DS</option>
-                                <option value="Cash">💵 Cash</option>
-                                <option value="Bank Transfer">🏦 Bank Transfer</option>
-                                <option value="Cheque">📝 Cheque</option>
-                                <option value="Online">💳 Online Payment</option>
-                                <option value="Mobile Money">📱 Mobile Money</option>
+                                <option value="Cash">Cash</option>
+                                <option value="Bank Transfer">Bank Transfer</option>
+                                <option value="Cheque">Cheque</option>
+                                <option value="Online">Online Payment</option>
+                                <option value="Mobile Money">Mobile Money</option>
                             </select>
                         </div>
+                    </div>
 
-                        <!-- Reference Number -->
-                        <div class="col-md-6">
-                            <label for="referenceNo" class="form-label fw-semibold">
-                                <i class="fas fa-hashtag me-1" style="color: #9C6ADE;"></i>Reference Number *
-                            </label>
-                            <input type="text" name="referenceNo" id="referenceNo" class="form-control" 
-                                   placeholder="Transaction/Receipt/Cheque Number" required />
-                            <small class="text-muted" id="refHint">Enter transaction reference number</small>
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-auto pms-rp-label">
+                            <label for="referenceNo" class="form-label pms-registration-4col-label mb-0">Reference Number *</label>
                         </div>
-
-                        <div class="col-md-6">
-                            <label for="bankName" class="form-label fw-semibold">
-                                <i class="fas fa-university me-1" style="color: #9C6ADE;"></i>Bank Name *
-                            </label>
-                            <select name="bankName" id="bankName" class="form-select" required>
+                        <div class="col-auto pms-rp-field">
+                            <input type="text" name="referenceNo" id="referenceNo" class="form-control form-control-sm"
+                                   placeholder="Transaction/Receipt/Cheque Number" required />
+                        </div>
+                        <div class="col-auto pms-rp-label">
+                            <label for="bankName" class="form-label pms-registration-4col-label mb-0">Bank Name *</label>
+                        </div>
+                        <div class="col-auto pms-rp-field">
+                            <select name="bankName" id="bankName" class="form-select form-select-sm" required>
                                 <option value="">Select Bank</option>
                                 @foreach (var bank in (ViewBag.BankNames as IEnumerable<string> ?? Array.Empty<string>()))
                                 {
@@ -188,129 +173,232 @@
                                 }
                             </select>
                         </div>
+                    </div>
 
-                        <div class="col-md-6">
-                            <label for="depositDate" class="form-label fw-semibold">
-                                <i class="fas fa-calendar-day me-1" style="color: #9C6ADE;"></i>Deposit Date *
-                            </label>
-                            <input type="date" name="depositDate" id="depositDate" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-auto pms-rp-label">
+                            <label for="depositDate" class="form-label pms-registration-4col-label mb-0">Deposit Date *</label>
                         </div>
-
-                        <!-- Payment Status (Paid only when amount = total due; Partially Paid only when amount < total due) -->
-                        <div class="col-md-6">
-                            <label for="status" class="form-label fw-semibold">
-                                <i class="fas fa-check-circle me-1" style="color: #9C6ADE;"></i>Payment Status *
-                            </label>
-                            <select name="status" id="status" class="form-select" required>
+                        <div class="col-auto pms-rp-field">
+                            <input type="date" name="depositDate" id="depositDate" class="form-control form-control-sm" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                        </div>
+                        <div class="col-auto pms-rp-label">
+                            <label for="status" class="form-label pms-registration-4col-label mb-0">Payment Status *</label>
+                        </div>
+                        <div class="col-auto pms-rp-field">
+                            <select name="status" id="status" class="form-select form-select-sm" required>
                                 @{ var paymentStatusList = ViewBag.PaymentStatuses as IEnumerable<string> ?? new[] { "Pending", "Paid", "Partially Paid" }; }
                                 @foreach (var s in paymentStatusList)
                                 {
                                     <option value="@s">@s</option>
                                 }
                             </select>
-                            <small class="text-muted" id="statusHint">Full payment → Paid; partial → Partially Paid</small>
-                        </div>
-
-                        <!-- Remarks -->
-                        <div class="col-12">
-                            <label for="remarks" class="form-label fw-semibold">
-                                <i class="fas fa-comment me-1" style="color: #9C6ADE;"></i>Remarks
-                            </label>
-                            <textarea name="remarks" id="remarks" class="form-control" rows="3" 
-                                      placeholder="Enter any additional notes or remarks about this payment"></textarea>
-                        </div>
-
-                        <div class="col-12">
-                            <label for="proofAttachment" class="form-label fw-semibold">
-                                <i class="fas fa-paperclip me-1" style="color: #9C6ADE;"></i>Payment Proof (Optional)
-                            </label>
-                            <input type="file" name="proofAttachment" id="proofAttachment" class="form-control" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
-                            <small class="text-muted d-block mt-1">Allowed: JPG, PNG, GIF, BMP, PDF (max 8MB)</small>
-                        </div>
-                        <div class="col-12">
-                            <label for="proofDescription" class="form-label fw-semibold">
-                                <i class="fas fa-file-alt me-1" style="color: #9C6ADE;"></i>Proof Title / Notes (Optional)
-                            </label>
-                            <input type="text" name="proofDescription" id="proofDescription" class="form-control" maxlength="500" placeholder="e.g. Deposit Slip, Bank Receipt #123" />
                         </div>
                     </div>
 
-                    <!-- Selected Installment Info -->
-                    <div id="scheduleInfo" class="alert mt-4" style="background: rgba(156, 106, 222, 0.08); border: 1px solid rgba(156, 106, 222, 0.2); display: none;">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <small class="text-muted d-block">Installment</small>
-                                <strong id="infoDescription">-</strong>
-                            </div>
-                            <div class="col-md-4">
-                                <small class="text-muted d-block">Due Date</small>
-                                <strong id="infoDueDate">-</strong>
-                            </div>
-                            <div class="col-md-4">
-                                <small class="text-muted d-block">Outstanding</small>
-                                <strong id="infoAmount" style="color: #9C6ADE;">-</strong>
-                                <small class="text-muted d-block">Total: <span id="infoTotal">-</span></small>
-                                <small class="text-muted d-block">Paid: <span id="infoPaid">-</span></small>
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-auto pms-rp-label">
+                            <label for="remarks" class="form-label pms-registration-4col-label mb-0">Remarks</label>
+                        </div>
+                        <div class="col-auto pms-rp-field">
+                            <textarea name="remarks" id="remarks" class="form-control form-control-sm" rows="1"
+                                      placeholder="Additional notes"></textarea>
+                        </div>
+                        <div class="col-auto pms-rp-label">
+                            <label for="proofAttachment" class="form-label pms-registration-4col-label mb-0">Payment Proof</label>
+                        </div>
+                        <div class="col-auto pms-rp-field">
+                            <input type="file" name="proofAttachment" id="proofAttachment" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
+                        </div>
+                    </div>
+
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-auto pms-rp-label">
+                            <label for="proofDescription" class="form-label pms-registration-4col-label mb-0">Proof Title</label>
+                        </div>
+                        <div class="col-auto pms-rp-field">
+                            <input type="text" name="proofDescription" id="proofDescription" class="form-control form-control-sm" maxlength="500" placeholder="e.g. Deposit Slip" />
+                        </div>
+                        <div class="col-auto pms-rp-label">
+                            <label class="form-label pms-registration-4col-label mb-0">Extra Payment</label>
+                        </div>
+                        <div class="col-auto pms-rp-field">
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" id="addExtraPayment" name="addExtraPayment" value="true" />
+                                    <label class="form-check-label small" for="addExtraPayment">Extra</label>
+                                </div>
+                                <div class="input-group input-group-sm" style="max-width: 9rem;">
+                                    <span class="input-group-text py-0">PKR</span>
+                                    <input type="text" name="extraAmount" id="extraAmount" class="form-control form-control-sm"
+                                           inputmode="numeric" placeholder="Amount" disabled />
+                                </div>
                             </div>
                         </div>
-                        <div id="surchargeWarning" class="mt-2 p-2 rounded" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); display: none;">
-                            <i class="fas fa-exclamation-triangle text-warning me-1"></i>
-                            <span id="surchargeWarningText"></span>
+                    </div>
+                </div>
+
+                <div id="scheduleInfo" class="alert mt-2 mb-2 py-1 px-2 small" style="background: rgba(37, 99, 235, 0.06); border: 1px solid rgba(37, 99, 235, 0.2); display: none;">
+                    <div class="row g-1">
+                        <div class="col-md-4">
+                            <span class="pms-registration-4col-label d-block">Installment</span>
+                            <strong id="infoDescription">-</strong>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="pms-registration-4col-label d-block">Due Date</span>
+                            <strong id="infoDueDate">-</strong>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="pms-registration-4col-label d-block">Outstanding</span>
+                            <strong id="infoAmount" class="text-primary">-</strong>
+                            <small class="text-muted d-block">Total: <span id="infoTotal">-</span> · Paid: <span id="infoPaid">-</span></small>
                         </div>
                     </div>
-
-                    <div class="alert alert-info mt-3" style="background: rgba(156, 106, 222, 0.08); border: 1px solid rgba(156, 106, 222, 0.2);">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Note:</strong> You can record multiple partial payments for the same installment (e.g. two entries of PKR 500 for a PKR 1000 installment). Amount can be edited.
+                    <div id="surchargeWarning" class="mt-1 p-1 rounded" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); display: none;">
+                        <i class="fas fa-exclamation-triangle text-warning me-1"></i>
+                        <span id="surchargeWarningText"></span>
                     </div>
+                </div>
 
-                    <hr class="my-4">
+                <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
+                    <button type="submit" id="btnSubmitPayment" class="btn btn-sm fw-semibold pms-mp-btn-save" disabled>
+                        <i class="fas fa-check me-1"></i>Record Payment
+                    </button>
+                    <a asp-action="CustomerPayments" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                    <div class="d-flex justify-content-end gap-2">
-                        <button type="submit" id="btnSubmitPayment" class="btn btn-sm fw-semibold pms-mp-btn-save" disabled>
-                            <i class="fas fa-check me-1"></i>Record Payment
-                        </button>
-                        <a asp-action="CustomerPayments" class="btn btn-sm btn-outline-secondary">
-                            <i class="fas fa-times me-1"></i>Cancel
-                        </a>
+    @if (schedule != null && schedule.SurchargeApplied && schedule.DueDate < DateTime.Now)
+    {
+        var daysLate = (DateTime.Now - schedule.DueDate).Days;
+        var surchargeAmount = schedule.Amount * schedule.SurchargeRate;
+        var totalWithSurcharge = schedule.Amount + surchargeAmount;
+
+        <div class="card border-0 shadow-sm pms-mp-header mb-3" style="border-left: 4px solid #f59e0b !important;">
+            <div class="card-header py-1 px-3 pms-mp-header-bar">
+                <h6 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Late Payment Surcharge Applied
+                </h6>
+            </div>
+            <div class="card-body py-2 px-3">
+                <div class="pms-registration-4col-form">
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <div class="form-label pms-registration-4col-label mb-0">Days Overdue</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="fw-semibold small text-danger">@daysLate days</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="form-label pms-registration-4col-label mb-0">Surcharge (@((schedule.SurchargeRate * 100).ToString("N1"))%)</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="fw-semibold small text-warning">PKR @surchargeAmount.ToString("N0")</div>
+                        </div>
                     </div>
-                </form>
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <div class="form-label pms-registration-4col-label mb-0">Total Amount Due</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="fw-semibold small text-primary">PKR @totalWithSurcharge.ToString("N0")</div>
+                        </div>
+                        <div class="col-12 col-lg-2"></div>
+                        <div class="col-12 col-lg-4"></div>
+                    </div>
+                </div>
             </div>
         </div>
-
-        <!-- Late Payment Warning -->
-        @if (schedule != null && schedule.SurchargeApplied && schedule.DueDate < DateTime.Now)
-        {
-            var daysLate = (DateTime.Now - schedule.DueDate).Days;
-            var surchargeAmount = schedule.Amount * schedule.SurchargeRate;
-            var totalWithSurcharge = schedule.Amount + surchargeAmount;
-
-            <div class="card border-0 shadow-sm pms-mp-header mb-3" style="border-left: 4px solid #f59e0b !important;">
-                <div class="card-header py-2 pms-mp-header-bar">
-                    <h6 class="mb-0">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Late Payment Surcharge Applied
-                    </h6>
-                </div>
-                <div class="card-body py-3 px-3">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <small class="text-muted">Days Overdue</small>
-                            <p class="fw-bold text-danger mb-0">@daysLate days</p>
-                        </div>
-                        <div class="col-md-4">
-                            <small class="text-muted">Surcharge (@((schedule.SurchargeRate * 100).ToString("N1"))%)</small>
-                            <p class="fw-bold text-warning mb-0">PKR @surchargeAmount</p>
-                        </div>
-                        <div class="col-md-4">
-                            <small class="text-muted">Total Amount Due</small>
-                            <p class="fw-bold mb-0" style="color: #9C6ADE; font-size: 1.3rem;">PKR @totalWithSurcharge</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
+    }
 </div>
+
+<style>
+    .pms-record-payment .pms-registration-4col-label,
+    .pms-record-payment .pms-registration-4col-form .form-label {
+        color: #2563eb !important;
+        font-weight: 600 !important;
+        font-size: 0.75rem !important;
+        line-height: 1.2;
+    }
+
+    .pms-record-payment .card-body {
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    .pms-record-payment-form .pms-registration-4col-row {
+        margin-bottom: 0.25rem !important;
+        padding-bottom: 0.25rem !important;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-record-payment-form .pms-registration-4col-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .pms-record-payment-form .pms-rp-status-row {
+        min-height: 1.35rem;
+        border-bottom: none !important;
+        margin-bottom: 0.15rem !important;
+        padding-bottom: 0.15rem !important;
+    }
+
+    .pms-record-payment-form .pms-rp-status-space {
+        min-height: 1.2rem;
+        line-height: 1.2rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .pms-record-payment-form .pms-rp-label {
+        flex: 0 0 auto;
+        width: 8.75rem;
+        max-width: 8.75rem;
+    }
+
+    .pms-record-payment-form .pms-rp-field {
+        flex: 0 0 20%;
+        width: 20%;
+        max-width: 20%;
+    }
+
+    .pms-record-payment-form .pms-rp-field-wide {
+        flex: 0 0 28%;
+        width: 28%;
+        max-width: 28%;
+    }
+
+    .pms-record-payment-form .pms-rp-field .form-control,
+    .pms-record-payment-form .pms-rp-field .form-select,
+    .pms-record-payment-form .pms-rp-field .input-group {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .pms-record-payment-form .form-control-sm,
+    .pms-record-payment-form .form-select-sm {
+        min-height: 1.7rem;
+        padding-top: 0.15rem;
+        padding-bottom: 0.15rem;
+        font-size: 0.8125rem;
+    }
+
+    @@media (max-width: 991.98px) {
+        .pms-record-payment-form .pms-rp-label,
+        .pms-record-payment-form .pms-rp-field,
+        .pms-record-payment-form .pms-rp-field-wide {
+            flex: 0 0 100%;
+            width: 100%;
+            max-width: 100%;
+        }
+    }
+</style>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
@@ -347,6 +435,7 @@
             // Search customer
             $('#btnSearchCustomer').on('click', function() {
                 var input = $('#customerIdInput').val().trim();
+                $('#customerIdInput').val(input);
                 var $msg = $('#customerSearchMessage');
                 var $nameDisplay = $('#customerNameDisplay');
                 var $scheduleSelect = $('#scheduleId');
@@ -354,6 +443,8 @@
 
                 $msg.removeClass('text-danger text-success').text('');
                 $nameDisplay.hide();
+                $('#customerNameText').text('');
+                $('#customerPlanText').text('').hide();
                 $('#customerId').val('');
                 $scheduleSelect.prop('disabled', true).find('option:not(:first)').remove();
                 $scheduleSelect.find('option:first').text('Search by Customer ID first');
@@ -373,9 +464,15 @@
                         if (data.found) {
                             $('#customerId').val(data.customerId);
                             $('#customerIdInput').val(data.customerId);
-                            $('#customerNameText').text(data.fullName + ' (' + data.customerId + ')');
-                            $nameDisplay.show();
-                            $msg.addClass('text-success').text('Customer found. Select an installment below.');
+                            $msg.removeClass('text-danger').addClass('text-success').text('Customer Exist');
+                            var namePart = (data.fullName || '') + ' (' + data.customerId + ')';
+                            $('#customerNameText').text(namePart);
+                            if (data.planName) {
+                                $('#customerPlanText').text('Plan: ' + data.planName).show();
+                            } else {
+                                $('#customerPlanText').text('').hide();
+                            }
+                            $nameDisplay.css('display', 'inline').addClass('ms-2');
                             schedulesData = data.schedules || [];
                             $scheduleSelect.prop('disabled', false);
                             if (schedulesData.length === 0) {
@@ -398,9 +495,15 @@
                                         .data('isSurchargePayment', true);
                                     $scheduleSelect.append(surchargeOpt);
                                 }
+                                var customerPlanName = data.planName || '';
                                 schedulesData.forEach(function(s) {
+                                    // Only show rows that belong to this customer's plan
+                                    if (data.planId && s.planId && String(s.planId).trim() !== String(data.planId).trim()) {
+                                        return;
+                                    }
+                                    var displayPlan = (s.planName || customerPlanName || '').trim();
                                     var outstandingLabel = (s.isOverdue ? ' (Outstanding)' : '');
-                                    var optText = '[' + (s.planName || '') + '] Installment #' + (s.installmentNo != null ? s.installmentNo : 'N/A') + ' - Due ' + (s.dueDate || '') + ' - PKR ' + formatCurrency(s.outstanding) + outstandingLabel;
+                                    var optText = '[' + displayPlan + '] Installment #' + (s.installmentNo != null ? s.installmentNo : 'N/A') + ' - ' + (s.paymentDescription || '') + ' - Due ' + (s.dueDate || '') + ' - PKR ' + formatCurrency(s.outstanding) + outstandingLabel;
                                     var opt = $('<option></option>')
                                         .val(s.scheduleId)
                                         .text(optText)
@@ -422,7 +525,8 @@
                                 }
                             }
                         } else {
-                            $msg.addClass('text-danger').text(data.message || 'Customer not found.');
+                            $msg.removeClass('text-success').addClass('text-danger').text(data.message || 'Customer not found.');
+                            $nameDisplay.hide();
                         }
                     })
                     .fail(function(jqXHR, textStatus, errorThrown) {
@@ -480,7 +584,6 @@
                 $('#amountValidationError').hide().removeClass('text-danger').text('');
                 if (amount > 0) {
                     $('#amount').val(Math.round(amount));
-                    $('#amountHint').text((isSurchargePayment ? 'Total Due Surcharge: PKR ' : 'Total Due: PKR ') + formatCurrency(amount) + '. You can enter a partial amount; must not exceed this.');
                 }
                 updateStatusOptions();
                 setSubmitState();
@@ -495,7 +598,6 @@
                 if (isSurchargePayment) {
                     $status.val('Surcharge Paid');
                     $status.find('option:not([value="Surcharge Paid"])').prop('disabled', true);
-                    $('#statusHint').text('Surcharge payment always uses status: Surcharge Paid.');
                     return;
                 }
                 if (maxDue <= 0) return;
@@ -504,12 +606,10 @@
                     if (!$status.val() || $status.val() === 'Pending') {
                         $status.val('Paid');
                     }
-                    $('#statusHint').text('Full payment detected. Recommended status: Paid.');
                 } else {
                     if (!$status.val() || $status.val() === 'Pending') {
                         $status.val('Partially Paid');
                     }
-                    $('#statusHint').text('Partial payment detected. Recommended status: Partially Paid (you may keep Paid if needed).');
                 }
             }
 
@@ -573,7 +673,6 @@
             $('#method').on('change', function() {
                 var method = $(this).val();
                 var refInput = $('#referenceNo');
-                var refHint = $('#refHint');
                 if (method === 'Cash') refInput.attr('placeholder', 'Receipt Number (optional)');
                 else if (method === 'DD/DS') refInput.attr('placeholder', 'DD/DS Reference Number');
                 else if (method === 'Bank Transfer') refInput.attr('placeholder', 'Transaction Reference Number');

@@ -3,266 +3,135 @@
 @{
     ViewData["Title"] = "Configuration Settings";
     ViewData["HidePageBanner"] = true;
-    var categories = Model.GroupBy(c => c.Category ?? "General").OrderBy(g => g.Key);
-}
-
-@functions {
-    private string GetModalId(string key)
-    {
-        var sanitized = new string((key ?? string.Empty).Where(char.IsLetterOrDigit).ToArray());
-        if (string.IsNullOrEmpty(sanitized))
+    var allConfigs = Model?
+        .Select(c => new
         {
-            sanitized = "Config";
-        }
-        return $"editModal{sanitized}";
-    }
+            Config = c,
+            Category = string.IsNullOrWhiteSpace(c.Category) ? "General" : c.Category!.Trim()
+        })
+        .OrderBy(x => x.Config.ConfigKey)
+        .ThenBy(x => x.Category)
+        .ToList() ?? new();
+    var categories = allConfigs.GroupBy(x => x.Category).OrderBy(g => g.Key).ToList();
+    var totalCount = allConfigs.Count;
 }
 
-<div class="d-flex flex-wrap justify-content-end gap-2 mb-3">
-    <a asp-action="SiteConfig" asp-controller="Settings" class="btn btn-outline-primary btn-sm">
-        <i class="bi bi-sliders me-1" aria-hidden="true"></i>Site Configuration
-    </a>
-    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addConfigModal">
-        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add Configuration
-    </button>
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+        <h5 class="mb-0">Configuration Settings</h5>
+        <small class="text-muted">All records from the Configuration table (@totalCount)</small>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-action="Create" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add Configuration
+        </a>
+    </div>
 </div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show py-2 small" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show py-2 small" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
 <div class="row g-2 mb-3 settings-stats-compact">
     <div class="col-6 col-md-3">
         <div class="stats-card">
-            <div class="stats-number">@Model.Count()</div>
+            <div class="stats-number">@totalCount</div>
             <div class="stats-label">Total Configs</div>
         </div>
     </div>
     <div class="col-6 col-md-3">
         <div class="stats-card">
-            <div class="stats-number">@categories.Count()</div>
+            <div class="stats-number">@categories.Count</div>
             <div class="stats-label">Categories</div>
         </div>
     </div>
     <div class="col-6 col-md-3">
         <div class="stats-card">
-            <div class="stats-number">@Model.Count(c => c.Category == "Cities")</div>
+            <div class="stats-number">@allConfigs.Count(c => c.Category == "Cities")</div>
             <div class="stats-label">Cities</div>
         </div>
     </div>
     <div class="col-6 col-md-3">
         <div class="stats-card">
-            <div class="stats-number">@Model.Count(c => c.Category == "Countries")</div>
+            <div class="stats-number">@allConfigs.Count(c => c.Category == "Countries")</div>
             <div class="stats-label">Countries</div>
         </div>
     </div>
 </div>
 
-<!-- Configuration by Category -->
-@foreach (var categoryGroup in categories)
+@if (allConfigs.Any())
 {
-    <div class="pms-settings-category pms-listing-page mb-4">
-        <div class="pms-settings-category-header d-flex align-items-center gap-2 mb-2 pb-2">
-            <h6 class="mb-0 fw-semibold">@categoryGroup.Key</h6>
-            <span class="badge rounded-pill pms-record-badge">@categoryGroup.Count()</span>
-        </div>
-        <div class="table-responsive pms-saas-table-wrap">
-            <table class="table pms-saas-table mb-0">
-                <thead>
-                    <tr>
-                        <th>Key</th>
-                        <th>Value</th>
-                        <th>Description</th>
-                        <th>Updated</th>
-                        <th class="pms-saas-th-actions">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var config in categoryGroup.OrderBy(c => c.ConfigKey))
-                    {
-                        var modalId = GetModalId(config.ConfigKey);
+    <div class="card pms-grid-card pms-listing-flat pms-saas-grid mb-3">
+        <div class="card-body py-2">
+            <div class="table-responsive pms-saas-table-wrap">
+                <table class="table pms-saas-table mb-0" id="settingsConfigTable">
+                    <thead>
                         <tr>
-                            <td data-label="Key"><code>@config.ConfigKey</code></td>
-                            <td data-label="Value"><strong>@config.ConfigValue</strong></td>
-                            <td data-label="Description"><span class="text-muted small">@(config.Description ?? "N/A")</span></td>
-                            <td data-label="Updated">
-                                @if (config.UpdatedAt.HasValue)
-                                {
-                                    <span class="text-muted small text-nowrap">@config.UpdatedAt.Value.ToString("MMM dd, yyyy")</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted small">—</span>
-                                }
-                            </td>
-                            <td class="pms-saas-td-actions" data-label="Actions">
-                                <div class="pms-row-actions" role="group">
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-primary"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#@modalId"
-                                            title="Edit">
-                                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                    </button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-danger"
-                                            onclick="deleteConfig('@config.ConfigKey')"
-                                            title="Delete">
-                                        <i class="bi bi-trash" aria-hidden="true"></i>
-                                    </button>
-                                </div>
-                            </td>
+                            <th>Key</th>
+                            <th>Category</th>
+                            <th>Value</th>
+                            <th class="pms-saas-th-actions">Actions</th>
                         </tr>
-
-                            <!-- Edit Modal -->
-                            <div class="modal fade" id="@modalId" tabindex="-1" data-bs-backdrop="false">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header" style="background: var(--primary);">
-                                            <h6 class="modal-title text-white">
-                                                <i class="fas fa-edit me-2"></i>Edit Configuration
-                                            </h6>
-                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <form asp-action="Edit" method="post">
-                                            <div class="modal-body">
-                                                <input type="hidden" name="ConfigKey" value="@config.ConfigKey" />
-                                                <input type="hidden" name="CreatedAt" value="@config.CreatedAt" />
-
-                                                <div class="mb-3">
-                                                    <label class="form-label">Configuration Key</label>
-                                                    <input type="text" class="form-control" value="@config.ConfigKey" disabled />
-                                                    <small class="text-muted">Key cannot be changed</small>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label for="Category" class="form-label">Category</label>
-                                                    <select name="Category" class="form-select">
-                                                        <option value="">Select Category</option>
-                                                        <option value="Years" selected="@(config.Category == "Years")">Years</option>
-                                                        <option value="Cities" selected="@(config.Category == "Cities")">Cities</option>
-                                                        <option value="Countries" selected="@(config.Category == "Countries")">Countries</option>
-                                                        <option value="Blocks" selected="@(config.Category == "Blocks")">Blocks</option>
-                                                        <option value="PropertyTypes" selected="@(config.Category == "PropertyTypes")">Property Types</option>
-                                                        <option value="ProjectTypes" selected="@(config.Category == "ProjectTypes")">Project Types</option>
-                                                        <option value="PaymentMethods" selected="@(config.Category == "PaymentMethods")">Payment Methods</option>
-                                                        <option value="Sizes" selected="@(config.Category == "Sizes")">Sizes</option>
-                                                        <option value="Users" selected="@(config.Category == "Users")">Users</option>
-                                                        <option value="Property" selected="@(config.Category == "Property")">Property</option>
-                                                        <option value="General" selected="@(config.Category == "General")">General</option>
-                                                    </select>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label for="ConfigValue" class="form-label">Value *</label>
-                                                    <textarea name="ConfigValue" class="form-control" rows="3" required>@config.ConfigValue</textarea>
-                                                </div>
-
-                                                <div class="mb-3">
-                                                    <label for="Description" class="form-label">Description</label>
-                                                    <input type="text" name="Description" class="form-control" value="@config.Description" />
-                                                </div>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="submit" class="btn btn-primary">
-                                                    <i class="fas fa-save me-2"></i>Save Changes
-                                                </button>
-                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                            </div>
-                                        </form>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in allConfigs)
+                        {
+                            var config = item.Config;
+                            <tr>
+                                <td data-label="Key"><code class="pms-config-key">@config.ConfigKey</code></td>
+                                <td data-label="Category">@item.Category</td>
+                                <td data-label="Value"><span class="pms-config-value">@(config.ConfigValue ?? "")</span></td>
+                                <td class="pms-saas-td-actions" data-label="Actions">
+                                    <div class="pms-row-actions" role="group">
+                                        <a asp-action="Edit"
+                                           asp-route-id="@config.ConfigKey"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Edit">
+                                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger"
+                                                onclick="deleteConfig('@config.ConfigKey')"
+                                                title="Delete">
+                                            <i class="bi bi-trash" aria-hidden="true"></i>
+                                        </button>
                                     </div>
-                                </div>
-                            </div>
+                                </td>
+                            </tr>
                         }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 }
-
-@if (!Model.Any())
+else
 {
     <div class="card">
         <div class="card-body text-center py-5">
             <i class="fas fa-cogs fa-4x mb-3 text-muted"></i>
             <h5 class="text-muted">No Configurations Found</h5>
             <p class="text-muted">Add system configuration settings to get started.</p>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addConfigModal">
+            <a asp-action="Create" class="btn btn-primary">
                 <i class="fas fa-plus me-2"></i>Add First Configuration
-            </button>
+            </a>
         </div>
     </div>
 }
 
-<!-- Add Configuration Modal -->
-<div class="modal fade" id="addConfigModal" tabindex="-1" data-bs-backdrop="false">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header" style="background: var(--primary);">
-                <h5 class="modal-title text-white">
-                    <i class="fas fa-plus me-2"></i>Add Configuration
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form asp-action="Create" method="post">
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="ConfigKey" class="form-label">Configuration Key *</label>
-                        <input type="text" name="ConfigKey" id="ConfigKey" class="form-control" 
-                               placeholder="e.g., city_juba" required />
-                        <small class="text-muted">Use lowercase with underscores (e.g., city_juba)</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="Category" class="form-label">Category *</label>
-                        <select name="Category" id="Category" class="form-select" required>
-                            <option value="">Select Category</option>
-                            <option value="Years">Years</option>
-                            <option value="Cities">Cities</option>
-                            <option value="Countries">Countries</option>
-                            <option value="Blocks">Blocks</option>
-                            <option value="PropertyTypes">Property Types</option>
-                            <option value="ProjectTypes">Project Types</option>
-                            <option value="PaymentMethods">Payment Methods</option>
-                            <option value="Sizes">Property Sizes</option>
-                            <option value="Users">Users</option>
-                            <option value="Property">Property</option>
-                            <option value="Status">Status Options</option>
-                            <option value="General">General</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="ConfigValue" class="form-label">Value *</label>
-                        <textarea name="ConfigValue" id="ConfigValue" class="form-control" rows="3" 
-                                  placeholder="Enter configuration value" required></textarea>
-                        <small class="text-muted">For multiple values, separate with commas</small>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="Description" class="form-label">Description</label>
-                        <input type="text" name="Description" id="Description" class="form-control" 
-                               placeholder="Optional description" />
-                    </div>
-
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Common Examples:</strong><br>
-                        • Cities: Juba, Wau, Malakal<br>
-                        • Countries: South Sudan<br>
-                        • Years: 2024, 2025, 2026<br>
-                        • Property Types: Residential, Commercial
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Add Configuration
-                    </button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Delete Form (Hidden) -->
 <form id="deleteForm" asp-action="Delete" method="post" style="display: none;">
+    @Html.AntiForgeryToken()
     <input type="hidden" id="deleteConfigKey" name="id" />
 </form>
 
@@ -277,23 +146,17 @@
         box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
     }
 
-    html[data-theme="dark"] .settings-stats-compact .stats-card {
-        background: var(--surface, #1e293b);
-        border-color: var(--border, #334155);
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    }
-
     .settings-stats-compact .stats-number {
         font-size: 1.35rem;
         font-weight: 700;
-        color: var(--primary-light);
+        color: #000;
         margin-bottom: 0.15rem;
         line-height: 1.2;
     }
 
     .settings-stats-compact .stats-label {
         font-size: 10px;
-        color: var(--text-secondary);
+        color: #000;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.35px;
@@ -301,81 +164,39 @@
         line-height: 1.2;
     }
 
-    .pms-settings-category {
-        background: transparent !important;
+    #settingsConfigTable,
+    #settingsConfigTable thead th,
+    #settingsConfigTable tbody td,
+    #settingsConfigTable tbody td span,
+    #settingsConfigTable tbody td strong,
+    #settingsConfigTable .pms-config-value {
+        color: #000 !important;
     }
 
-    .pms-settings-category-header {
-        border-bottom: 1px solid #e2e8f0;
-        background: transparent !important;
-    }
-
-    html[data-theme="dark"] .pms-settings-category-header {
-        border-bottom-color: var(--border, #334155);
-    }
-
-    .pms-settings-category .pms-saas-table-wrap {
-        border: none;
-    }
-
-    code {
-        background: rgba(156, 106, 222, 0.1);
-        color: var(--primary);
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 12px;
+    #settingsConfigTable .pms-config-key,
+    #settingsConfigTable td[data-label="Key"] code {
+        color: #0d6efd !important;
+        background: transparent;
+        padding: 0;
         font-weight: 600;
     }
 
-    /* Settings Modals - No Backdrop */
-    .modal[data-bs-backdrop="false"] {
-        background: transparent !important;
+    #settingsConfigTable .pms-config-value {
+        display: inline-block;
+        max-width: 480px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: bottom;
+        font-weight: 600;
     }
 
-    .modal[data-bs-backdrop="false"] .modal-dialog {
-        position: relative;
-        z-index: 1055;
-    }
-
-    .modal[data-bs-backdrop="false"] .modal-content {
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        border: none;
-    }
-
-    /* Completely remove backdrop for Settings modals */
-    .modal-backdrop {
-        display: none !important;
-    }
-
-    /* Ensure no backdrop appears for any modal on this page */
-    body.modal-open .modal-backdrop {
-        display: none !important;
-    }
-
-    /* Disable global dim overlay from layout on this page */
-    body.modal-open::before {
-        display: none !important;
-        background: transparent !important;
-    }
-
-    /* Force transparent background for all modals */
-    .modal {
-        background: transparent !important;
-    }
-
-    .modal.show {
-        background: transparent !important;
-    }
-
-    /* Specific targeting for Settings page modals */
-    #addConfigModal,
-    .modal[id^="editModal"] {
-        background: transparent !important;
-    }
-
-    #addConfigModal.show,
-    .modal[id^="editModal"].show {
-        background: transparent !important;
+    /* Always show Edit/Delete (override hover-only grid actions) */
+    #settingsConfigTable .pms-row-actions,
+    .pms-saas-grid #settingsConfigTable tbody tr .pms-row-actions {
+        opacity: 1 !important;
+        transform: none !important;
+        visibility: visible !important;
     }
 </style>
 
@@ -388,38 +209,29 @@
             }
         }
 
-        // Ensure no backdrop is created for Settings modals
-        $(document).ready(function() {
-            // Remove any existing backdrops
-            $('.modal-backdrop').remove();
-            
-            // Override Bootstrap modal show event (Bootstrap 5 safe)
-            $('.modal').on('show.bs.modal', function(e) {
-                // Remove any existing backdrops
-                $('.modal-backdrop').remove();
-                // Ensure a Bootstrap Modal instance exists and set backdrop to false
-                var modalInstance = bootstrap.Modal.getOrCreateInstance(this, { backdrop: false });
-                // For already-created instances, enforce backdrop false as well
-                if (modalInstance && modalInstance._config) {
-                    modalInstance._config.backdrop = false;
-                }
-            });
-
-            // Remove backdrop when modal is shown
-            $('.modal').on('shown.bs.modal', function(e) {
-                $('.modal-backdrop').remove();
-            });
-
-            // Remove backdrop when modal is hidden
-            $('.modal').on('hidden.bs.modal', function(e) {
-                $('.modal-backdrop').remove();
-            });
-
-            // Watch for backdrop creation and remove it
-            setInterval(function() {
-                $('.modal-backdrop').remove();
-            }, 100);
+        $(document).ready(function () {
+            if ($('#settingsConfigTable').length && $.fn.DataTable) {
+                $('#settingsConfigTable').DataTable({
+                    pageLength: 25,
+                    order: [[0, 'asc']],
+                    lengthMenu: [[25, 50, 100, -1], [25, 50, 100, 'All']],
+                    columnDefs: [
+                        { orderable: false, targets: 3 }
+                    ],
+                    language: {
+                        search: 'Search:',
+                        lengthMenu: 'Show _MENU_ records',
+                        info: 'Showing _START_ to _END_ of _TOTAL_ configurations',
+                        infoEmpty: 'No configurations',
+                        paginate: {
+                            first: 'First',
+                            last: 'Last',
+                            next: 'Next',
+                            previous: 'Previous'
+                        }
+                    }
+                });
+            }
         });
     </script>
 }
-

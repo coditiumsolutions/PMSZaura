@@ -57,7 +57,14 @@ namespace PMS.Controllers
             _groqService = groqService;
         }
 
-        public async Task<IActionResult> Index()
+        [AllowAnonymous]
+        public IActionResult Index()
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
+        [HttpGet("/coditium")]
+        public async Task<IActionResult> Coditium()
         {
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             var homePerm = await _modulePermission.GetPermissionAsync(userId, "Home");
@@ -430,7 +437,7 @@ namespace PMS.Controllers
                     DealerData = dealerData
                 };
 
-                return View(dashboardData);
+                return View("Index", dashboardData);
             }
             catch
             {
@@ -465,7 +472,7 @@ namespace PMS.Controllers
                     CustomerTrendData = new Dictionary<string, int>(),
                     DealerData = new List<DealerDashboardData>()
                 };
-                return View(dashboardData);
+                return View("Index", dashboardData);
             }
         }
 

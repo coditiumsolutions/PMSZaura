@@ -1,0 +1,183 @@
+@model PMS.Models.User
+@{
+    ViewData["Title"] = "User Details";
+    ViewData["HidePageBanner"] = true;
+    string ModuleDisplayName(string key) => key switch
+    {
+        "PaymentAudit" => "Audit",
+        "DuplicateFileTransfer" => "Duplicate file transfer",
+        "Account" => "User profile & login screens",
+        "AccountsManagement" => "Accounts Management",
+        _ => key
+    };
+}
+
+<div class="pms-settings-edit pms-user-details">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <h5 class="mb-0 pms-settings-edit-title">
+            <i class="fas fa-user-circle me-1"></i>User Details
+        </h5>
+        <div class="d-flex flex-wrap gap-1">
+            <a asp-action="EditUser" asp-route-id="@Model.UserID" class="btn btn-sm btn-primary py-0 px-2">
+                <i class="fas fa-edit me-1"></i>Edit
+            </a>
+            <a asp-action="Users" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                <i class="fas fa-arrow-left me-1"></i>Back to Users
+            </a>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-header py-1 px-3 pms-settings-edit-header">
+            <h6 class="mb-0">User Information</h6>
+        </div>
+        <div class="card-body py-3 px-3 bg-white">
+            <div class="pms-registration-4col-form">
+                <div class="row g-2 align-items-center mb-2">
+                    <div class="col-12 col-lg-2">
+                        <label class="form-label mb-0 fw-semibold">User ID</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="form-control form-control-sm bg-light">@Model.UserID</div>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label class="form-label mb-0 fw-semibold">Full Name</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="form-control form-control-sm bg-light">@Model.FullName</div>
+                    </div>
+                </div>
+
+                <div class="row g-2 align-items-center mb-2">
+                    <div class="col-12 col-lg-2">
+                        <label class="form-label mb-0 fw-semibold">Email</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="form-control form-control-sm bg-light">@Model.Email</div>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label class="form-label mb-0 fw-semibold">Status</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="form-control form-control-sm bg-light">
+                            @if (Model.IsActive)
+                            {
+                                <span class="pms-pill pms-pill--success">Active</span>
+                            }
+                            else
+                            {
+                                <span class="pms-pill pms-pill--danger">Inactive</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-2 align-items-center mb-2">
+                    <div class="col-12 col-lg-2">
+                        <label class="form-label mb-0 fw-semibold">Designation</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="form-control form-control-sm bg-light">@(Model.Designation ?? "—")</div>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label class="form-label mb-0 fw-semibold">Department</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="form-control form-control-sm bg-light">@(Model.Department ?? "—")</div>
+                    </div>
+                </div>
+
+                <div class="row g-2 align-items-center mb-2">
+                    <div class="col-12 col-lg-2">
+                        <label class="form-label mb-0 fw-semibold">User Type</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="form-control form-control-sm bg-light">@(Model.UserType ?? "—")</div>
+                    </div>
+                    <div class="col-12 col-lg-2">
+                        <label class="form-label mb-0 fw-semibold">Role</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="form-control form-control-sm bg-light">@(Model.Role?.RoleName ?? "N/A")</div>
+                    </div>
+                </div>
+
+                <div class="row g-2 align-items-center mb-0">
+                    <div class="col-12 col-lg-2">
+                        <label class="form-label mb-0 fw-semibold">Created</label>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="form-control form-control-sm bg-light">@Model.CreatedAt.ToString("MMM dd, yyyy hh:mm tt")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-header py-1 px-3 pms-settings-edit-header">
+            <h6 class="mb-0">Module Rights</h6>
+        </div>
+        <div class="card-body py-3 px-3 bg-white">
+            <div class="table-responsive">
+                <table class="table table-sm mb-0 pms-user-details-perms">
+                    <thead>
+                        <tr>
+                            <th>Module</th>
+                            <th style="width: 12rem;">Permission</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            var perms = Model.ModulePermissions?.ToDictionary(p => p.ModuleKey, p => p.Permission)
+                                         ?? new Dictionary<string, string>();
+                            var keys = ViewBag.ModuleKeys as string[] ?? Array.Empty<string>();
+                        }
+                        @foreach (var key in keys)
+                        {
+                            var perm = perms.TryGetValue(key, out var p) ? p : "NoAccess";
+                            <tr>
+                                <td>@ModuleDisplayName(key)</td>
+                                <td>@perm</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .pms-settings-edit-title {
+        font-size: 1.05rem;
+        font-weight: 650;
+        color: #000;
+    }
+
+    .pms-settings-edit-header {
+        background: #E8EAE4 !important;
+        border-bottom: 1px solid #d1d5db;
+        color: #000;
+    }
+
+    .pms-settings-edit-header h6 {
+        color: #000 !important;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .pms-user-details .form-label,
+    .pms-user-details .form-control,
+    .pms-user-details td {
+        color: #000;
+    }
+
+    .pms-user-details-perms thead th {
+        background: #E8EAE4 !important;
+        color: #334155 !important;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-bottom: 1px solid #d1d5db;
+    }
+</style>

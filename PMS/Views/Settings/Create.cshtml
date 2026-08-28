@@ -1,0 +1,132 @@
+@model PMS.Models.Configuration
+@{
+    ViewData["Title"] = "Add Configuration";
+    ViewData["HidePageBanner"] = true;
+    var currentCategory = string.IsNullOrWhiteSpace(Model?.Category) ? "" : Model.Category!.Trim();
+    var categoryOptions = new[]
+    {
+        "Years", "Cities", "Countries", "Blocks", "PropertyTypes", "ProjectTypes",
+        "PaymentMethods", "Sizes", "Users", "Property", "Status", "General",
+        "Security", "NDC", "Waiver", "Possession", "Currency", "WorkflowStatus",
+        "PaymentStatus", "NomineeRelations", "AllotmentTypes", "SubProjects"
+    };
+}
+
+<div class="pms-settings-edit">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <h5 class="mb-0 pms-settings-edit-title">
+            <i class="fas fa-plus me-1"></i>Add Configuration
+        </h5>
+        <a asp-action="Index" class="btn btn-sm btn-outline-secondary py-0 px-2">
+            <i class="fas fa-arrow-left me-1"></i>Back to Settings
+        </a>
+    </div>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger py-2 small">@ViewBag.Error</div>
+    }
+
+    <div class="card border-0 shadow-sm mb-3">
+        <div class="card-header py-1 px-3 pms-settings-edit-header">
+            <h6 class="mb-0">Configuration Details</h6>
+        </div>
+        <div class="card-body py-3 px-3 bg-white">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="pms-registration-4col-form">
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="ConfigKey" class="form-label mb-0 fw-semibold">Configuration Key *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="ConfigKey" class="form-control form-control-sm"
+                                   placeholder="e.g., PaymentHeads" required />
+                            <small class="text-muted">Use a unique key (e.g., PaymentHeads, cities)</small>
+                            <span asp-validation-for="ConfigKey" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Category" class="form-label mb-0 fw-semibold">Category *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select asp-for="Category" class="form-select form-select-sm" required>
+                                <option value="">Select Category</option>
+                                @if (!string.IsNullOrWhiteSpace(currentCategory)
+                                    && !categoryOptions.Contains(currentCategory, StringComparer.OrdinalIgnoreCase))
+                                {
+                                    <option value="@currentCategory" selected="selected">@currentCategory</option>
+                                }
+                                @foreach (var cat in categoryOptions)
+                                {
+                                    <option value="@cat" selected="@(string.Equals(currentCategory, cat, StringComparison.OrdinalIgnoreCase))">@cat</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Category" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 align-items-start mb-2">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="ConfigValue" class="form-label mb-0 fw-semibold">Value *</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <textarea asp-for="ConfigValue" class="form-control form-control-sm" rows="5"
+                                      placeholder="Enter configuration value" required></textarea>
+                            <small class="text-muted">For multiple values, separate with commas</small>
+                            <span asp-validation-for="ConfigValue" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Description" class="form-label mb-0 fw-semibold">Description</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <input asp-for="Description" class="form-control form-control-sm"
+                                   placeholder="Optional description" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-1 mt-3">
+                    <button type="submit" class="btn btn-sm btn-primary py-0 px-2">
+                        <i class="fas fa-save me-1"></i>Add Configuration
+                    </button>
+                    <a asp-action="Index" class="btn btn-sm btn-outline-secondary py-0 px-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .pms-settings-edit-title {
+        font-size: 1.05rem;
+        font-weight: 650;
+        color: #000;
+    }
+
+    .pms-settings-edit-header {
+        background: #E8EAE4 !important;
+        border-bottom: 1px solid #d1d5db;
+        color: #000;
+    }
+
+    .pms-settings-edit-header h6 {
+        color: #000 !important;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .pms-settings-edit .form-label,
+    .pms-settings-edit .form-control,
+    .pms-settings-edit .form-select,
+    .pms-settings-edit small {
+        color: #000;
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

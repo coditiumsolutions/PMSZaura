@@ -9,10 +9,13 @@ The Account Statement page provides a printable customer ledger showing:
 - daily surcharge values
 - latest payment reference details per installment
 
-It is rendered as an A4-ready report and can be printed/downloaded as PDF from browser print.
+It is rendered as an A4-ready on-screen statement (browser Print) and as a PDF via the Coditium report service.
+
+Server-side RDLC PDF was removed from the Linux PMS host. PDF is now proxied from the Python report API (see [AccountStatementPdf.md](./AccountStatementPdf.md) and repo `api.txt`).
 
 **Controller Action:** `CustomerController.AccountStatement(id)`  
 **View:** `Views/Customer/AccountStatement.cshtml`  
+**PDF:** `Report/AccountStatement?accountNo={CustomerID}` → `GET {ReportService}/api/reports/account-statement?customerId=`  
 **Permission:** `Read` on Customer module
 
 ---

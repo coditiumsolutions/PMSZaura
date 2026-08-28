@@ -3,15 +3,13 @@
 @{
     ViewData["Title"] = "User Management";
     ViewData["HidePageBanner"] = true;
-    ViewData["ListingHideTitle"] = true;
+    ViewData["ListingHideTitle"] = false;
     ViewData["ListingRecordCount"] = Model?.Count() ?? 0;
     ViewData["ListingAddUrl"] = Url.Action("CreateUser");
     ViewData["ListingAddText"] = "Add New User";
     ViewData["ListingExtraActions"] =
         "<a href=\"" + Url.Action("Index", "UserMac") + "\" class=\"btn btn-outline-primary btn-sm\">" +
         "<i class=\"bi bi-shield-check me-1\" aria-hidden=\"true\"></i>Manage mTLS Certificates</a>";
-    var whitelistCounts = ViewBag.WhitelistCounts as Dictionary<string, int> ?? new Dictionary<string, int>();
-    var blockedCounts = ViewBag.BlockedCounts as Dictionary<string, int> ?? new Dictionary<string, int>();
 }
 
 <div class="row g-2 mb-3 users-stats-compact">
@@ -41,7 +39,7 @@
     </div>
 </div>
 
-<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page">
+<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page pms-users-listing">
     <div class="card-body">
         <partial name="Listing/_GridToolbar" />
 
@@ -49,17 +47,14 @@
             <table class="table pms-saas-table" id="usersTable">
                 <thead>
                     <tr>
-                        <th>User ID</th>
-                        <th>Full Name</th>
+                        <th>ID</th>
+                        <th>Name</th>
                         <th>Email</th>
-                        <th>Designation</th>
-                        <th>Department</th>
+                        <th>Desig</th>
+                        <th>Dept</th>
                         <th>User Type</th>
                         <th>Role</th>
                         <th>Status</th>
-                        <th>Whitelisted Certs</th>
-                        <th>Blocked Attempts</th>
-                        <th>Created Date</th>
                         <th class="pms-saas-th-actions">Actions</th>
                     </tr>
                 </thead>
@@ -67,13 +62,13 @@
                     @foreach (var user in Model.OrderBy(u => u.FullName))
                     {
                         <tr>
-                            <td data-label="User ID"><code>@user.UserID</code></td>
-                            <td data-label="Full Name">
-                                <strong class="pms-cell-truncate" title="@user.FullName">@user.FullName</strong>
+                            <td data-label="ID"><span class="pms-users-id">@user.UserID</span></td>
+                            <td data-label="Name">
+                                <span class="pms-cell-truncate" title="@user.FullName">@user.FullName</span>
                             </td>
                             <td data-label="Email"><span class="pms-cell-truncate" title="@user.Email">@user.Email</span></td>
-                            <td data-label="Designation">@(user.Designation ?? "—")</td>
-                            <td data-label="Department">@(user.Department ?? "—")</td>
+                            <td data-label="Desig">@(user.Designation ?? "—")</td>
+                            <td data-label="Dept">@(user.Department ?? "—")</td>
                             <td data-label="User Type">
                                 @if (!string.IsNullOrEmpty(user.UserType))
                                 {
@@ -104,30 +99,20 @@
                                     <span class="pms-pill pms-pill--danger">Inactive</span>
                                 }
                             </td>
-                            <td data-label="Whitelisted Certs">
-                                <span class="pms-pill pms-pill--success">@(whitelistCounts.ContainsKey(user.UserID) ? whitelistCounts[user.UserID] : 0)</span>
-                            </td>
-                            <td data-label="Blocked Attempts">
-                                <span class="pms-pill pms-pill--warning">@(blockedCounts.ContainsKey(user.UserID) ? blockedCounts[user.UserID] : 0)</span>
-                            </td>
-                            <td data-label="Created Date">
-                                <span class="text-nowrap">@user.CreatedAt.ToString("MMM dd, yyyy")</span>
-                            </td>
                             <td class="pms-saas-td-actions" data-label="Actions">
                                 <div class="pms-row-actions" role="group">
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-secondary"
-                                            data-bs-toggle="modal"
-                                            data-bs-target="#userModal@(user.UserID)"
-                                            title="View Details">
+                                    <a asp-action="EditUser"
+                                       asp-route-id="@user.UserID"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="View / Edit User">
                                         <i class="bi bi-eye" aria-hidden="true"></i>
-                                    </button>
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-primary"
-                                            onclick="editUser('@user.UserID')"
-                                            title="Edit User">
+                                    </a>
+                                    <a asp-action="EditUser"
+                                       asp-route-id="@user.UserID"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Edit User">
                                         <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                    </button>
+                                    </a>
                                     <button type="button"
                                             class="btn btn-sm @(user.IsActive ? "btn-outline-warning" : "btn-outline-success")"
                                             onclick="toggleUserStatus('@user.UserID', @user.IsActive.ToString().ToLower())"
@@ -144,84 +129,6 @@
                                 </div>
                             </td>
                         </tr>
-
-                        <!-- User Details Modal -->
-                        <div class="modal fade" id="userModal@(user.UserID)" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-green) 0%, #0a7a38 100%);">
-                                        <h5 class="modal-title text-white">
-                                            <i class="fas fa-user-circle me-2"></i>User Details
-                                        </h5>
-                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="text-center mb-4">
-                                            <i class="fas fa-user-circle fa-5x" style="color: var(--primary-green);"></i>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-12 mb-3">
-                                                <label class="text-muted small">User ID</label>
-                                                <p><code>@user.UserID</code></p>
-                                            </div>
-                                            <div class="col-12 mb-3">
-                                                <label class="text-muted small">Full Name</label>
-                                                <p class="fw-bold">@user.FullName</p>
-                                            </div>
-                                            <div class="col-12 mb-3">
-                                                <label class="text-muted small">Email Address</label>
-                                                <p>@user.Email</p>
-                                            </div>
-                                            <div class="col-6 mb-3">
-                                                <label class="text-muted small">Designation</label>
-                                                <p>@(user.Designation ?? "—")</p>
-                                            </div>
-                                            <div class="col-6 mb-3">
-                                                <label class="text-muted small">Department</label>
-                                                <p>@(user.Department ?? "—")</p>
-                                            </div>
-                                            <div class="col-6 mb-3">
-                                                <label class="text-muted small">User Type</label>
-                                                <p>@(user.UserType ?? "—")</p>
-                                            </div>
-                                            <div class="col-6 mb-3">
-                                                <label class="text-muted small">Role</label>
-                                                <p>@(user.Role?.RoleName ?? "N/A")</p>
-                                            </div>
-                                            <div class="col-6 mb-3">
-                                                <label class="text-muted small">Status</label>
-                                                <p>
-                                                    <span class="badge @(user.IsActive ? "bg-success" : "bg-danger")">
-                                                        @(user.IsActive ? "Active" : "Inactive")
-                                                    </span>
-                                                </p>
-                                            </div>
-                                            <div class="col-12 mb-3">
-                                                <label class="text-muted small">Created Date</label>
-                                                <p>@user.CreatedAt.ToString("MMMM dd, yyyy hh:mm tt")</p>
-                                            </div>
-                                            @if (!string.IsNullOrEmpty(user.Role?.Permissions))
-                                            {
-                                                <div class="col-12">
-                                                    <label class="text-muted small">Permissions</label>
-                                                    <div class="d-flex flex-wrap gap-1">
-                                                        @foreach (var permission in user.Role.Permissions.Split(','))
-                                                        {
-                                                            <span class="badge bg-primary">
-                                                                <i class="fas fa-check me-1"></i>@permission.Trim()
-                                                            </span>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            }
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     }
                 </tbody>
             </table>
@@ -230,37 +137,59 @@
 </div>
 
 <style>
-    code {
-        background: rgba(156, 106, 222, 0.1);
-        color: var(--primary);
-        padding: 4px 8px;
-        border-radius: 6px;
-        font-size: 12px;
+    .pms-users-listing .pms-grid-title {
+        font-size: 0.8rem !important;
+        font-weight: 600 !important;
+        color: #334155 !important;
+        letter-spacing: 0.01em;
+        line-height: 1.25;
+    }
+
+    .pms-users-listing #usersTable thead th {
+        background: #E8EAE4 !important;
+        color: #334155 !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+        padding-top: 0.35rem !important;
+        padding-bottom: 0.35rem !important;
+        border-bottom: 1px solid #d1d5db !important;
+        white-space: nowrap;
+    }
+
+    .pms-users-listing #usersTable,
+    .pms-users-listing #usersTable tbody td,
+    .pms-users-listing #usersTable tbody td span,
+    .pms-users-listing #usersTable tbody td strong {
+        color: #000 !important;
+    }
+
+    .pms-users-listing #usersTable tbody td:first-child,
+    .pms-users-listing #usersTable tbody td:first-child .pms-users-id {
+        color: #1e3a8a !important;
         font-weight: 600;
     }
 
     .users-stats-compact .stats-card {
-        background: var(--surface);
+        background: #f8fafc;
         border-radius: 10px;
         padding: 0.65rem 0.75rem;
         text-align: center;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
-        border: 1px solid var(--border);
+        border: 1px solid #e2e8f0;
         min-height: 0;
     }
 
     .users-stats-compact .stats-number {
-        font-family: 'Inter', sans-serif;
         font-size: 1.35rem;
         font-weight: 700;
-        color: var(--primary-light);
+        color: #000;
         margin-bottom: 0.15rem;
         line-height: 1.2;
     }
 
     .users-stats-compact .stats-label {
         font-size: 10px;
-        color: var(--text-secondary);
+        color: #000;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.35px;
@@ -268,26 +197,6 @@
         line-height: 1.2;
     }
 
-    .modal-backdrop {
-        display: none !important;
-    }
-
-    body.modal-open .modal-backdrop {
-        display: none !important;
-    }
-
-    body.modal-open::before {
-        display: none !important;
-        background: transparent !important;
-    }
-
-    .modal {
-        background: transparent !important;
-    }
-
-    .modal.show {
-        background: transparent !important;
-    }
 </style>
 
 @section Scripts {
@@ -296,27 +205,10 @@
             $('#usersTable').DataTable({
                 pageLength: 25,
                 order: [[1, 'asc']],
-                columnDefs: [{ orderable: false, targets: 11 }]
-            });
-
-            $('.modal-backdrop').remove();
-
-            $('.modal').on('show.bs.modal', function(e) {
-                $('.modal-backdrop').remove();
-                var modalInstance = bootstrap.Modal.getOrCreateInstance(this, { backdrop: false });
-                if (modalInstance && modalInstance._config) {
-                    modalInstance._config.backdrop = false;
-                }
-            });
-
-            $('.modal').on('shown.bs.modal hidden.bs.modal', function() {
-                $('.modal-backdrop').remove();
+                columnDefs: [{ orderable: false, targets: 8 }],
+                dom: '<"d-flex justify-content-end mb-2"f>rt<"d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2"lip>'
             });
         });
-
-        function editUser(userId) {
-            window.location.href = '@Url.Action("EditUser", "Account")/' + userId;
-        }
 
         function toggleUserStatus(userId, isActive) {
             var action = isActive ? 'deactivate' : 'activate';

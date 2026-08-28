@@ -1559,7 +1559,7 @@ else if (isAmsArea)
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")" asp-controller="Home" asp-action="Index">
+                            <a class="nav-link @(currentController == "Home" && currentAction == "Coditium" ? "active" : "")" asp-controller="Home" asp-action="Coditium">
                                 <i class="fas fa-tachometer-alt"></i> Dashboard
                             </a>
                         </li>
@@ -1594,7 +1594,7 @@ else
                         </li>
                         <li class="nav-item sidebar-module-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" 
-                               asp-controller="Home" asp-action="Index">
+                               asp-controller="Home" asp-action="Coditium">
                                 <i class="fas fa-tachometer-alt"></i>
                                 Dashboard
                             </a>
@@ -1736,7 +1736,7 @@ else
                             </h1>
                             <div class="btn-toolbar mb-2 mb-md-0">
                                 <div class="btn-group me-2">
-                                    <a href="@Url.Action("Index", "Home")" class="btn btn-outline-primary">
+                                    <a href="@Url.Action("Coditium", "Home")" class="btn btn-outline-primary">
                                         <i class="fas fa-home me-1"></i>Dashboard
                                     </a>
                                 </div>

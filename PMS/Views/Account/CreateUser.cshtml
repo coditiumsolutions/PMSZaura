@@ -1,240 +1,248 @@
 @model PMS.Models.User
-
 @{
     ViewData["Title"] = "Create New User";
+    ViewData["HidePageBanner"] = true;
 }
 
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <!-- <h2>
-                <i class="fas fa-user-plus me-2"></i>Create New User
-            </h2> -->
-            <a asp-action="Users" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left me-2"></i>Back to Users
-            </a>
-        </div>
+<div class="pms-settings-edit pms-create-user">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <h5 class="mb-0 pms-settings-edit-title">
+            <i class="fas fa-user-plus me-1"></i>Create New User
+        </h5>
+        <a asp-action="Users" class="btn btn-sm btn-outline-secondary py-0 px-2">
+            <i class="fas fa-arrow-left me-1"></i>Back to Users
+        </a>
+    </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">
-                    <i class="fas fa-user-circle me-2"></i>User Information
-                </h5>
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger py-2 small">@ViewBag.Error</div>
+    }
+
+    <form asp-action="CreateUser" method="post" id="createUserForm">
+        @Html.AntiForgeryToken()
+
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header py-1 px-3 pms-settings-edit-header">
+                <h6 class="mb-0">User Information</h6>
             </div>
-            <div class="card-body">
-                @if (ViewBag.Error != null)
-                {
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        @ViewBag.Error
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                }
-
-                <form asp-action="CreateUser" method="post">
-                    <div class="row">
-                        <!-- Personal Information -->
-                        <div class="col-md-6">
-                            <h6 class="text-primary mb-3">
-                                <i class="fas fa-info-circle me-2"></i>Personal Information
-                            </h6>
-
-                            <div class="mb-3">
-                                <label asp-for="FullName" class="form-label">Full Name *</label>
-                                <input asp-for="FullName" class="form-control" placeholder="Enter full name" required />
-                                <span asp-validation-for="FullName" class="text-danger"></span>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Email" class="form-label">Email Address *</label>
-                                <input asp-for="Email" type="email" class="form-control" placeholder="user@example.com" required />
-                                <span asp-validation-for="Email" class="text-danger"></span>
-                                <small class="text-muted">This will be used for login</small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="PasswordHash" class="form-label">Password *</label>
-                                <input asp-for="PasswordHash" type="password" class="form-control" placeholder="Enter password" required minlength="6" />
-                                <span asp-validation-for="PasswordHash" class="text-danger"></span>
-                                <small class="text-muted">Minimum 6 characters</small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="ConfirmPassword" class="form-label">Confirm Password *</label>
-                                <input type="password" id="ConfirmPassword" class="form-control" placeholder="Re-enter password" required />
-                                <small id="passwordMatch" class="text-danger" style="display: none;">Passwords do not match</small>
-                            </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Designation" class="form-label">Designation</label>
-                                <select asp-for="Designation" class="form-select">
-                                    <option value="">Select designation</option>
-                                    @if (ViewBag.Designations != null)
-                                    {
-                                        @foreach (var d in (IEnumerable<string>)ViewBag.Designations)
-                                        {
-                                            <option value="@d">@d</option>
-                                        }
-                                    }
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label asp-for="Department" class="form-label">Department</label>
-                                <select asp-for="Department" class="form-select">
-                                    <option value="">Select department</option>
-                                    @if (ViewBag.Departments != null)
-                                    {
-                                        @foreach (var d in (IEnumerable<string>)ViewBag.Departments)
-                                        {
-                                            <option value="@d">@d</option>
-                                        }
-                                    }
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label asp-for="UserType" class="form-label">User Type</label>
-                                <select asp-for="UserType" class="form-select">
-                                    <option value="">Select type</option>
-                                    <option value="Admin">Admin</option>
-                                    <option value="Manager">Manager</option>
-                                    <option value="CRO">CRO</option>
-                                </select>
-                            </div>
+            <div class="card-body py-3 px-3 bg-white">
+                <div class="pms-registration-4col-form">
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="FullName" class="form-label mb-0 fw-semibold">Full Name *</label>
                         </div>
-
-                        <!-- Status -->
-                        <div class="col-md-6">
-                            <h6 class="text-primary mb-3">
-                                <i class="fas fa-user-check me-2"></i>Status
-                            </h6>
-
-                            <div class="mb-3">
-                                <div class="form-check form-switch">
-                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
-                                    <label asp-for="IsActive" class="form-check-label">
-                                        Active User
-                                        <small class="text-muted d-block">Inactive users cannot login</small>
-                                    </label>
-                                </div>
-                            </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="FullName" class="form-control form-control-sm" placeholder="Enter full name" required />
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Email" class="form-label mb-0 fw-semibold">Email *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="Email" type="email" class="form-control form-control-sm" placeholder="user@example.com" required />
+                            <small class="text-muted">Used for login</small>
+                            <span asp-validation-for="Email" class="text-danger"></span>
                         </div>
                     </div>
 
-                    <hr>
-                    <h6 class="text-primary mb-3">
-                        <i class="fas fa-lock me-2"></i>Module rights
-                    </h6>
-                    <p class="text-muted small">No Access = no access; Read = view only; Author = write/create only (cannot edit existing); Edit = Create + Edit + Read; Admin = full CRUD.</p>
-                    <div class="mb-2 d-flex flex-wrap gap-2 align-items-center">
-                        <span class="small text-muted me-1">Quick actions:</span>
-                        <button type="button" class="btn btn-outline-dark btn-sm js-set-all-permissions" data-permission="NoAccess">NoAccess for all</button>
-                        <button type="button" class="btn btn-outline-info btn-sm js-set-all-permissions" data-permission="Read">Read for all</button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm js-set-all-permissions" data-permission="Author">Author for all</button>
-                        <button type="button" class="btn btn-outline-primary btn-sm js-set-all-permissions" data-permission="Edit">Edit for all</button>
-                        <button type="button" class="btn btn-outline-success btn-sm js-set-all-permissions" data-permission="Admin">Admin for all</button>
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="PasswordHash" class="form-label mb-0 fw-semibold">Password *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="PasswordHash" type="password" class="form-control form-control-sm" placeholder="Enter password" required minlength="6" />
+                            <small class="text-muted">Minimum 6 characters</small>
+                            <span asp-validation-for="PasswordHash" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label for="ConfirmPassword" class="form-label mb-0 fw-semibold">Confirm Password *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="password" id="ConfirmPassword" class="form-control form-control-sm" placeholder="Re-enter password" required />
+                            <small id="passwordMatch" class="text-danger" style="display: none;">Passwords do not match</small>
+                        </div>
                     </div>
-                    <div class="table-responsive mb-3">
-                        <table class="table table-sm table-bordered">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Module</th>
-                                    <th>Permission</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (ViewBag.ModuleKeys != null)
+
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Designation" class="form-label mb-0 fw-semibold">Designation</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select asp-for="Designation" class="form-select form-select-sm">
+                                <option value="">Select designation</option>
+                                @if (ViewBag.Designations != null)
+                                {
+                                    @foreach (var d in (IEnumerable<string>)ViewBag.Designations)
                                     {
-                                    @foreach (var key in (string[])ViewBag.ModuleKeys)
-                                    {
-                                        var currentPerm = "NoAccess";
-                                        var displayName = key switch
-                                        {
-                                            "PaymentAudit" => "Audit",
-                                            "DuplicateFileTransfer" => "Duplicate file transfer",
-                                            "Account" => "User profile & login screens",
-                                            "AccountsManagement" => "Accounts Management",
-                                            _ => key
-                                        };
-                                        <tr>
-                                            <td>@displayName</td>
-                                            <td>
-                                                <select name="ModulePermissions_@key" class="form-select form-select-sm module-permission-select">
-                                                    @if (ViewBag.PermissionOptions != null)
-                                                    {
-                                                        @foreach (var opt in (string[])ViewBag.PermissionOptions)
-                                                        {
-                                                            <option value="@opt" selected="@(opt == currentPerm)">@opt</option>
-                                                        }
-                                                    }
-                                                </select>
-                                            </td>
-                                        </tr>
+                                        <option value="@d">@d</option>
                                     }
                                 }
-                            </tbody>
-                        </table>
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Department" class="form-label mb-0 fw-semibold">Department</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select asp-for="Department" class="form-select form-select-sm">
+                                <option value="">Select department</option>
+                                @if (ViewBag.Departments != null)
+                                {
+                                    @foreach (var d in (IEnumerable<string>)ViewBag.Departments)
+                                    {
+                                        <option value="@d">@d</option>
+                                    }
+                                }
+                            </select>
+                        </div>
                     </div>
 
-                    <hr>
-
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Note:</strong> The user will be able to login immediately after creation using their email and password.
-                    </div>
-
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="d-flex justify-content-end">
-                                <button type="submit" class="btn btn-primary me-2" id="submitBtn">
-                                    <i class="fas fa-save me-2"></i>Create User
-                                </button>
-                                <a asp-action="Users" class="btn btn-secondary">
-                                    <i class="fas fa-times me-2"></i>Cancel
-                                </a>
+                    <div class="row g-2 align-items-center mb-2">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="UserType" class="form-label mb-0 fw-semibold">User Type</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select asp-for="UserType" class="form-select form-select-sm">
+                                <option value="">Select type</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Manager">Manager</option>
+                                <option value="CRO">CRO</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label mb-0 fw-semibold">Status</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="form-check form-switch mb-0">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" checked />
+                                <label asp-for="IsActive" class="form-check-label small">Active User</label>
                             </div>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
 
-        <!-- Password Requirements Card -->
-        <div class="card mt-3">
-            <div class="card-body">
-                <h6 class="mb-3">
-                    <i class="fas fa-lock me-2"></i>Password Requirements
-                </h6>
-                <ul class="list-unstyled mb-0">
-                    <li class="mb-2">
-                        <i class="fas fa-check-circle text-success me-2"></i>
-                        Minimum 6 characters
-                    </li>
-                    <li class="mb-2">
-                        <i class="fas fa-check-circle text-success me-2"></i>
-                        Use a strong, unique password
-                    </li>
-                    <li>
-                        <i class="fas fa-check-circle text-success me-2"></i>
-                        Avoid common passwords
-                    </li>
-                </ul>
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header py-1 px-3 pms-settings-edit-header">
+                <h6 class="mb-0">Module Rights</h6>
+            </div>
+            <div class="card-body py-3 px-3 bg-white">
+                <p class="text-muted small mb-2">No Access = no access; Read = view only; Author = write/create only; Edit = Create + Edit + Read; Admin = full CRUD.</p>
+                <div class="mb-2 d-flex flex-wrap gap-1 align-items-center">
+                    <span class="small text-muted me-1">Quick:</span>
+                    <button type="button" class="btn btn-outline-dark btn-sm py-0 px-2 js-set-all-permissions" data-permission="NoAccess">NoAccess</button>
+                    <button type="button" class="btn btn-outline-info btn-sm py-0 px-2 js-set-all-permissions" data-permission="Read">Read</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-2 js-set-all-permissions" data-permission="Author">Author</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm py-0 px-2 js-set-all-permissions" data-permission="Edit">Edit</button>
+                    <button type="button" class="btn btn-outline-success btn-sm py-0 px-2 js-set-all-permissions" data-permission="Admin">Admin</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0 pms-create-user-perms">
+                        <thead>
+                            <tr>
+                                <th>Module</th>
+                                <th style="width: 12rem;">Permission</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.ModuleKeys != null)
+                            {
+                                @foreach (var key in (string[])ViewBag.ModuleKeys)
+                                {
+                                    var currentPerm = "NoAccess";
+                                    var displayName = key switch
+                                    {
+                                        "PaymentAudit" => "Audit",
+                                        "DuplicateFileTransfer" => "Duplicate file transfer",
+                                        "Account" => "User profile & login screens",
+                                        "AccountsManagement" => "Accounts Management",
+                                        _ => key
+                                    };
+                                    <tr>
+                                        <td>@displayName</td>
+                                        <td>
+                                            <select name="ModulePermissions_@key" class="form-select form-select-sm module-permission-select">
+                                                @if (ViewBag.PermissionOptions != null)
+                                                {
+                                                    @foreach (var opt in (string[])ViewBag.PermissionOptions)
+                                                    {
+                                                        if (opt == currentPerm)
+                                                        {
+                                                            <option value="@opt" selected>@opt</option>
+                                                        }
+                                                        else
+                                                        {
+                                                            <option value="@opt">@opt</option>
+                                                        }
+                                                    }
+                                                }
+                                            </select>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+
+        <div class="d-flex justify-content-end gap-1">
+            <button type="submit" class="btn btn-sm btn-primary py-0 px-2" id="submitBtn">
+                <i class="fas fa-save me-1"></i>Create User
+            </button>
+            <a asp-action="Users" class="btn btn-sm btn-outline-secondary py-0 px-2">Cancel</a>
+        </div>
+    </form>
 </div>
+
+<style>
+    .pms-settings-edit-title {
+        font-size: 1.05rem;
+        font-weight: 650;
+        color: #000;
+    }
+
+    .pms-settings-edit-header {
+        background: #E8EAE4 !important;
+        border-bottom: 1px solid #d1d5db;
+        color: #000;
+    }
+
+    .pms-settings-edit-header h6 {
+        color: #000 !important;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .pms-create-user .form-label,
+    .pms-create-user .form-control,
+    .pms-create-user .form-select,
+    .pms-create-user small,
+    .pms-create-user td {
+        color: #000;
+    }
+
+    .pms-create-user-perms thead th {
+        background: #E8EAE4 !important;
+        color: #334155 !important;
+        font-size: 0.75rem;
+        font-weight: 600;
+        border-bottom: 1px solid #d1d5db;
+    }
+</style>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
     <script>
-        $(document).ready(function() {
-            // Password matching validation
+        $(document).ready(function () {
             function checkPasswordMatch() {
                 var password = $('#PasswordHash').val();
                 var confirmPassword = $('#ConfirmPassword').val();
                 var submitBtn = $('#submitBtn');
                 var matchMsg = $('#passwordMatch');
-                
+
                 if (confirmPassword && password !== confirmPassword) {
                     matchMsg.show();
                     submitBtn.prop('disabled', true);
@@ -246,31 +254,28 @@
 
             $('#PasswordHash, #ConfirmPassword').on('keyup', checkPasswordMatch);
 
-            $(document).on('click', '.js-set-all-permissions', function() {
-                var permission = $(this).data('permission');
-                $('.module-permission-select').val(permission);
+            $(document).on('click', '.js-set-all-permissions', function () {
+                $('.module-permission-select').val($(this).data('permission'));
             });
 
-            // Form submission validation
-            $('form').on('submit', function(e) {
+            $('#createUserForm').on('submit', function (e) {
                 var password = $('#PasswordHash').val();
                 var confirmPassword = $('#ConfirmPassword').val();
-                
+
                 if (password !== confirmPassword) {
                     e.preventDefault();
                     alert('Passwords do not match!');
                     return false;
                 }
-                
+
                 if (password.length < 6) {
                     e.preventDefault();
                     alert('Password must be at least 6 characters long!');
                     return false;
                 }
-                
+
                 return true;
             });
         });
     </script>
 }
-

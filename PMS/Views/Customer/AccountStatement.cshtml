@@ -163,15 +163,19 @@
                         : sch.PaymentDescription.Trim();
                     var currentCustomerId = Model.CustomerID?.Trim();
                     var payments = (sch.Payments ?? new List<PMS.Models.Payment>())
-                        .Where(p => string.Equals(p.AuditStatus, "Approved", StringComparison.OrdinalIgnoreCase)
-                            && string.Equals(p.CustomerID?.Trim(), currentCustomerId, StringComparison.OrdinalIgnoreCase)
-                            && !string.Equals(p.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+                        .Where(p => string.Equals(p.CustomerID?.Trim(), currentCustomerId, StringComparison.OrdinalIgnoreCase)
+                            && !string.Equals(p.Status, "Pending", StringComparison.OrdinalIgnoreCase)
+                            && !string.Equals(p.AuditStatus, "Declined", StringComparison.OrdinalIgnoreCase)
+                            && !string.IsNullOrWhiteSpace(sch.ScheduleID)
+                            && string.Equals(p.ScheduleID?.Trim(), sch.ScheduleID.Trim(), StringComparison.OrdinalIgnoreCase))
                         .OrderBy(p => p.PaymentDate)
                         .ThenBy(p => p.PaymentID)
                         .ToList();
                     var amountPaid = payments.Sum(p => p.Amount);
                     var amountDue = Math.Max(0m, sch.Amount - amountPaid);
-                    var surchargeData = !string.IsNullOrWhiteSpace(sch.ScheduleID) && surchargeBySchedule.TryGetValue(sch.ScheduleID, out var mapped)
+                    var surchargeData = !string.IsNullOrWhiteSpace(sch.ScheduleID)
+                        && (surchargeBySchedule.TryGetValue(sch.ScheduleID.Trim(), out var mapped)
+                            || surchargeBySchedule.TryGetValue(sch.ScheduleID, out mapped))
                         ? mapped
                         : null;
                     var surcharge = surchargeData?.Surcharge ?? 0m;

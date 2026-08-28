@@ -1,50 +1,47 @@
 ========================================
-PMS Application Deployment Commands
+PMS deployment — quick reference
 ========================================
 
-Run these commands from the project root directory (d:\PMS\PMS\PMS)
+Repo project folder:
+  d:\Dotnet\CoreCursor\PMSCoditium\PMS
 
-OPTION 1: Using PowerShell Script (Recommended)
-------------------------------------------------
-cd d:\PMS\PMS\PMS
-powershell -ExecutionPolicy Bypass -File .\DeployToIIS.ps1
+----------------------------------------
+A) GCP Ubuntu (production — preferred)
+----------------------------------------
+Site:    https://pms.coditium.com
+Host:    34.131.132.158
+SSH:     coditiums@34.131.132.158
+Key:     D:\.ssh\Learning\gcp_coditium_vm
+App dir: /var/www/pms
+Service: pms.service
 
-OPTION 2: Using Batch File
----------------------------
-cd d:\PMS\PMS\PMS
-.\DeployToIIS.bat
+From PowerShell:
+  cd d:\Dotnet\CoreCursor\PMSCoditium\PMS
+  powershell -ExecutionPolicy Bypass -File .\deploy-gcp.ps1
 
-OPTION 3: Manual Commands
---------------------------
-cd d:\PMS\PMS\PMS
+Optional overrides:
+  .\deploy-gcp.ps1 -SshUser coditiums -IdentityFile "D:\.ssh\Learning\gcp_coditium_vm"
 
-# Clean previous build
-dotnet clean PMS.csproj --configuration Release
+Scripts:
+  deploy-gcp.ps1         — publish, upload, run remote script
+  deploy-gcp-remote.sh   — unpack + systemd/nginx on the VM
 
-# Restore packages
-dotnet restore PMS.csproj
+Do NOT deploy to /var/www/pms/app (stale path). Live unit uses /var/www/pms.
 
-# Build in Release mode
-dotnet build PMS.csproj --configuration Release --no-restore
+----------------------------------------
+B) Local / on-prem IIS (Windows)
+----------------------------------------
+Publish scripts (still valid for Windows IIS targets):
+  DeployToIIS.ps1
+  DeployToIIS.bat
+  DeployToIIS_Unlocked.bat   — when obj\Release is file-locked
 
-# Publish to deployment folder
-dotnet publish PMS.csproj --configuration Release --output "D:\PMSDeploy" --no-build --self-contained false --runtime win-x64
+Default publish folder is often D:\PMSDeploy or C:\PMSDeploy — confirm IIS site path.
 
-========================================
-Deployment Target
-========================================
-Location: D:\PMSDeploy
-IIS Site: PMS
-URL: http://172.20.228.2:84/
+----------------------------------------
+C) Other hosts (separate products / VPS)
+----------------------------------------
+  deploy-hostinger.ps1
+  deploy-dlpestate.ps1
 
-========================================
-After Deployment
-========================================
-1. Verify files are in D:\PMSDeploy
-2. Ensure IIS site 'PMS' physical path points to D:\PMSDeploy
-3. Restart IIS site if needed:
-   C:\Windows\System32\inetsrv\appcmd.exe stop site "PMS"
-   C:\Windows\System32\inetsrv\appcmd.exe start site "PMS"
-4. Test: http://172.20.228.2:84/
-
-========================================
+These are not the Coditium GCP PMS production deploy.

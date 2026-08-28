@@ -226,7 +226,7 @@ namespace PMS.Data
             modelBuilder.Entity<PaymentPlan>(entity =>
             {
                 entity.HasKey(e => e.PlanID);
-                entity.Property(e => e.PlanID).HasMaxLength(10);
+                entity.Property(e => e.PlanID).HasMaxLength(10).HasColumnType("char(10)");
                 entity.Property(e => e.ProjectID).HasMaxLength(10);
                 entity.Property(e => e.RegisteredSize).HasMaxLength(100);
                 entity.Property(e => e.SubProject).HasMaxLength(100);
@@ -245,8 +245,8 @@ namespace PMS.Data
             modelBuilder.Entity<PaymentSchedule>(entity =>
             {
                 entity.HasKey(e => e.ScheduleID);
-                entity.Property(e => e.ScheduleID).HasMaxLength(10);
-                entity.Property(e => e.PlanID).HasMaxLength(10);
+                entity.Property(e => e.ScheduleID).HasMaxLength(10).HasColumnType("char(10)");
+                entity.Property(e => e.PlanID).HasMaxLength(10).HasColumnType("char(10)");
                 entity.Property(e => e.PaymentDescription).HasMaxLength(250);
                 entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.SurchargeRate).HasColumnType("decimal(18,6)");
@@ -261,9 +261,9 @@ namespace PMS.Data
             modelBuilder.Entity<Customer>(entity =>
             {
                 entity.HasKey(e => e.CustomerID);
-                entity.Property(e => e.CustomerID).HasMaxLength(10);
+                entity.Property(e => e.CustomerID).HasMaxLength(10).HasColumnType("char(10)");
                 entity.Property(e => e.RegID).HasMaxLength(10);
-                entity.Property(e => e.PlanID).HasMaxLength(10).IsRequired(false);
+                entity.Property(e => e.PlanID).HasMaxLength(10).HasColumnType("char(10)").IsRequired(false);
                 entity.Property(e => e.ProjectID).HasMaxLength(10).IsRequired(false);
                 entity.Property(e => e.FullName).HasMaxLength(150);
                 entity.Property(e => e.FatherName).HasMaxLength(150);
@@ -592,9 +592,9 @@ namespace PMS.Data
             {
                 entity.ToTable(tb => tb.HasTrigger("TR_Payments_Metadata"));
                 entity.HasKey(e => e.PaymentID);
-                entity.Property(e => e.PaymentID).HasMaxLength(10);
-                entity.Property(e => e.ScheduleID).HasMaxLength(10);
-                entity.Property(e => e.CustomerID).HasMaxLength(10);
+                entity.Property(e => e.PaymentID).HasMaxLength(10).HasColumnType("char(10)");
+                entity.Property(e => e.ScheduleID).HasMaxLength(10).HasColumnType("char(10)");
+                entity.Property(e => e.CustomerID).HasMaxLength(10).HasColumnType("char(10)");
                 entity.Property(e => e.Amount).HasColumnType("decimal(18,2)");
                 entity.Property(e => e.Method).HasMaxLength(50).HasColumnName("PaymentMethod");
                 entity.Property(e => e.ReferenceNo).HasMaxLength(100).HasColumnName("ReferenceNumber");

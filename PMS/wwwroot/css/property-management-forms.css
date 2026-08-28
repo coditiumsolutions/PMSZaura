@@ -409,19 +409,25 @@
     font-size: 0.9rem;
 }
 
-/* Customer Edit attachment sections: lighter headers, white body */
+/* Customer Edit attachment sections: mineral light headers, compact height */
 .pms-customer-attachment-section .card-header,
 .pms-saas-form .tab-pane .pms-customer-attachment-section .card-header {
-    background: linear-gradient(135deg, #7eb6e8 0%, #a8d0f0 100%) !important;
+    background: #E8EAE4 !important;
     border: none !important;
-    padding: 0.7rem 1.15rem;
+    padding: 0.3rem 0.85rem !important;
+    min-height: 0;
 }
 
 .pms-saas-form .tab-pane .pms-customer-attachment-section .card-header h6,
 .pms-customer-attachment-section .card-header h6 {
     color: #0f172a !important;
-    font-size: 1.05rem !important;
+    font-size: 0.8rem !important;
     font-weight: 600 !important;
+    line-height: 1.25 !important;
+}
+
+.pms-customer-attachment-section .card-header h6 .fas {
+    font-size: 0.85em;
 }
 
 .pms-customer-attachment-section .card-body {

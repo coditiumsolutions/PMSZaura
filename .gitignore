@@ -369,3 +369,18 @@ PMS/App_Data/
 .ssh/
 *.pem
 
+# App configuration containing connection strings and credentials.
+# Use appsettings.Example.json as the template for a new environment.
+PMS/appsettings.json
+PMS/appsettings.Development.json
+PMS/appsettings.Production.json
+!PMS/appsettings.Example.json
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.local.json
+**/secrets.json
+**/credentials.json
+

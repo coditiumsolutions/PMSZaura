@@ -4,7 +4,7 @@
 $ErrorActionPreference = "Stop"
 
 # Configuration
-$ProjectPath = "D:\PMS\PMS\PMS"
+$ProjectPath = $PSScriptRoot
 $DeployPath = "D:\PMSDeploy"
 $AppPoolName = "PMSAppPool"
 $SiteName = "PMS"

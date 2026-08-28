@@ -64,7 +64,7 @@ namespace PMS.Controllers
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 var homePerm = await _modulePermission.GetPermissionAsync(userId, "Home");
                 if (_modulePermission.CanRead(homePerm))
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Coditium", "Home");
                 else
                     return RedirectToAction("Workspace", "Home");
             }
@@ -424,7 +424,7 @@ namespace PMS.Controllers
 
             var homePerm = await _modulePermission.GetPermissionAsync(user.UserID, "Home");
             if (_modulePermission.CanRead(homePerm))
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Coditium", "Home");
             return RedirectToAction("Workspace", "Home");
         }
 
@@ -657,6 +657,18 @@ namespace PMS.Controllers
             ViewBag.ModuleKeys = ModuleKeys;
             ViewBag.PermissionOptions = PermissionOptions;
             return View(user);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public IActionResult UserDetails(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+            {
+                return NotFound();
+            }
+
+            return RedirectToAction(nameof(EditUser), new { id });
         }
 
         [HttpGet]

@@ -14,7 +14,7 @@
 
 ## 1. Run the deployment script
 
-From the project folder (e.g. `d:\PMS\PMS\PMS`):
+From the project folder (`d:\Dotnet\CoreCursor\PMSCoditium\PMS`):
 
 **Option A – Batch file**
 ```cmd
@@ -25,6 +25,8 @@ From the project folder (e.g. `d:\PMS\PMS\PMS`):
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\DeployToIIS.ps1
 ```
+
+For **GCP Ubuntu production**, use [DEPLOY_GCP.md](./DEPLOY_GCP.md) / `deploy-gcp.ps1` instead.
 
 This will:
 - Clean, restore, and build in **Release**

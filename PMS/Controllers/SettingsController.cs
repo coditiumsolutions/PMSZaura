@@ -43,12 +43,14 @@ namespace PMS.Controllers
         {
             var denied = await EnsurePermissionAsync("Read");
             if (denied != null) return denied;
+
+            // Load every Configuration row (no filters / joins that could drop records).
             var configurations = await _context.Configurations
-                .Include(c => c.UpdatedByUser)
-                .OrderBy(c => c.Category)
+                .AsNoTracking()
+                .OrderBy(c => c.Category ?? string.Empty)
                 .ThenBy(c => c.ConfigKey)
                 .ToListAsync();
-            
+
             return View(configurations);
         }
 
@@ -102,7 +104,7 @@ namespace PMS.Controllers
         {
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
-            return View();
+            return View(new Configuration { Category = "General" });
         }
 
         [HttpPost]
@@ -160,14 +162,25 @@ namespace PMS.Controllers
         {
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
+
+            if (string.IsNullOrWhiteSpace(configuration.ConfigKey))
+                return NotFound();
+
+            var existing = await _context.Configurations
+                .FirstOrDefaultAsync(c => c.ConfigKey == configuration.ConfigKey);
+            if (existing == null)
+                return NotFound();
+
             if (ModelState.IsValid)
             {
                 try
                 {
-                    configuration.UpdatedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                    configuration.UpdatedAt = DateTime.Now;
+                    existing.Category = configuration.Category;
+                    existing.ConfigValue = configuration.ConfigValue;
+                    existing.Description = configuration.Description;
+                    existing.UpdatedBy = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                    existing.UpdatedAt = DateTime.Now;
 
-                    _context.Update(configuration);
                     await _context.SaveChangesAsync();
 
                     TempData["Success"] = "Configuration updated successfully.";

@@ -1017,6 +1017,16 @@
     font-size: 0.8125rem;
     border-radius: 0;
     border: 1.5px solid #334155;
+    color: #1e3a8a;
+}
+
+.pms-customer-create .form-control::placeholder {
+    color: #64748b;
+}
+
+.pms-customer-create .form-select option,
+.pms-customer-create .form-check-label {
+    color: #1e3a8a;
 }
 
 .pms-customer-create .form-control:focus,

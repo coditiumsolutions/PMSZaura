@@ -367,6 +367,7 @@ namespace PMS.Controllers
 
             var paymentPlan = await _context.PaymentPlans
                 .Include(pp => pp.PaymentSchedules)
+                    .ThenInclude(ps => ps.Payments)
                 .Include(pp => pp.Customers)
                 .FirstOrDefaultAsync(pp => pp.PlanID == planId);
 
@@ -396,10 +397,20 @@ namespace PMS.Controllers
 
             try
             {
+                var customerIdTrimmed = customerId.Trim();
+
+                // char(10) keys may be space-padded — always compare with Trim()
                 var customer = await _context.Customers
                     .AsNoTracking()
-                    .Where(c => c.CustomerID == customerId.Trim() && (c.Status ?? "Active") == "Active")
-                    .Select(c => new { c.CustomerID, c.FullName, c.PlanID })
+                    .Where(c => c.CustomerID != null
+                        && c.CustomerID.Trim() == customerIdTrimmed
+                        && (c.Status ?? "Active") == "Active")
+                    .Select(c => new
+                    {
+                        CustomerID = c.CustomerID!,
+                        c.FullName,
+                        PlanID = c.PlanID
+                    })
                     .FirstOrDefaultAsync();
 
                 if (customer == null)
@@ -407,25 +418,45 @@ namespace PMS.Controllers
                     return Json(new { found = false, message = "Customer not found or inactive." });
                 }
 
-                if (string.IsNullOrWhiteSpace(customer.PlanID))
+                var planId = customer.PlanID?.Trim();
+                if (string.IsNullOrWhiteSpace(planId))
                 {
                     return Json(new { found = false, message = "Customer has no payment plan assigned." });
                 }
 
-                // Load schedules without Payments nav to avoid selecting new audit columns (works when DB has no CreatedBy/CreatedAt/LastModified yet)
-                var schedules = await _context.PaymentSchedules
+                var planName = await _context.PaymentPlans
                     .AsNoTracking()
-                    .Include(ps => ps.PaymentPlan)
-                    .Where(ps => ps.PlanID == customer.PlanID)
-                    .OrderBy(ps => ps.DueDate)
-                    .ToListAsync();
+                    .Where(pp => pp.PlanID != null && pp.PlanID.Trim() == planId)
+                    .Select(pp => pp.PlanName)
+                    .FirstOrDefaultAsync();
+
+                // Explicit plan filter + plan name from PaymentPlan (avoid wrong Include fix-up)
+                var schedules = await (
+                    from ps in _context.PaymentSchedules.AsNoTracking()
+                    join pp in _context.PaymentPlans.AsNoTracking()
+                        on ps.PlanID equals pp.PlanID
+                    where ps.PlanID != null && ps.PlanID.Trim() == planId
+                    orderby ps.DueDate, ps.InstallmentNo
+                    select new
+                    {
+                        ps.ScheduleID,
+                        PlanID = ps.PlanID!,
+                        PlanName = pp.PlanName,
+                        ps.PaymentDescription,
+                        ps.InstallmentNo,
+                        ps.DueDate,
+                        ps.Amount,
+                        ps.SurchargeApplied,
+                        ps.SurchargeRate
+                    }).ToListAsync();
 
                 var scheduleIds = schedules.Select(ps => ps.ScheduleID).ToList();
-                var customerIdTrimmed = customerId.Trim();
-                // Only sum payments made by this customer for each schedule (not all customers)
                 var paidBySchedule = await _context.Payments
                     .AsNoTracking()
-                    .Where(p => scheduleIds.Contains(p.ScheduleID) && p.CustomerID == customerIdTrimmed)
+                    .Where(p => p.ScheduleID != null
+                        && scheduleIds.Contains(p.ScheduleID)
+                        && p.CustomerID != null
+                        && p.CustomerID.Trim() == customerIdTrimmed)
                     .GroupBy(p => p.ScheduleID)
                     .Select(g => new { ScheduleID = g.Key, TotalPaid = g.Sum(p => p.Amount) })
                     .ToListAsync();
@@ -438,8 +469,9 @@ namespace PMS.Controllers
                         var outstanding = Math.Max(0m, ps.Amount - paid);
                         return new
                         {
-                            scheduleId = ps.ScheduleID,
-                            planName = ps.PaymentPlan?.PlanName,
+                            scheduleId = ps.ScheduleID.Trim(),
+                            planId = ps.PlanID.Trim(),
+                            planName = string.IsNullOrWhiteSpace(ps.PlanName) ? planName : ps.PlanName,
                             paymentDescription = ps.PaymentDescription,
                             installmentNo = ps.InstallmentNo,
                             dueDate = ps.DueDate.ToString("dd-MM-yyyy"),
@@ -455,14 +487,17 @@ namespace PMS.Controllers
                     .ToList();
 
                 var totalDueSurcharge = await ComputeCustomerDueSurchargeAsync(
-                    customer.PlanID,
+                    planId,
                     customerIdTrimmed,
                     DateTime.Now.Date);
+
                 return Json(new
                 {
                     found = true,
-                    customerId = customer.CustomerID,
-                    fullName = string.IsNullOrWhiteSpace(customer.FullName) ? "(No Name)" : customer.FullName,
+                    customerId = customerIdTrimmed,
+                    fullName = string.IsNullOrWhiteSpace(customer.FullName) ? "(No Name)" : customer.FullName.Trim(),
+                    planId = planId,
+                    planName = planName ?? "",
                     schedules = dueSchedules,
                     totalDueSurcharge = totalDueSurcharge
                 });
@@ -471,6 +506,63 @@ namespace PMS.Controllers
             {
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Step 1: pick a customer (searchable list), then continue to RecordPayment form.
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> AddPayment(string projectFilter = "All", string searchTerm = "")
+        {
+            var denied = await EnsurePermissionAsync("Edit");
+            if (denied != null) return denied;
+
+            var projects = await _context.Projects
+                .AsNoTracking()
+                .OrderBy(p => p.ProjectName)
+                .Select(p => new { p.ProjectID, p.ProjectName })
+                .ToListAsync();
+            ViewBag.Projects = projects;
+            ViewBag.ProjectFilter = projectFilter ?? "All";
+            ViewBag.SearchTerm = searchTerm ?? "";
+
+            var query = _context.Customers
+                .AsNoTracking()
+                .Include(c => c.Project)
+                .Include(c => c.PaymentPlan)
+                    .ThenInclude(p => p!.Project)
+                .Include(c => c.Allotments)
+                .Where(c => (c.Status ?? "Active") == "Active")
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(projectFilter) && projectFilter != "All")
+            {
+                query = query.Where(c =>
+                    c.ProjectID == projectFilter ||
+                    (c.PaymentPlan != null && c.PaymentPlan.ProjectID == projectFilter));
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+                query = query.Where(c =>
+                    (c.CustomerID != null && c.CustomerID.ToLower().Contains(term)) ||
+                    (c.FormNo != null && c.FormNo.ToLower().Contains(term)) ||
+                    (c.FullName != null && c.FullName.ToLower().Contains(term)) ||
+                    (c.CNIC != null && c.CNIC.ToLower().Contains(term)) ||
+                    (c.Phone != null && c.Phone.ToLower().Contains(term)) ||
+                    (c.MobileNo != null && c.MobileNo.ToLower().Contains(term)) ||
+                    (c.MobileNo2 != null && c.MobileNo2.ToLower().Contains(term)) ||
+                    (c.Email != null && c.Email.ToLower().Contains(term)));
+            }
+
+            var customers = await query
+                .OrderBy(c => c.FullName)
+                .ThenBy(c => c.CustomerID)
+                .Take(500)
+                .ToListAsync();
+
+            return View(customers);
         }
 
         public async Task<IActionResult> RecordPayment(string scheduleId = null, string customerId = null)
@@ -513,7 +605,7 @@ namespace PMS.Controllers
             }
             else if (!string.IsNullOrWhiteSpace(customerId))
             {
-                ViewBag.PreSelectedCustomerId = customerId;
+                ViewBag.PreSelectedCustomerId = customerId.Trim();
             }
 
             ViewBag.PaymentStatuses = new List<string> { "Pending", "Paid", "Partially Paid", "Surcharge Paid" };
@@ -578,7 +670,9 @@ namespace PMS.Controllers
 
             var customer = await _context.Customers
                 .AsNoTracking()
-                .Where(c => c.CustomerID == customerId.Trim() && (c.Status ?? "Active") == "Active")
+                .Where(c => c.CustomerID != null
+                    && c.CustomerID.Trim() == customerId.Trim()
+                    && (c.Status ?? "Active") == "Active")
                 .Select(c => new { c.CustomerID, c.PlanID })
                 .FirstOrDefaultAsync();
 
@@ -588,6 +682,7 @@ namespace PMS.Controllers
                 return RedirectToAction(nameof(RecordPayment));
             }
 
+            var customerPlanId = customer.PlanID?.Trim();
             var isSurchargePayment = string.Equals(scheduleId?.Trim(), "SURCHARGE_PAYMENT", StringComparison.OrdinalIgnoreCase);
             PaymentSchedule? schedule = null;
             decimal totalDue = 0m;
@@ -596,7 +691,7 @@ namespace PMS.Controllers
             if (isSurchargePayment)
             {
                 totalDue = await ComputeCustomerDueSurchargeAsync(
-                    customer.PlanID,
+                    customerPlanId,
                     customerId.Trim(),
                     DateTime.Now.Date);
 
@@ -616,32 +711,35 @@ namespace PMS.Controllers
             }
             else
             {
+                var scheduleIdTrimmed = scheduleId?.Trim();
                 schedule = await _context.PaymentSchedules
                     .AsNoTracking()
                     .Include(ps => ps.Payments)
-                    .FirstOrDefaultAsync(ps => ps.ScheduleID == scheduleId);
+                    .FirstOrDefaultAsync(ps => ps.ScheduleID != null && ps.ScheduleID.Trim() == scheduleIdTrimmed);
 
                 if (schedule == null)
                 {
                     TempData["Error"] = "Installment not found.";
-                    return RedirectToAction(nameof(RecordPayment), new { customerId });
+                    return RedirectToAction(nameof(RecordPayment), new { customerId = customerId.Trim() });
                 }
 
-                if (schedule.PlanID != customer.PlanID)
+                if (!string.Equals(schedule.PlanID?.Trim(), customerPlanId, StringComparison.OrdinalIgnoreCase))
                 {
                     TempData["Error"] = "Selected installment does not belong to this customer's plan.";
-                    return RedirectToAction(nameof(RecordPayment), new { customerId });
+                    return RedirectToAction(nameof(RecordPayment), new { customerId = customerId.Trim() });
                 }
 
-                var paidSoFar = schedule.Payments?.Where(p => p.CustomerID == customerId.Trim()).Sum(p => p.Amount) ?? 0m;
+                var paidSoFar = schedule.Payments?
+                    .Where(p => p.CustomerID != null && p.CustomerID.Trim() == customerId.Trim())
+                    .Sum(p => p.Amount) ?? 0m;
                 totalDue = Math.Max(0m, schedule.Amount - paidSoFar);
                 if (amount > totalDue)
                 {
                     TempData["Error"] = $"Amount Received (PKR {amount:N0}) must not exceed Total Due for this installment (PKR {totalDue:N0}). You can record multiple partial payments.";
-                    return RedirectToAction(nameof(RecordPayment), new { customerId, scheduleId });
+                    return RedirectToAction(nameof(RecordPayment), new { customerId = customerId.Trim(), scheduleId = scheduleIdTrimmed });
                 }
 
-                normalizedScheduleId = scheduleId;
+                normalizedScheduleId = schedule.ScheduleID;
             }
 
             if (await HasCrossCustomerDuplicateReferenceAsync(customerId.Trim(), bankName, referenceNo))
@@ -662,7 +760,9 @@ namespace PMS.Controllers
                 ReferenceNo = referenceNo.Trim(),
                 BankName = bankName.Trim(),
                 Status = isSurchargePayment ? "Surcharge Paid" : status,
-                AccountHead = isSurchargePayment ? "Surcharge Payment" : null,
+                AccountHead = isSurchargePayment
+                    ? "Surcharge Payment"
+                    : (schedule?.PaymentDescription?.Trim()),
                 Remarks = isSurchargePayment
                     ? (string.IsNullOrWhiteSpace(remarks) ? "Surcharge payment." : $"Surcharge payment. {remarks}")
                     : remarks
@@ -740,9 +840,12 @@ namespace PMS.Controllers
                 return 0m;
             }
 
+            var planIdTrimmed = planId.Trim();
+            var customerIdTrimmed = customerId.Trim();
+
             var schedules = await _context.PaymentSchedules
                 .AsNoTracking()
-                .Where(ps => ps.PlanID == planId)
+                .Where(ps => ps.PlanID != null && ps.PlanID.Trim() == planIdTrimmed)
                 .Select(ps => new PaymentSchedule
                 {
                     ScheduleID = ps.ScheduleID,
@@ -762,7 +865,8 @@ namespace PMS.Controllers
                 .AsNoTracking()
                 .Where(p => p.ScheduleID != null
                     && scheduleIds.Contains(p.ScheduleID)
-                    && p.CustomerID == customerId.Trim())
+                    && p.CustomerID != null
+                    && p.CustomerID.Trim() == customerIdTrimmed)
                 .ToListAsync();
 
             var paymentLookup = payments
@@ -1608,6 +1712,25 @@ namespace PMS.Controllers
             return SplitCsvValues(configValue);
         }
 
+        private async Task<List<string>> GetPaymentHeadOptionsAsync(string? currentValue = null)
+        {
+            var configValue = await _context.Configurations
+                .AsNoTracking()
+                .Where(c => c.ConfigKey == "PaymentHeads")
+                .Select(c => c.ConfigValue)
+                .FirstOrDefaultAsync();
+
+            var heads = SplitCsvValues(configValue);
+            var current = currentValue?.Trim();
+            if (!string.IsNullOrWhiteSpace(current)
+                && !heads.Any(h => string.Equals(h, current, StringComparison.OrdinalIgnoreCase)))
+            {
+                heads.Insert(0, current);
+            }
+
+            return heads;
+        }
+
         private async Task<bool> HasCrossCustomerDuplicateReferenceAsync(string? customerId, string? bankName, string? referenceNo, string? excludePaymentId = null)
         {
             var normalizedCustomerId = (customerId ?? string.Empty).Trim();
@@ -1747,6 +1870,7 @@ namespace PMS.Controllers
             ViewBag.OthersAmountSum = plan.PaymentSchedules
                 .Where(ps => ps.ScheduleID != schedule.ScheduleID)
                 .Sum(ps => ps.Amount);
+            ViewBag.PaymentHeads = await GetPaymentHeadOptionsAsync(schedule.PaymentDescription);
 
             return View(schedule);
         }

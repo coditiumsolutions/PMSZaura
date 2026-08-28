@@ -42,7 +42,17 @@ builder.Services.AddSingleton<PMS.Services.ITotpAuthenticatorService, PMS.Servic
 builder.Services.AddScoped<PMS.Services.ITwoFactorConfigService, PMS.Services.TwoFactorConfigService>();
 builder.Services.AddScoped<ISurchargeService, SurchargeService>();
 builder.Services.AddScoped<IAccountStatementService, AccountStatementService>();
-builder.Services.AddScoped<IAccountStatementReportService, AccountStatementReportService>();
+builder.Services.Configure<ReportServiceOptions>(builder.Configuration.GetSection(ReportServiceOptions.SectionName));
+builder.Services.AddHttpClient(ReportServiceClient.HttpClientName, (sp, client) =>
+{
+    var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ReportServiceOptions>>().Value;
+    var baseUrl = string.IsNullOrWhiteSpace(options.BaseUrl)
+        ? "http://34.131.132.158:8000"
+        : options.BaseUrl.TrimEnd('/');
+    client.BaseAddress = new Uri(baseUrl + "/");
+    client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 10, 300));
+});
+builder.Services.AddScoped<IReportServiceClient, ReportServiceClient>();
 builder.Services.Configure<AmsPmsIntegrationOptions>(builder.Configuration.GetSection(AmsPmsIntegrationOptions.SectionName));
 builder.Services.AddScoped<IAmsPmsIntegrationService, AmsPmsIntegrationService>();
 builder.Services.AddScoped<AmsExportService>();
@@ -158,6 +168,15 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+var samplePagePath = Path.Combine(app.Environment.ContentRootPath, "..", "samplepage");
+if (Directory.Exists(samplePagePath))
+{
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        RequestPath = "/samplepage-assets",
+        FileProvider = new PhysicalFileProvider(samplePagePath)
+    });
+}
 var wellKnownPath = Path.Combine(app.Environment.ContentRootPath, "wwwroot", ".well-known");
 Directory.CreateDirectory(wellKnownPath);
 app.UseStaticFiles(new StaticFileOptions

@@ -64,7 +64,7 @@ namespace PMS.Services
                     .Include(c => c.JointOwners)
                     .Include(c => c.Allotments)
                         .ThenInclude(a => a.Property)
-                    .FirstOrDefaultAsync(c => c.CustomerID == customerIdTrimmed, cancellationToken);
+                    .FirstOrDefaultAsync(c => c.CustomerID != null && c.CustomerID.Trim() == customerIdTrimmed, cancellationToken);
             }
             else
             {
@@ -77,7 +77,7 @@ namespace PMS.Services
                     .Include(c => c.JointOwners)
                     .Include(c => c.Allotments)
                         .ThenInclude(a => a.Property)
-                    .FirstOrDefaultAsync(c => c.CustomerID == customerIdTrimmed, cancellationToken);
+                    .FirstOrDefaultAsync(c => c.CustomerID != null && c.CustomerID.Trim() == customerIdTrimmed, cancellationToken);
             }
 
             if (customer == null)
@@ -99,9 +99,12 @@ namespace PMS.Services
             {
                 var otherPaymentsRaw = await _context.Payments
                     .AsNoTracking()
-                    .Where(p => p.CustomerID == customer.CustomerID
+                    .Where(p => p.CustomerID != null
+                        && p.CustomerID.Trim() == customerIdTrimmed
                         && p.ScheduleID == null
-                        && p.AuditStatus == "Approved")
+                        && (p.AuditStatus == null
+                            || p.AuditStatus == "Approved"
+                            || p.AuditStatus == "Pending"))
                     .OrderBy(p => p.PaymentDate)
                     .ToListAsync(cancellationToken);
                 otherPayments = otherPaymentsRaw
@@ -121,7 +124,8 @@ namespace PMS.Services
         }
 
         /// <summary>
-        /// Loads approved-scope payments for this customer and assigns each to its PaymentSchedule by ScheduleID.
+        /// Loads payments for this customer and assigns each to its PaymentSchedule by ScheduleID
+        /// (aligned to that schedule's PaymentDescription / InstallmentNo).
         /// </summary>
         private async Task AttachPaymentsByScheduleAsync(
             string customerIdTrimmed,
@@ -135,25 +139,34 @@ namespace PMS.Services
             var scheduleIds = scheduleList
                 .Select(s => s.ScheduleID)
                 .Where(id => !string.IsNullOrWhiteSpace(id))
+                .Select(id => id!.Trim())
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToList();
             if (scheduleIds.Count == 0)
                 return;
 
             var paymentsList = await _context.Payments.AsNoTracking()
-                .Where(p => p.CustomerID == customerIdTrimmed
+                .Where(p => p.CustomerID != null
+                    && p.CustomerID.Trim() == customerIdTrimmed
                     && p.ScheduleID != null
-                    && scheduleIds.Contains(p.ScheduleID))
+                    && (p.AuditStatus == null || p.AuditStatus != "Declined"))
                 .ToListAsync(cancellationToken);
 
+            // Keep only payments whose ScheduleID belongs to this customer's plan schedules
+            // (each schedule row is PaymentDescription + InstallmentNo).
+            var scheduleIdSet = new HashSet<string>(scheduleIds, StringComparer.OrdinalIgnoreCase);
+            paymentsList = paymentsList
+                .Where(p => scheduleIdSet.Contains(p.ScheduleID!.Trim()))
+                .ToList();
+
             var bySchedule = paymentsList
-                .GroupBy(p => p.ScheduleID!, StringComparer.OrdinalIgnoreCase)
+                .GroupBy(p => p.ScheduleID!.Trim(), StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => (ICollection<Payment>)g.ToList(), StringComparer.OrdinalIgnoreCase);
 
             foreach (var schedule in scheduleList)
             {
-                if (!string.IsNullOrWhiteSpace(schedule.ScheduleID)
-                    && bySchedule.TryGetValue(schedule.ScheduleID, out var matched))
+                var key = schedule.ScheduleID?.Trim();
+                if (!string.IsNullOrWhiteSpace(key) && bySchedule.TryGetValue(key, out var matched))
                     schedule.Payments = matched;
                 else
                     schedule.Payments = new List<Payment>();

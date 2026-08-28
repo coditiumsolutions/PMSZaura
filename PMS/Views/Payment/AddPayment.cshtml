@@ -1,0 +1,209 @@
+@model IEnumerable<PMS.Models.Customer>
+@{
+    ViewData["Title"] = "Add Payment";
+    var customerCount = Model?.Count() ?? 0;
+    var projectFilter = ViewBag.ProjectFilter as string ?? "All";
+    var searchTerm = ViewBag.SearchTerm as string ?? "";
+    var recordPaymentUrl = Url.Action("RecordPayment", "Payment");
+}
+
+<div class="pms-payment-listing pms-listing-page pms-customer-listing">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <div>
+            <h5 class="pms-grid-title mb-0">Add Payment</h5>
+            <small class="text-muted">Select a customer, then click Add to open the payment form</small>
+        </div>
+        <span class="badge rounded-pill pms-record-badge">@customerCount customer@(customerCount == 1 ? "" : "s")</span>
+    </div>
+
+    <form method="get" asp-action="AddPayment" class="mb-2" id="addPaymentSearchForm">
+        <div class="pms-customer-search-wrap pms-listing-search-wrap pms-customer-search-panel">
+            <div class="row g-1 align-items-center flex-lg-nowrap pms-customer-search-fields">
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="pms-compact-field pms-select-dropdown">
+                        <label for="projectFilter" class="visually-hidden">Project</label>
+                        <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()" aria-label="Project">
+                            <option value="All" selected="@(projectFilter == "All")">All Projects</option>
+                            @if (ViewBag.Projects != null)
+                            {
+                                @foreach (var project in ViewBag.Projects)
+                                {
+                                    <option value="@project.ProjectID" selected="@(projectFilter == project.ProjectID)">
+                                        @project.ProjectName
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-lg pms-customer-search-term-field">
+                    <div class="pms-compact-field">
+                        <label for="searchTerm" class="visually-hidden">Search Customer</label>
+                        <input type="text"
+                               name="searchTerm"
+                               id="searchTerm"
+                               class="form-control"
+                               placeholder="Search by name, Customer ID, CNIC, phone, email…"
+                               aria-label="Search Customer"
+                               value="@searchTerm" />
+                    </div>
+                </div>
+                <div class="col-12 col-lg-auto">
+                    <div class="pms-compact-field pms-customer-search-actions">
+                        <div class="d-flex flex-nowrap gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                            </button>
+                            <button type="button" id="btnContinueAddPayment" class="btn btn-success btn-sm" disabled>
+                                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add
+                            </button>
+                            <a asp-action="CustomerPayments" class="btn btn-outline-secondary btn-sm">
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div id="addPaymentSelectionHint" class="alert alert-light border py-2 small mb-2" role="status">
+        <i class="bi bi-info-circle me-1"></i>Select one customer below, then click <strong>Add</strong> to record a payment.
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="card pms-grid-card pms-listing-flat pms-saas-grid mb-3">
+            <div class="card-body py-2">
+                <div class="table-responsive pms-saas-table-wrap">
+                    <table class="table pms-saas-table mb-0" id="addPaymentCustomersTable">
+                        <thead>
+                            <tr>
+                                <th class="pms-saas-th-check" style="width: 2.5rem;">
+                                    <span class="visually-hidden">Select</span>
+                                </th>
+                                <th>Customer ID</th>
+                                <th>Full Name</th>
+                                <th>Project</th>
+                                <th>Allotment Status</th>
+                                <th>CNIC</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var customer in Model)
+                            {
+                                var projectName = customer.PaymentPlan?.Project?.ProjectName
+                                    ?? customer.Project?.ProjectName;
+                                var custStatus = customer.Status ?? "Active";
+                                var customerId = (customer.CustomerID ?? "").Trim();
+                                <tr class="pms-listing-row pms-add-payment-row"
+                                    data-customer-id="@customerId">
+                                    <td class="pms-saas-td-check" data-label="Select">
+                                        <input type="radio"
+                                               class="add-payment-customer-radio pms-saas-checkbox"
+                                               name="selectedCustomerForPayment"
+                                               value="@customerId"
+                                               aria-label="Select customer @customerId"
+                                               @(string.IsNullOrWhiteSpace(customerId) ? "disabled" : "") />
+                                    </td>
+                                    <td data-label="Customer ID">
+                                        <span class="pms-cell-primary-title text-primary">@customerId</span>
+                                    </td>
+                                    <td data-label="Full Name">
+                                        <span class="pms-cell-primary-title">@customer.FullName</span>
+                                    </td>
+                                    <td data-label="Project">
+                                        @if (!string.IsNullOrWhiteSpace(projectName))
+                                        {
+                                            <span class="pms-pill pms-pill--info">@projectName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">No project</span>
+                                        }
+                                    </td>
+                                    <td data-label="Allotment Status">
+                                        @if (customer.Allotments != null && customer.Allotments.Any())
+                                        {
+                                            <span class="pms-pill pms-pill--success">Allotted</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="pms-pill pms-pill--neutral">Not allotted</span>
+                                        }
+                                    </td>
+                                    <td data-label="CNIC">@(customer.CNIC ?? "")</td>
+                                    <td data-label="Status">
+                                        @if (custStatus == "Active")
+                                        { <span class="pms-pill pms-pill--success">@custStatus</span> }
+                                        else
+                                        { <span class="pms-pill pms-pill--neutral">@custStatus</span> }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+                <h5 class="text-muted">No customers found</h5>
+                <p class="text-muted mb-0">Try a different search term or project filter.</p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var recordUrl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(recordPaymentUrl));
+            var btn = document.getElementById('btnContinueAddPayment');
+            var radios = document.querySelectorAll('.add-payment-customer-radio');
+
+            function selectedId() {
+                var checked = document.querySelector('.add-payment-customer-radio:checked');
+                return checked ? checked.value : '';
+            }
+
+            function syncButton() {
+                if (!btn) return;
+                btn.disabled = !selectedId();
+            }
+
+            radios.forEach(function (radio) {
+                radio.addEventListener('change', syncButton);
+            });
+
+            document.querySelectorAll('.pms-add-payment-row').forEach(function (row) {
+                row.addEventListener('click', function (e) {
+                    if (e.target.closest('input, a, button, label')) return;
+                    var radio = row.querySelector('.add-payment-customer-radio');
+                    if (radio && !radio.disabled) {
+                        radio.checked = true;
+                        syncButton();
+                    }
+                });
+            });
+
+            if (btn) {
+                btn.addEventListener('click', function () {
+                    var id = selectedId();
+                    if (!id) {
+                        alert('Please select a customer first.');
+                        return;
+                    }
+                    window.location.href = recordUrl + (recordUrl.indexOf('?') >= 0 ? '&' : '?') + 'customerId=' + encodeURIComponent(id);
+                });
+            }
+
+            syncButton();
+        })();
+    </script>
+}
