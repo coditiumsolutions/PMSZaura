@@ -1,0 +1,142 @@
+name: Deploy PMS to GCP
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "PMS/**"
+      - ".github/workflows/deploy-gcp.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-gcp
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      SSH_REMOTE_PATH: ${{ secrets.SSH_REMOTE_PATH }}
+      SSH_SERVICE_NAME: ${{ secrets.SSH_SERVICE_NAME }}
+      SSH_DOMAIN_NAME: ${{ secrets.SSH_DOMAIN_NAME }}
+      DB_CONNECTION: ${{ secrets.GCP_DB_CONNECTION }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Resolve deploy target
+        run: |
+          set -euo pipefail
+          echo "SSH_HOST=${SSH_HOST:-34.93.239.49}" >> "$GITHUB_ENV"
+          echo "SSH_USER=${SSH_USER:-zaura_coditium}" >> "$GITHUB_ENV"
+          echo "SSH_PORT=${SSH_PORT:-22}" >> "$GITHUB_ENV"
+          echo "SSH_REMOTE_PATH=${SSH_REMOTE_PATH:-/var/www/pms}" >> "$GITHUB_ENV"
+          echo "SSH_SERVICE_NAME=${SSH_SERVICE_NAME:-pms}" >> "$GITHUB_ENV"
+          echo "SSH_DOMAIN_NAME=${SSH_DOMAIN_NAME:-zaura.coditium.com}" >> "$GITHUB_ENV"
+          if [ -z "${DB_CONNECTION}" ]; then
+            echo "Missing required secret: GCP_DB_CONNECTION"
+            exit 1
+          fi
+
+      - name: Validate SSH key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${SSH_PRIVATE_KEY}" ]; then
+            echo "Missing required secret: SSH_PRIVATE_KEY"
+            exit 1
+          fi
+          echo "SSH target: ${SSH_USER}@${SSH_HOST}:${SSH_PORT}"
+          echo "Remote path: ${SSH_REMOTE_PATH}"
+          echo "Service: ${SSH_SERVICE_NAME}"
+          echo "Domain: ${SSH_DOMAIN_NAME}"
+
+      - name: Publish (linux-x64)
+        working-directory: PMS
+        run: |
+          set -euo pipefail
+          dotnet publish PMS.csproj \
+            --configuration Release \
+            --runtime linux-x64 \
+            --self-contained false \
+            --output ./publish-out/linux-x64
+          test -f ./publish-out/linux-x64/PMS.dll
+          ls -lah ./publish-out/linux-x64 | head -n 30
+
+      - name: Package deployment archive
+        working-directory: PMS
+        run: |
+          tar -czf /tmp/pms-gcp-deploy.tar.gz -C ./publish-out/linux-x64 .
+          ls -lh /tmp/pms-gcp-deploy.tar.gz
+
+      - name: Setup SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Upload package to server
+        run: |
+          set -euo pipefail
+          scp -i ~/.ssh/deploy_key \
+            -P "$SSH_PORT" \
+            -o StrictHostKeyChecking=accept-new \
+            -o IdentitiesOnly=yes \
+            /tmp/pms-gcp-deploy.tar.gz \
+            "${SSH_USER}@${SSH_HOST}:/tmp/pms-gcp-deploy.tar.gz"
+
+      - name: Deploy on server
+        run: |
+          set -euo pipefail
+          {
+            echo "export SERVER_NAME='${SSH_HOST}'"
+            echo "export DOMAIN_NAME='${SSH_DOMAIN_NAME}'"
+            echo "export APP_DIR='${SSH_REMOTE_PATH}'"
+            echo "export SERVICE_NAME='${SSH_SERVICE_NAME}'"
+            echo "export KEYS_DIR='${SSH_REMOTE_PATH}/data-protection-keys'"
+            echo "export DB_CONNECTION='${DB_CONNECTION}'"
+            cat PMS/deploy-gcp-remote.sh
+          } | ssh -i ~/.ssh/deploy_key \
+            -p "$SSH_PORT" \
+            -o StrictHostKeyChecking=accept-new \
+            -o IdentitiesOnly=yes \
+            "${SSH_USER}@${SSH_HOST}" "bash -s"
+
+      - name: Cleanup remote package
+        if: always()
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+            -p "${SSH_PORT:-22}" \
+            -o StrictHostKeyChecking=accept-new \
+            -o IdentitiesOnly=yes \
+            "${SSH_USER}@${SSH_HOST}" "rm -f /tmp/pms-gcp-deploy.tar.gz" || true
+
+      - name: Deployment summary
+        run: |
+          echo "Deployed to https://${SSH_DOMAIN_NAME}/"
+          echo "IP: http://${SSH_HOST}/"
+          echo "Service: ${SSH_SERVICE_NAME}"
+          echo "Path: ${SSH_REMOTE_PATH}"

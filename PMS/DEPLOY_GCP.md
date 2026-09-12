@@ -4,26 +4,47 @@
 
 | Item | Value |
 |------|--------|
-| URL | https://pms.coditium.com |
-| VM IP | `34.131.132.158` |
-| SSH user | `coditiums` |
-| SSH key (local) | `D:\.ssh\Learning\gcp_coditium_vm` |
+| URL | https://zaura.coditium.com |
+| VM IP | `34.93.239.49` |
+| SSH user | `zaura_coditium` |
+| SSH key (local) | `D:\.ssh\key_gcp_zaura` |
 | App directory | `/var/www/pms` |
 | systemd unit | `pms.service` → `dotnet /var/www/pms/PMS.dll` |
 | Kestrel | `http://127.0.0.1:8080` (nginx reverse proxy) |
 | DataProtection keys | `/var/www/pms/data-protection-keys` |
 
-**Incorrect / obsolete values (do not use):**
+SQL Server runs on the VM. The app must use `127.0.0.1` (not the public IP) for `ConnectionStrings:DefaultConnection`.
 
-- SSH user `coditiumsolutions`
-- Key `D:\.ssh\GCP ssh\github_deploy_key` as the default local deploy key (may exist for CI; local deploy uses Learning key)
-- App path `/var/www/pms/app` (service does not run from there)
-- Old VM IP `34.93.208.98`
+## GitHub Actions (preferred)
+
+Workflow: [`.github/workflows/deploy-gcp.yml`](../.github/workflows/deploy-gcp.yml)
+
+It publishes `linux-x64` on every push to `main` that touches `PMS/**`, or when you run **Actions → Deploy PMS to GCP → Run workflow**.
+
+Required repository secret:
+
+| Secret | Source |
+|--------|--------|
+| `SSH_PRIVATE_KEY` | Private key from `D:\.ssh\key_gcp_zaura` |
+
+Optional secrets (defaults match this VM):
+
+| Secret | Default |
+|--------|---------|
+| `SSH_HOST` | `34.93.239.49` |
+| `SSH_USER` | `zaura_coditium` |
+| `SSH_PORT` | `22` |
+| `SSH_REMOTE_PATH` | `/var/www/pms` |
+| `SSH_SERVICE_NAME` | `pms` |
+| `SSH_DOMAIN_NAME` | `zaura.coditium.com` |
+| `GCP_DB_CONNECTION` | `Server=127.0.0.1;Database=DBZaura;...` (local SQL on the VM) |
+
+The private key is never stored in the repo.
 
 ## Deploy from Windows
 
 ```powershell
-cd d:\Dotnet\CoreCursor\PMSCoditium\PMS
+cd D:\Dotnet\CoreCursor\Zaura-PMSCoditium\PMS
 powershell -ExecutionPolicy Bypass -File .\deploy-gcp.ps1
 ```
 
@@ -31,14 +52,14 @@ What it does:
 
 1. `dotnet publish` → `linux-x64` (framework-dependent) under `publish-out/linux-x64`
 2. Packs `pms-gcp-deploy.tar.gz` and uploads to `/tmp` on the VM
-3. Runs `deploy-gcp-remote.sh` over SSH as `coditiums` (uses `sudo` on the VM)
+3. Runs `deploy-gcp-remote.sh` over SSH as `zaura_coditium` (uses `sudo` on the VM)
 
 Uploads and data-protection keys under `/var/www/pms` are preserved (rsync excludes).
 
 ## Manual SSH check
 
 ```powershell
-ssh -i "D:\.ssh\Learning\gcp_coditium_vm" coditiums@34.131.132.158
+ssh -i "D:\.ssh\key_gcp_zaura" zaura_coditium@34.93.239.49
 sudo systemctl status pms --no-pager
 ```
 

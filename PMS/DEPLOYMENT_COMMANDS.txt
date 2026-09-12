@@ -8,19 +8,20 @@ Repo project folder:
 ----------------------------------------
 A) GCP Ubuntu (production — preferred)
 ----------------------------------------
-Site:    https://pms.coditium.com
-Host:    34.131.132.158
-SSH:     coditiums@34.131.132.158
-Key:     D:\.ssh\Learning\gcp_coditium_vm
+Site:    https://zaura.coditium.com
+Host:    34.93.239.49
+SSH:     zaura_coditium@34.93.239.49
+Key:     D:\.ssh\key_gcp_zaura
 App dir: /var/www/pms
 Service: pms.service
+CI:      GitHub Actions workflow `.github/workflows/deploy-gcp.yml`
 
 From PowerShell:
-  cd d:\Dotnet\CoreCursor\PMSCoditium\PMS
+  cd D:\Dotnet\CoreCursor\Zaura-PMSCoditium\PMS
   powershell -ExecutionPolicy Bypass -File .\deploy-gcp.ps1
 
 Optional overrides:
-  .\deploy-gcp.ps1 -SshUser coditiums -IdentityFile "D:\.ssh\Learning\gcp_coditium_vm"
+  .\deploy-gcp.ps1 -SshUser zaura_coditium -IdentityFile "D:\.ssh\key_gcp_zaura"
 
 Scripts:
   deploy-gcp.ps1         — publish, upload, run remote script
