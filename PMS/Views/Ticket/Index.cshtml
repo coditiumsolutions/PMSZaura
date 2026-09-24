@@ -21,10 +21,21 @@
 
     @if (ViewBag.CanCreate == true)
     {
-        <div class="mb-2">
-            <a asp-action="Create" class="btn btn-primary btn-sm">
+        <div class="mb-2 d-flex flex-wrap gap-2">
+            <a asp-action="Create" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">
                 <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New Ticket
             </a>
+            <button type="button" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--operations" onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="mb-2">
+            <button type="button" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--operations" onclick="window.location.reload()">
+                <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh
+            </button>
         </div>
     }
 

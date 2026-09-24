@@ -1,7 +1,7 @@
 # Accounting Management System (AMS) — Development Plan
 > **Context file for Cursor AI**
 > This document is the single source of truth for building the Accounting Management System
-> as a module inside the existing Property Management System (PMS) called **PMSAbbas**.
+> as a module inside the existing Property Management System (PMS) called **Zaura**.
 
 **Execution order (one step at a time):** see [`STEP_SEQUENCE.md`](STEP_SEQUENCE.md) and per-step files under [`steps/`](steps/).
 
@@ -13,7 +13,7 @@
 |---|---|
 | System | Accounting Management System (AMS) |
 | Type | Integrated module inside existing PMS |
-| Database | MS SQL Server — same database: `PMSAbbas` |
+| Database | MS SQL Server — same database: `DBZaura` |
 | Schema separation | AMS tables live in `acc` schema; PMS stays in `dbo` |
 | Currency | PKR (primary); design must support multi-currency extension |
 | Compliance | Pakistan FBR — WHT, GST, income tax |
@@ -1136,7 +1136,7 @@ Add these as new module permission entries in `dbo.UserModulePermission`:
 - **Backend**: (same as PMS — .NET / Node.js / Laravel — specify)
 - **ORM**: Entity Framework / Dapper / raw SQL (specify — if EF, AMS tables need model classes in `acc` schema)
 - **Frontend**: (same as PMS frontend — specify)
-- **Database**: MS SQL Server (same instance, same database `PMSAbbas`)
+- **Database**: MS SQL Server (same instance, same database `DBZaura`)
 - **Schema**: `acc` (separate from PMS `dbo`)
 - **Authentication**: Reuse existing PMS auth — `dbo.Users`, `dbo.UserSessions`, `dbo.UserModulePermission`
 - **File attachments**: Reuse `dbo.Attachments` table from PMS for bill/voucher attachments

@@ -73,20 +73,16 @@
                 <div class="col-12 col-md-8 col-lg-5">
                     <div class="pms-compact-field">
                         <label for="propertyIdFilter" class="form-label">Property ID</label>
-                        <div class="input-group pms-inline-search-group">
-                            <input type="text" name="propertyIdFilter" id="propertyIdFilter" class="form-control"
-                                   placeholder="Search by property ID"
-                                   value="@ViewBag.PropertyIdFilter" />
-                            <button type="submit" class="btn btn-primary pms-inline-search-btn" title="Search">
-                                <i class="bi bi-search" aria-hidden="true"></i>
-                            </button>
-                        </div>
+                        <input type="text" name="propertyIdFilter" id="propertyIdFilter" class="form-control"
+                               placeholder="Search by property ID"
+                               value="@ViewBag.PropertyIdFilter" />
                     </div>
                 </div>
-            </div>
-            <div class="row g-1 mt-1">
-                <div class="col-12">
-                    <div class="pms-listing-search-actions">
+                <div class="col-12 col-lg-auto">
+                    <div class="d-flex flex-nowrap gap-2 align-items-center pms-listing-search-actions">
+                        <button type="submit" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">
+                            <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                        </button>
                         <partial name="_OperationsDropdown" />
                     </div>
                 </div>

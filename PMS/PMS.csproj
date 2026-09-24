@@ -27,15 +27,18 @@
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Otp.NET" Version="1.4.1" />
     <PackageReference Include="QRCoder" Version="1.8.0" />
+    <PackageReference Include="ReportViewerCore.NETCore" Version="15.1.26" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.8.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="wwwroot\uploads\customers\" />
   </ItemGroup>
 
-  <!-- AccountStatement.rdlc kept as design asset for the future Windows report API project. -->
   <ItemGroup>
-    <None Include="Reports\AccountStatement.rdlc" />
+    <Content Include="Reports\AccountStatement.rdlc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

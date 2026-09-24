@@ -11,7 +11,7 @@ A) GCP Ubuntu (production — preferred)
 Site:    https://zaura.coditium.com
 Host:    34.93.239.49
 SSH:     zaura_coditium@34.93.239.49
-Key:     D:\.ssh\key_gcp_zaura
+Key:     D:\.ssh\zauracoditium_gcp\key_gcp_zaura
 App dir: /var/www/pms
 Service: pms.service
 CI:      GitHub Actions workflow `.github/workflows/deploy-gcp.yml`
@@ -21,7 +21,7 @@ From PowerShell:
   powershell -ExecutionPolicy Bypass -File .\deploy-gcp.ps1
 
 Optional overrides:
-  .\deploy-gcp.ps1 -SshUser zaura_coditium -IdentityFile "D:\.ssh\key_gcp_zaura"
+  .\deploy-gcp.ps1 -SshUser zaura_coditium -IdentityFile "D:\.ssh\zauracoditium_gcp\key_gcp_zaura"
 
 Scripts:
   deploy-gcp.ps1         — publish, upload, run remote script

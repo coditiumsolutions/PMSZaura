@@ -6,15 +6,33 @@
     ViewData["ListingHideTitle"] = true;
     var statusSel = ViewBag.StatusFilter as string ?? "";
     var propertyStatuses = new[] { "Available", "Allotted", "Vacant", "Occupied", "Reserved" };
+    var canDelete = ViewBag.CanDelete == true;
+    var canEdit = ViewBag.CanEdit == true;
+    var showDelete = canDelete || canEdit;
 }
 
 <div class="pms-property-listing pms-listing-page">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-        <h5 class="pms-grid-title mb-0">Properties</h5>
-        @if (Model != null)
-        {
-            <span class="badge rounded-pill pms-record-badge">@Model.Count() record@(Model.Count() == 1 ? "" : "s")</span>
-        }
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <h5 class="pms-grid-title mb-0">Properties</h5>
+            @if (Model != null)
+            {
+                <span class="badge rounded-pill pms-record-badge">@Model.Count() record@(Model.Count() == 1 ? "" : "s")</span>
+            }
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            @if (showDelete)
+            {
+                <button type="button"
+                        id="btnDeleteProperty"
+                        class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search"
+                        disabled
+                        title="Select a property first">
+                    <i class="bi bi-trash me-1" aria-hidden="true"></i>Delete
+                </button>
+            }
+            <partial name="_OperationsDropdown" />
+        </div>
     </div>
 
     <div class="row g-2 mb-2">
@@ -60,6 +78,21 @@
         </div>
     </div>
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show py-2 small" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show py-2 small" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <form method="get" asp-action="Index" class="mb-2">
         <div class="pms-listing-search-wrap">
             <div class="row g-1 align-items-end flex-lg-nowrap">
@@ -95,24 +128,21 @@
                 <div class="col-12 col-md-5 col-lg-5">
                     <div class="pms-compact-field">
                         <label for="searchTerm" class="form-label">Search</label>
-                        <div class="input-group pms-inline-search-group">
-                            <input type="text" name="searchTerm" id="searchTerm" class="form-control"
-                                   placeholder="Search by ID, unit, tower..."
-                                   value="@ViewBag.SearchTerm" />
-                            <button type="submit" class="btn btn-primary pms-inline-search-btn" title="Search">
-                                <i class="bi bi-search" aria-hidden="true"></i>
-                            </button>
-                        </div>
+                        <input type="text" name="searchTerm" id="searchTerm" class="form-control"
+                               placeholder="Search by ID, unit, tower..."
+                               value="@ViewBag.SearchTerm" />
                     </div>
                 </div>
-                <div class="col-12 col-md-2 col-lg-auto ms-lg-auto">
-                    <div class="pms-listing-search-actions">
-                        <partial name="_OperationsDropdown" />
-                    </div>
+                <div class="col-12 col-lg-auto">
+                    <button type="submit" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">
+                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                    </button>
                 </div>
             </div>
         </div>
     </form>
+
+    @Html.AntiForgeryToken()
 
     <div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-2">
         <div class="card-body py-2">
@@ -120,8 +150,9 @@
                 <table class="table pms-saas-table" id="propertiesTable">
                     <thead>
                         <tr>
+                            <th class="pms-property-select-col text-center">Select</th>
                             <th>Project</th>
-                            <th>SubProject</th>
+                            <th>Sub Proj</th>
                             <th>Tower</th>
                             <th>Floor</th>
                             <th>Unit No</th>
@@ -140,7 +171,16 @@
                                 "Occupied" => "pms-pill--info",
                                 _ => "pms-pill--danger"
                             };
-                            <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = property.PropertyID })">
+                            <tr class="pms-property-selectable-row"
+                                data-property-id="@property.PropertyID"
+                                data-href="@Url.Action("Details", new { id = property.PropertyID })">
+                                <td data-label="Select" class="text-center pms-property-select-col">
+                                    <input type="radio"
+                                           name="selectedProperty"
+                                           class="form-check-input property-select-radio m-0"
+                                           value="@property.PropertyID"
+                                           aria-label="Select unit @property.PlotNo" />
+                                </td>
                                 <td data-label="Project">
                                     @if (property.Project != null)
                                     {
@@ -151,7 +191,7 @@
                                         <span class="text-muted">No Project</span>
                                     }
                                 </td>
-                                <td data-label="SubProject"><span class="pms-cell-truncate" title="@property.SubProject">@(string.IsNullOrWhiteSpace(property.SubProject) ? "—" : property.SubProject)</span></td>
+                                <td data-label="Sub Proj"><span class="pms-cell-truncate" title="@property.SubProject">@(string.IsNullOrWhiteSpace(property.SubProject) ? "—" : property.SubProject)</span></td>
                                 <td data-label="Tower">@property.Block</td>
                                 <td data-label="Floor">@(property.Floor ?? "—")</td>
                                 <td data-label="Unit No"><strong>@property.PlotNo</strong></td>
@@ -167,6 +207,20 @@
 </div>
 
 <style>
+    .pms-property-listing .pms-property-select-col {
+        width: 4.5rem;
+        min-width: 4.5rem;
+    }
+
+    .pms-property-listing .pms-property-selectable-row {
+        cursor: pointer;
+    }
+
+    .pms-property-listing .pms-property-selectable-row.pms-row-selected,
+    .pms-property-listing .pms-property-selectable-row.pms-row-selected > td {
+        background-color: #e7f1ff !important;
+    }
+
     .pms-property-listing .pms-grid-title {
         font-size: 1rem !important;
         font-weight: 700;
@@ -210,28 +264,97 @@
     .pms-property-listing .pms-saas-table tbody td,
     .pms-property-listing .pms-saas-table tbody td span,
     .pms-property-listing .pms-saas-table tbody td strong,
-    .pms-property-listing .pms-saas-table tbody td a {
+    .pms-property-listing .pms-saas-table tbody td a,
+    .pms-property-listing .pms-saas-table .pms-pill {
         color: #000 !important;
     }
 
-    .pms-property-listing .pms-saas-table tbody td:first-child,
-    .pms-property-listing .pms-saas-table tbody td:first-child span,
-    .pms-property-listing .pms-saas-table tbody td:first-child a {
-        color: #1e3a8a !important;
-        font-weight: 600;
+    .pms-property-listing .pms-saas-table thead th {
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        border-color: #524c96 !important;
+        font-weight: 700;
     }
 </style>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
+            var canDelete = @showDelete.ToString().ToLowerInvariant();
+            var deletePropertyBaseUrl = '@Url.Action("Delete", "Property")';
+            var selectedPropertyId = null;
+            var $deleteBtn = $('#btnDeleteProperty');
+
+            function clearSelection() {
+                selectedPropertyId = null;
+                $('#propertiesTable tbody tr.pms-property-selectable-row').removeClass('pms-row-selected');
+                $('.property-select-radio').prop('checked', false);
+                if ($deleteBtn.length) {
+                    $deleteBtn.prop('disabled', true).attr('title', 'Select a property first');
+                }
+            }
+
+            function setSelectedProperty($row) {
+                if (!$row || !$row.length) {
+                    clearSelection();
+                    return;
+                }
+
+                selectedPropertyId = String($row.data('property-id') || '');
+                $('#propertiesTable tbody tr.pms-property-selectable-row').removeClass('pms-row-selected');
+                $row.addClass('pms-row-selected');
+                $row.find('.property-select-radio').prop('checked', true);
+
+                if ($deleteBtn.length) {
+                    $deleteBtn.prop('disabled', false).attr('title', 'Delete selected property');
+                }
+            }
+
             PmsListingDataTable.init('#propertiesTable', {
                 searching: false,
                 pageLength: 20,
-                order: [[4, 'asc']],
+                order: [[5, 'asc']],
+                columnDefs: [{ orderable: false, targets: 0 }],
                 dom: 'rt<"pms-property-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>'
             });
-            PmsListingDataTable.bindRowNavigation('#propertiesTable');
+
+            $('#propertiesTable tbody').on('change', '.property-select-radio', function() {
+                setSelectedProperty($(this).closest('tr'));
+            });
+
+            $('#propertiesTable tbody').on('click', 'tr.pms-property-selectable-row', function(e) {
+                if ($(e.target).closest('a, button, form, select, textarea, input').length) {
+                    return;
+                }
+                var $row = $(this);
+                if (selectedPropertyId === String($row.data('property-id') || '')) {
+                    clearSelection();
+                } else {
+                    setSelectedProperty($row);
+                }
+            });
+
+            $('#propertiesTable tbody').on('dblclick', 'tr.pms-property-selectable-row', function() {
+                var href = $(this).data('href');
+                if (href) {
+                    window.location.href = href;
+                }
+            });
+
+            if (canDelete) {
+                $deleteBtn.on('click', function() {
+                    if (!selectedPropertyId) return;
+                    if (!confirm('Are you sure you want to delete this property? This cannot be undone.')) {
+                        return;
+                    }
+
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+                    var $form = $('<form>', { method: 'post', action: deletePropertyBaseUrl + '/' + encodeURIComponent(selectedPropertyId) });
+                    $form.append($('<input>', { type: 'hidden', name: '__RequestVerificationToken', value: token }));
+                    $('body').append($form);
+                    $form.submit();
+                });
+            }
         });
     </script>
 }

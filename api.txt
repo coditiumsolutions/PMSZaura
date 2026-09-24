@@ -2,12 +2,12 @@
 Coditium Report Service - API Reference
 Service : coditium-report-service
 Version: 1.0 | Last Updated: 23/07/2026
-Database: PMSAbbas
+Database: DBZaura
 Local Base URL:  http://127.0.0.1:8000/
-Deployed Base URL: http://34.131.132.158:8000/
-Server: 34.131.132.158,8000
+Deployed Base URL: http://127.0.0.1:8000/ (Zaura GCP VM; was previously http://34.131.132.158:8000/)
+Server: 34.93.239.49 (loopback :8000)
 Format: REST (PDF reports for ASP.NET Core / any HTTP client)
-Auth: None (internal service on same GCP account)
+Auth: None (internal service on same GCP VM)
 
 Purpose: Authoritative source of truth for this project's backend API contract.
 Read this file before implementing, modifying, or debugging any API integration

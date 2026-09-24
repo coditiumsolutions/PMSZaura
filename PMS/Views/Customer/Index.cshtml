@@ -80,7 +80,7 @@
             <div class="col-12 col-lg-auto">
                 <div class="pms-compact-field pms-customer-search-actions pms-customer-inline-action">
                     <div class="d-flex flex-nowrap gap-2">
-                        <button type="submit" class="btn btn-primary btn-sm">
+                        <button type="submit" class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--search">
                             <i class="bi bi-search me-1" aria-hidden="true"></i>Search
                         </button>
                         <partial name="_OperationsDropdown" />
@@ -128,12 +128,12 @@
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
             <button type="button"
                     id="btnAccountReport"
-                    class="btn btn-outline-primary btn-sm"
+                    class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--report"
                     disabled
-                    title="Select a customer row first">
+                    title="Select a customer with the radio first">
                 <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Account Report
             </button>
-            <small class="text-muted">Select one row, then open Account Report.</small>
+            <small class="text-muted">Use the radio to select a customer, then open Account Report. Click a row to open details.</small>
         </div>
 
         <div class="card pms-grid-card pms-listing-flat pms-customer-listing pms-customer-grid-compact mb-2">
@@ -148,12 +148,12 @@ else
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
         <button type="button"
                 id="btnAccountReport"
-                class="btn btn-outline-primary btn-sm"
+                class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--report"
                 disabled
-                title="Select a customer row first">
+                title="Select a customer with the radio first">
             <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Account Report
         </button>
-        <small class="text-muted">Select one row, then open Account Report.</small>
+        <small class="text-muted">Use the radio to select a customer, then open Account Report. Click a row to open details.</small>
     </div>
 
     <div class="card pms-grid-card pms-listing-flat pms-customer-listing pms-customer-grid-compact mb-2">
@@ -236,7 +236,9 @@ else
     }
 
     .pms-customer-listing .pms-saas-table thead th {
-        color: #000 !important;
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        border-color: #524c96 !important;
     }
 
     .pms-customer-listing .pms-saas-table tbody td .text-muted {
@@ -246,7 +248,7 @@ else
     .pms-customer-listing .pms-saas-table tbody td[data-label="Customer ID"],
     .pms-customer-listing .pms-saas-table tbody td[data-label="Customer ID"] a,
     .pms-customer-listing .pms-saas-table tbody td[data-label="Customer ID"] .pms-cell-primary-title {
-        color: #0d6efd !important;
+        color: #000 !important;
     }
 
     .pms-customer-listing .pms-customer-selectable-row {
@@ -256,6 +258,82 @@ else
     .pms-customer-listing .pms-customer-selectable-row.pms-row-selected,
     .pms-customer-listing .pms-customer-selectable-row.pms-row-selected > td {
         background-color: #e7f1ff !important;
+    }
+
+    /* Rectangle action buttons — green / red; Search & Operations equal width */
+    .pms-customer-listing .pms-customer-action-btn--search,
+    .pms-customer-listing .pms-customer-action-btn--operations,
+    .pms-customer-listing .pms-customer-operations-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 7.5rem !important;
+        min-width: 7.5rem !important;
+        max-width: 7.5rem !important;
+        flex: 0 0 7.5rem !important;
+        border-radius: 0 !important;
+        font-weight: 600;
+        min-height: var(--pms-listing-control-h, 36px);
+        height: var(--pms-listing-control-h, 36px);
+        padding: 0.35rem 0.5rem !important;
+        border: 1px solid transparent;
+        color: #fff !important;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn {
+        border-radius: 0 !important;
+        font-weight: 600;
+        min-height: var(--pms-listing-control-h, 36px);
+        padding: 0.35rem 0.95rem;
+        border: 1px solid transparent;
+        color: #fff !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--search {
+        background-color: #2f9e66 !important;
+        border-color: #288f5b !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--search:hover,
+    .pms-customer-listing .pms-customer-action-btn--search:focus {
+        background-color: #27915c !important;
+        border-color: #228553 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--operations {
+        background-color: #e45a67 !important;
+        border-color: #d94c5a !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--operations:hover,
+    .pms-customer-listing .pms-customer-action-btn--operations:focus,
+    .pms-customer-listing .pms-customer-action-btn--operations.show {
+        background-color: #d94c5a !important;
+        border-color: #cc4452 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--report {
+        background-color: #198754 !important;
+        border-color: #157347 !important;
+        color: #000 !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--report:hover:not(:disabled),
+    .pms-customer-listing .pms-customer-action-btn--report:focus:not(:disabled) {
+        background-color: #157347 !important;
+        border-color: #146c43 !important;
+        color: #000 !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--report:disabled {
+        background-color: #94a3b8 !important;
+        border-color: #94a3b8 !important;
+        color: #000 !important;
+        opacity: 0.85;
     }
 </style>
 
@@ -281,7 +359,7 @@ else
                     $accountReportBtn.prop('disabled', false).attr('title', 'Open Account Report for ' + selectedCustomerId);
                 } else {
                     $('.customer-report-radio').prop('checked', false);
-                    $accountReportBtn.prop('disabled', true).attr('title', 'Select a customer row first');
+                    $accountReportBtn.prop('disabled', true).attr('title', 'Select a customer with the radio first');
                 }
             }
 
@@ -295,21 +373,12 @@ else
                     dom: 'rt<"pms-customer-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>'
                 });
 
-                // Single-row selection (do not navigate on row click; use Customer ID link for details).
-                $('#customersTable tbody').on('click', 'tr.pms-customer-selectable-row', function (e) {
-                    if ($(e.target).closest('a, button, form, select, textarea').length) {
-                        return;
-                    }
-                    // Keep pending bulk checkboxes independent of report selection.
-                    if ($(e.target).closest('.pending-customer-checkbox').length) {
-                        return;
-                    }
-                    var id = String($(this).data('customer-id') || '');
-                    if (id) {
-                        setSelectedCustomer(id);
-                    }
+                // Click anywhere on the row (except radios/checkboxes/links) to open Details.
+                PmsListingDataTable.bindRowNavigation('#customersTable', {
+                    rowSelector: 'tr.pms-customer-selectable-row'
                 });
 
+                // Account Report selection via the row radio only.
                 $('#customersTable tbody').on('change', '.customer-report-radio', function () {
                     setSelectedCustomer($(this).val());
                 });
@@ -317,7 +386,7 @@ else
 
             $accountReportBtn.on('click', function () {
                 if (!selectedCustomerId) {
-                    alert('Please select a customer row first.');
+                    alert('Please select a customer with the radio first.');
                     return;
                 }
                 var url = accountReportUrl + (accountReportUrl.indexOf('?') >= 0 ? '&' : '?')

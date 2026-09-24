@@ -59,6 +59,14 @@ public sealed class NavigationService : INavigationService
             {
                 new NavigationMenuItemViewModel
                 {
+                    Label = "Projects",
+                    Controller = "Project",
+                    Action = "Index",
+                    IconClass = "fas fa-building me-2",
+                    ExcludeActiveAction = "FloorPlan"
+                },
+                new NavigationMenuItemViewModel
+                {
                     Label = "Properties",
                     Controller = "Property",
                     Action = "Index",
@@ -71,14 +79,6 @@ public sealed class NavigationService : INavigationService
                     Action = "FloorPlan",
                     IconClass = "fas fa-layer-group me-2",
                     ActiveAction = "FloorPlan"
-                },
-                new NavigationMenuItemViewModel
-                {
-                    Label = "Projects",
-                    Controller = "Project",
-                    Action = "Index",
-                    IconClass = "fas fa-building me-2",
-                    ExcludeActiveAction = "FloorPlan"
                 }
             }
         },
@@ -274,14 +274,16 @@ public sealed class NavigationService : INavigationService
             {
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Dealers",
-                    Controller = "Dealer",
-                    Action = "Index",
-                    IconClass = "fas fa-store me-2"
+                    Label = "System Users",
+                    Controller = "Account",
+                    Action = "Users",
+                    IconClass = "fas fa-user-cog me-2",
+                    ActiveAction = "Users",
+                    RequiresAdminRole = true
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Accounts Management",
+                    Label = "Finance",
                     Controller = "AccountsManagement",
                     Action = "Index",
                     IconClass = "fas fa-calculator me-2",
@@ -289,12 +291,10 @@ public sealed class NavigationService : INavigationService
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "User Management",
-                    Controller = "Account",
-                    Action = "Users",
-                    IconClass = "fas fa-user-cog me-2",
-                    ActiveAction = "Users",
-                    RequiresAdminRole = true
+                    Label = "Dealers",
+                    Controller = "Dealer",
+                    Action = "Index",
+                    IconClass = "fas fa-store me-2"
                 },
                 new NavigationMenuItemViewModel
                 {

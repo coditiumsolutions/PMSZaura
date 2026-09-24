@@ -84,20 +84,16 @@
                 <div class="col-12 col-md-8 col-lg-5">
                     <div class="pms-compact-field">
                         <label for="customerFilter" class="form-label">Customer ID</label>
-                        <div class="input-group pms-inline-search-group">
-                            <input type="text" name="customerFilter" id="customerFilter" class="form-control"
-                                   placeholder="Filter by customer ID"
-                                   value="@ViewBag.CustomerFilter" />
-                            <button type="submit" class="btn btn-primary pms-inline-search-btn" title="Search">
-                                <i class="bi bi-search" aria-hidden="true"></i>
-                            </button>
-                        </div>
+                        <input type="text" name="customerFilter" id="customerFilter" class="form-control"
+                               placeholder="Filter by customer ID"
+                               value="@ViewBag.CustomerFilter" />
                     </div>
                 </div>
-            </div>
-            <div class="row g-1 mt-1">
-                <div class="col-12">
-                    <div class="pms-listing-search-actions">
+                <div class="col-12 col-lg-auto">
+                    <div class="d-flex flex-nowrap gap-2 align-items-center pms-listing-search-actions">
+                        <button type="submit" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">
+                            <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                        </button>
                         <partial name="_OperationsDropdown" />
                     </div>
                 </div>

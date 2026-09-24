@@ -6,42 +6,76 @@
     var canDelete = ViewBag.CanDelete as bool? == true;
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <div class="d-flex align-items-center gap-4">
-        <!-- <h2 class="mb-0">
-            <i class="fas fa-user me-2"></i>Customer Details
-        </h2> -->
-        <div class="d-flex align-items-center gap-3 ms-4">
-            <div class="badge bg-light text-dark px-3 py-2" style="font-size: 14px;">
-                <i class="fas fa-calendar-check me-2" style="color: #6f42c1;"></i>
-                <strong>Member Since:</strong> @Model.CreatedAt.ToString("MMMM yyyy")
-                <span class="text-muted ms-2">(@((DateTime.Now - Model.CreatedAt).Days) days)</span>
-            </div>
+<div class="d-flex justify-content-end align-items-center mb-3">
+    <div class="d-flex flex-wrap align-items-stretch gap-2 pms-customer-details-actions">
+        <div class="dropdown">
+            <button class="btn btn-sm dropdown-toggle pms-customer-details-main-btn pms-customer-details-main-btn--reports"
+                    type="button"
+                    id="customerDetailsReportsBtn"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                <i class="fas fa-file-alt me-1"></i>Reports
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="customerDetailsReportsBtn">
+                <li>
+                    <a class="dropdown-item" asp-action="AccountStatement" asp-route-id="@Model.CustomerID" target="_blank" rel="noopener">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Account Statement
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item"
+                       asp-controller="Report"
+                       asp-action="AccountStatement"
+                       asp-route-accountNo="@Model.CustomerID"
+                       target="_blank"
+                       rel="noopener">
+                        <i class="fas fa-file-pdf me-2"></i>Account Report
+                    </a>
+                </li>
+                @if (Model.Allotments != null && Model.Allotments.Any())
+                {
+                    <li><hr class="dropdown-divider" /></li>
+                    <li>
+                        <a class="dropdown-item" asp-action="AllotmentLetter" asp-route-id="@Model.CustomerID" target="_blank" rel="noopener">
+                            <i class="fas fa-file-signature me-2"></i>Allotment Letter
+                        </a>
+                    </li>
+                }
+            </ul>
         </div>
-    </div>
-    <div class="d-flex flex-wrap gap-2">
-        @if (canEdit)
+
+        @if (canEdit || canDelete)
         {
-            <a asp-action="Edit" asp-route-id="@Model.CustomerID" class="btn btn-primary btn-sm">
-                <i class="fas fa-edit me-1"></i>Edit
-            </a>
+            <div class="dropdown">
+                <button class="btn btn-sm dropdown-toggle pms-customer-details-main-btn pms-customer-details-main-btn--operations"
+                        type="button"
+                        id="customerDetailsOperationsBtn"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    <i class="fas fa-cog me-1"></i>Operations
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="customerDetailsOperationsBtn">
+                    @if (canEdit)
+                    {
+                        <li>
+                            <a class="dropdown-item" asp-action="Edit" asp-route-id="@Model.CustomerID">
+                                <i class="fas fa-edit me-2"></i>Edit
+                            </a>
+                        </li>
+                    }
+                    @if (canDelete)
+                    {
+                        <li>
+                            <a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@Model.CustomerID">
+                                <i class="fas fa-trash me-2"></i>Delete
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
         }
-        @if (canDelete)
-        {
-            <a asp-action="Delete" asp-route-id="@Model.CustomerID" class="btn btn-outline-danger btn-sm">
-                <i class="fas fa-trash me-1"></i>Delete
-            </a>
-        }
-        <a asp-action="AccountStatement" asp-route-id="@Model.CustomerID" target="_blank" class="btn btn-outline-info btn-sm">
-            <i class="fas fa-file-invoice-dollar me-1"></i>Account Statement
-        </a>
-        @if (Model.Allotments != null && Model.Allotments.Any())
-        {
-            <a asp-action="AllotmentLetter" asp-route-id="@Model.CustomerID" target="_blank" class="btn btn-outline-info btn-sm">
-                <i class="fas fa-file-signature me-1"></i>Allotment Letter
-            </a>
-        }
-        <a asp-action="Index" class="btn btn-outline-primary btn-sm">
+
+        <a asp-action="Index" class="btn btn-sm pms-customer-details-main-btn pms-customer-details-main-btn--back">
             <i class="fas fa-arrow-left me-1"></i>Back to List
         </a>
     </div>
@@ -108,6 +142,8 @@
                 <div class="tab-content" id="customerTabContent">
                     <!-- Personal Information Tab -->
                     <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                        <div class="row g-3">
+                            <div class="col-lg-8 col-xl-9">
                         <div class="pms-registration-4col-form">
                             <div class="row g-2 pms-registration-4col-row align-items-start">
                                 <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Customer ID</div></div>
@@ -138,6 +174,37 @@
                                 <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.Nationality ?? "N/A")</div></div>
                                 <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Form No</div></div>
                                 <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.FormNo ?? "N/A")</div></div>
+                            </div>
+                        </div>
+                            </div>
+                            <div class="col-lg-4 col-xl-3">
+                                <div class="card h-100" style="border-color: rgb(104, 167, 226);">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                        <h6 class="mb-0"><i class="fas fa-user-circle me-2"></i>Customer Picture</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="text-center mb-3">
+                                            <img class="js-customer-picture-img img-thumbnail" src="" alt="Customer Picture" style="max-width: 180px; max-height: 180px; display: none;" />
+                                            <div class="js-customer-picture-placeholder text-muted">
+                                                <i class="fas fa-user-circle fa-5x"></i>
+                                                <p class="mt-2 mb-0">No picture uploaded</p>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label" for="customerPictureFilePersonal">Upload picture</label>
+                                            <input type="file" id="customerPictureFilePersonal" class="form-control form-control-sm" accept="image/*" />
+                                            <small class="text-muted">JPG, PNG, GIF, BMP. Max 8MB.</small>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <button type="button" class="btn btn-sm text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" onclick="uploadAttachment('CustomerPicture', 'customerPictureFilePersonal')">
+                                                <i class="fas fa-upload me-1"></i>Upload
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary js-open-customer-picture-camera" title="Capture with webcam">
+                                                <i class="fas fa-camera me-1"></i>Webcam
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -689,8 +756,8 @@
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="text-center mb-3" id="customerPicturePreview">
-                                                    <img id="customerPictureImg" src="" alt="Customer Picture" class="img-thumbnail" style="max-width: 200px; max-height: 200px; display: none;" />
-                                                    <div id="customerPicturePlaceholder" class="text-muted">
+                                                    <img id="customerPictureImg" class="js-customer-picture-img img-thumbnail" src="" alt="Customer Picture" style="max-width: 200px; max-height: 200px; display: none;" />
+                                                    <div id="customerPicturePlaceholder" class="js-customer-picture-placeholder text-muted">
                                                         <i class="fas fa-user-circle fa-5x"></i>
                                                         <p class="mt-2">No picture uploaded</p>
                                                     </div>
@@ -700,11 +767,16 @@
                                                 <div class="mb-3">
                                                     <label class="form-label" for="customerPictureFile">Upload Customer Picture</label>
                                                     <input type="file" id="customerPictureFile" class="form-control" accept="image/*" />
-                                                    <small class="text-muted">Only image files (JPG, PNG, GIF, BMP). Max size: 8MB</small>
+                                                    <small class="text-muted">Only image files (JPG, PNG, GIF, BMP). Max size: 8MB. A new upload replaces the current picture.</small>
                                                 </div>
-                                                <button type="button" class="btn text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" onclick="uploadAttachment('CustomerPicture', 'customerPictureFile')">
-                                                    <i class="fas fa-upload me-2"></i>Upload Picture
-                                                </button>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <button type="button" class="btn text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" onclick="uploadAttachment('CustomerPicture', 'customerPictureFile')">
+                                                        <i class="fas fa-upload me-2"></i>Upload Picture
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-secondary js-open-customer-picture-camera" title="Capture with webcam">
+                                                        <i class="fas fa-camera me-2"></i>Use Webcam
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -780,6 +852,37 @@
                     </div>
                 </div>
             </div>
+            <div class="card-footer pms-customer-details-member-footer bg-transparent border-0 px-0 pt-2 pb-0">
+                <div class="badge bg-light text-dark px-3 py-2" style="font-size: 14px;">
+                    <i class="fas fa-calendar-check me-2" style="color: #6f42c1;"></i>
+                    <strong>Member Since:</strong> @Model.CreatedAt.ToString("MMMM yyyy")
+                    <span class="text-muted ms-2">(@((DateTime.Now - Model.CreatedAt).Days) days)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="customerPictureCameraModal" tabindex="-1" aria-labelledby="customerPictureCameraModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h5 class="modal-title" id="customerPictureCameraModalLabel"><i class="fas fa-camera me-2"></i>Customer picture — webcam</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-2">
+                <p class="text-muted small mb-2">Allow camera access when prompted. Capture uploads immediately and replaces the current customer picture.</p>
+                <div class="ratio ratio-4x3 bg-dark rounded overflow-hidden position-relative">
+                    <video id="customerPictureCameraVideo" class="w-100 h-100" style="object-fit:contain;" playsinline muted autoplay></video>
+                </div>
+                <canvas id="customerPictureCameraCanvas" class="d-none"></canvas>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="customerPictureCameraCaptureBtn">
+                    <i class="fas fa-camera me-1"></i>Capture &amp; upload
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -829,11 +932,99 @@
 </div>
 
 <style>
+    /* Details toolbar — three equal main buttons */
+    .pms-customer-details-actions {
+        align-items: stretch;
+    }
+
+    .pms-customer-details-actions > .dropdown,
+    .pms-customer-details-actions > .pms-customer-details-main-btn {
+        display: flex;
+    }
+
+    .pms-customer-details-main-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        min-height: 38px;
+        min-width: 8.5rem;
+        padding: 0.4rem 1rem;
+        border-radius: 0 !important;
+        font-weight: 600;
+        font-size: 0.875rem;
+        line-height: 1.2;
+        border: 1px solid transparent;
+        box-shadow: none;
+    }
+
+    /* Palette: navy / periwinkle / gold */
+    .pms-customer-details-main-btn--reports {
+        background-color: #3E348D !important;
+        border-color: #342c78 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-details-main-btn--reports:hover,
+    .pms-customer-details-main-btn--reports:focus,
+    .pms-customer-details-main-btn--reports.show {
+        background-color: #342c78 !important;
+        border-color: #2c2566 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-details-main-btn--operations {
+        background-color: #7679EE !important;
+        border-color: #6366e0 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-details-main-btn--operations:hover,
+    .pms-customer-details-main-btn--operations:focus,
+    .pms-customer-details-main-btn--operations.show {
+        background-color: #6366e0 !important;
+        border-color: #5558d4 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-details-main-btn--back {
+        background-color: #F6B801 !important;
+        border-color: #dda500 !important;
+        color: #1f1700 !important;
+    }
+
+    .pms-customer-details-main-btn--back:hover,
+    .pms-customer-details-main-btn--back:focus {
+        background-color: #dda500 !important;
+        border-color: #c79400 !important;
+        color: #140f00 !important;
+    }
+
+    .pms-customer-details-actions .dropdown-menu {
+        min-width: 12.5rem;
+        border-radius: 0;
+        border-color: #e2e8f0;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+    }
+
+    .pms-customer-details-actions .dropdown-item {
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.5rem 0.9rem;
+    }
+
     /* Card / form — no background */
     .pms-customer-details.card {
         background: transparent;
         border: none;
         box-shadow: none;
+    }
+
+    .pms-customer-details > .card-header {
+        background-color: #6059A6 !important;
+        border: none;
+        border-radius: 0;
+        padding: 0;
     }
 
     .pms-customer-details .card-body {
@@ -848,9 +1039,9 @@
         flex-wrap: nowrap;
         overflow-x: auto;
         white-space: nowrap;
-        border-bottom: 1px solid #e5e7eb;
-        background: transparent;
-        padding: 0.35rem 0 0;
+        border-bottom: none;
+        background-color: #6059A6;
+        padding: 0.35rem 0.5rem 0;
         gap: 0;
         scrollbar-width: thin;
     }
@@ -860,12 +1051,12 @@
     }
 
     .pms-customer-details .customer-tabs .nav-link {
-        color: #64748b;
+        color: rgba(255, 255, 255, 0.82);
         font-weight: 600;
         border: none;
         border-bottom: 2px solid transparent;
         padding: 0.45rem 0.55rem;
-        transition: color 0.2s ease, border-color 0.2s ease;
+        transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
         font-size: 0.78rem;
         background: transparent;
         white-space: nowrap;
@@ -873,15 +1064,15 @@
     }
 
     .pms-customer-details .customer-tabs .nav-link:hover {
-        color: #2563eb;
-        background: transparent;
-        border-bottom-color: #cbd5e1;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
+        border-bottom-color: rgba(255, 255, 255, 0.55);
     }
 
     .pms-customer-details .customer-tabs .nav-link.active {
-        color: #2563eb;
-        background: transparent;
-        border-bottom-color: #2563eb;
+        color: #fff;
+        background: rgba(255, 255, 255, 0.12);
+        border-bottom-color: #fff;
         font-weight: 700;
     }
 
@@ -1166,6 +1357,7 @@
             $('#attachments-tab').on('shown.bs.tab', function() {
                 loadAttachments();
             });
+            loadAttachments();
             $('#jointowners-tab').on('shown.bs.tab', function() {
                 loadJointOwners();
             });
@@ -1408,11 +1600,11 @@
 
             // Display Customer Picture
             if (customerPicture) {
-                $('#customerPictureImg').attr('src', customerPicture.filePath).show();
-                $('#customerPicturePlaceholder').hide();
+                $('.js-customer-picture-img').attr('src', customerPicture.filePath).show();
+                $('.js-customer-picture-placeholder').hide();
             } else {
-                $('#customerPictureImg').hide();
-                $('#customerPicturePlaceholder').show();
+                $('.js-customer-picture-img').hide().attr('src', '');
+                $('.js-customer-picture-placeholder').show();
             }
 
             // Display ID Cards (multiple supported)
@@ -1607,6 +1799,96 @@
             var i = Math.floor(Math.log(bytes) / Math.log(k));
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
+
+        var customerPictureCameraStream = null;
+
+        function stopCustomerPictureCamera() {
+            if (customerPictureCameraStream) {
+                customerPictureCameraStream.getTracks().forEach(function(t) { t.stop(); });
+                customerPictureCameraStream = null;
+            }
+            var video = document.getElementById('customerPictureCameraVideo');
+            if (video) video.srcObject = null;
+        }
+
+        function startCustomerPictureCamera() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Camera is not supported in this browser.');
+                var el = document.getElementById('customerPictureCameraModal');
+                if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).hide();
+                return;
+            }
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+                .then(function(stream) {
+                    customerPictureCameraStream = stream;
+                    var video = document.getElementById('customerPictureCameraVideo');
+                    video.srcObject = stream;
+                    return video.play();
+                })
+                .catch(function(err) {
+                    alert('Could not access the camera: ' + (err && err.message ? err.message : String(err)));
+                    var el = document.getElementById('customerPictureCameraModal');
+                    if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).hide();
+                });
+        }
+
+        $(document).on('click', '.js-open-customer-picture-camera', function() {
+            var el = document.getElementById('customerPictureCameraModal');
+            if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).show();
+        });
+
+        $('#customerPictureCameraModal').on('shown.bs.modal', function() {
+            startCustomerPictureCamera();
+        });
+        $('#customerPictureCameraModal').on('hidden.bs.modal', function() {
+            stopCustomerPictureCamera();
+            $('#customerPictureCameraCaptureBtn').prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+        });
+
+        $('#customerPictureCameraCaptureBtn').on('click', function() {
+            var video = document.getElementById('customerPictureCameraVideo');
+            var canvas = document.getElementById('customerPictureCameraCanvas');
+            var width = video ? video.videoWidth : 0;
+            var height = video ? video.videoHeight : 0;
+            if (!width || !height) {
+                alert('Camera preview is not ready yet. Wait a moment and try again.');
+                return;
+            }
+            var maxWidth = 1920;
+            var scale = width > maxWidth ? maxWidth / width : 1;
+            var outWidth = Math.round(width * scale);
+            var outHeight = Math.round(height * scale);
+            canvas.width = outWidth;
+            canvas.height = outHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, width, height, 0, 0, outWidth, outHeight);
+            var $capture = $('#customerPictureCameraCaptureBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Uploading...');
+            canvas.toBlob(function(blob) {
+                if (!blob) {
+                    $capture.prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+                    alert('Could not capture image.');
+                    return;
+                }
+                var file = new File([blob], 'customer-picture-' + Date.now() + '.jpg', { type: 'image/jpeg' });
+                var modalEl = document.getElementById('customerPictureCameraModal');
+                if (modalEl && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                uploadSingleAttachment(file, 'CustomerPicture', 'Webcam capture')
+                    .then(function(response) {
+                        $capture.prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+                        if (response.success) {
+                            loadAttachments();
+                        } else {
+                            alert('Error: ' + (response.message || 'Upload failed'));
+                        }
+                    })
+                    .catch(function(xhr) {
+                        $capture.prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+                        var err = xhr && xhr.responseJSON && xhr.responseJSON.message
+                            ? xhr.responseJSON.message
+                            : 'An error occurred while uploading the picture';
+                        alert('Error: ' + err);
+                    });
+            }, 'image/jpeg', 0.88);
+        });
     </script>
 }
 

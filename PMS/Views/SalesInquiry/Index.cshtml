@@ -15,12 +15,12 @@
     <div class="d-flex flex-wrap gap-2 mb-2">
         @if (ViewBag.CanCreate == true || ViewBag.CanEdit == true)
         {
-            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newInquiryModal">
+            <button type="button" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search" data-bs-toggle="modal" data-bs-target="#newInquiryModal">
                 <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New Inquiry
             </button>
         }
-        <a href="@Url.Action("PerformanceReport")" class="btn btn-outline-primary btn-sm">
-            <i class="bi bi-graph-up me-1" aria-hidden="true"></i>Performance Report
+        <a href="@Url.Action("PerformanceReport")" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--operations">
+            <i class="bi bi-graph-up me-1" aria-hidden="true"></i>Report
         </a>
     </div>
 

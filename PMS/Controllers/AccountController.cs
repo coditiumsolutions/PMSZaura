@@ -861,6 +861,68 @@ namespace PMS.Controllers
             }
         }
 
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteUser(string userId)
+        {
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                return Json(new { success = false, message = "User not found." });
+            }
+
+            var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.Equals(currentUserId, userId, StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new { success = false, message = "You cannot delete your own account." });
+            }
+
+            try
+            {
+                var user = await _context.Users
+                    .Include(u => u.UserSessions)
+                    .Include(u => u.ModulePermissions)
+                    .Include(u => u.MacWhitelists)
+                    .Include(u => u.BlockedMacLoginAttempts)
+                    .Include(u => u.Notifications)
+                    .FirstOrDefaultAsync(u => u.UserID == userId);
+
+                if (user == null)
+                {
+                    return Json(new { success = false, message = "User not found." });
+                }
+
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+
+                if (!string.IsNullOrEmpty(currentUserId))
+                {
+                    try
+                    {
+                        await LogActivity(currentUserId, "Delete User", "User", userId);
+                    }
+                    catch
+                    {
+                        // ActivityLog table may not exist, continue anyway
+                    }
+                }
+
+                return Json(new { success = true, message = "User deleted successfully." });
+            }
+            catch (DbUpdateException ex)
+            {
+                var root = ex.InnerException?.Message ?? ex.Message;
+                return Json(new
+                {
+                    success = false,
+                    message = "Unable to delete this user because related records still reference them. " + root
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred: " + ex.Message });
+            }
+        }
+
         private async Task SaveModulePermissionsFromFormAsync(string userId)
         {
             var existing = await _context.UserModulePermissions.Where(p => p.UserID == userId).ToListAsync();

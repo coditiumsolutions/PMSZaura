@@ -259,7 +259,7 @@ namespace PMS.Controllers
 
         public async Task<IActionResult> Delete(string id)
         {
-            var denied = await EnsurePermissionAsync("Admin");
+            var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
             if (id == null)
             {
@@ -279,7 +279,7 @@ namespace PMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var denied = await EnsurePermissionAsync("Admin");
+            var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
             var project = await _context.Projects.FindAsync(id);
             if (project != null)
@@ -292,6 +292,8 @@ namespace PMS.Controllers
                 {
                     await LogActivity(userId, "Delete Project", "Project", id);
                 }
+
+                TempData["Success"] = "Project deleted successfully.";
             }
 
             return RedirectToAction(nameof(Index));

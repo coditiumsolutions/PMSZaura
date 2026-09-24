@@ -51,9 +51,9 @@
                     </select>
                 </div>
             </div>
-            <div class="col-12 col-lg">
-                <div class="d-flex flex-wrap gap-2 pms-listing-search-actions">
-                    <button type="submit" class="btn btn-primary btn-sm">
+            <div class="col-12 col-lg-auto">
+                <div class="d-flex flex-nowrap gap-2 align-items-center pms-listing-search-actions pms-ndc-search-actions">
+                    <button type="submit" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">
                         <i class="bi bi-search me-1" aria-hidden="true"></i>Search
                     </button>
                     <partial name="_OperationsDropdown" />
@@ -147,6 +147,54 @@
 
     .pms-ndc-listing .pms-saas-table thead th {
         font-size: 11.5px !important;
+    }
+
+    /* Equal-width rectangle buttons — #D0875A / #7A6A6D */
+    .pms-ndc-listing .pms-ndc-action-btn,
+    .pms-ndc-listing .pms-listing-operations-btn.pms-ndc-action-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 7.5rem !important;
+        min-width: 7.5rem !important;
+        max-width: 7.5rem !important;
+        flex: 0 0 7.5rem !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 0.35rem 0.5rem !important;
+        border-radius: 0 !important;
+        font-weight: 600;
+        font-size: 0.8125rem;
+        line-height: 1.2;
+        border: 1px solid transparent;
+        color: #fff !important;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+
+    .pms-ndc-listing .pms-ndc-action-btn--search {
+        background-color: #D0875A !important;
+        border-color: #c0784e !important;
+    }
+
+    .pms-ndc-listing .pms-ndc-action-btn--search:hover,
+    .pms-ndc-listing .pms-ndc-action-btn--search:focus {
+        background-color: #c0784e !important;
+        border-color: #ad6b45 !important;
+        color: #fff !important;
+    }
+
+    .pms-ndc-listing .pms-ndc-action-btn--operations {
+        background-color: #7A6A6D !important;
+        border-color: #6b5c5f !important;
+    }
+
+    .pms-ndc-listing .pms-ndc-action-btn--operations:hover,
+    .pms-ndc-listing .pms-ndc-action-btn--operations:focus,
+    .pms-ndc-listing .pms-ndc-action-btn--operations.show {
+        background-color: #6b5c5f !important;
+        border-color: #5c4f52 !important;
+        color: #fff !important;
     }
 </style>
 

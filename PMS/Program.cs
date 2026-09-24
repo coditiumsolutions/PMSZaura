@@ -47,12 +47,13 @@ builder.Services.AddHttpClient(ReportServiceClient.HttpClientName, (sp, client) 
 {
     var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ReportServiceOptions>>().Value;
     var baseUrl = string.IsNullOrWhiteSpace(options.BaseUrl)
-        ? "http://34.131.132.158:8000"
+        ? "http://127.0.0.1:8000"
         : options.BaseUrl.TrimEnd('/');
     client.BaseAddress = new Uri(baseUrl + "/");
     client.Timeout = TimeSpan.FromSeconds(Math.Clamp(options.TimeoutSeconds, 10, 300));
 });
 builder.Services.AddScoped<IReportServiceClient, ReportServiceClient>();
+builder.Services.AddScoped<IAccountStatementReportService, AccountStatementReportService>();
 builder.Services.Configure<AmsPmsIntegrationOptions>(builder.Configuration.GetSection(AmsPmsIntegrationOptions.SectionName));
 builder.Services.AddScoped<IAmsPmsIntegrationService, AmsPmsIntegrationService>();
 builder.Services.AddScoped<AmsExportService>();

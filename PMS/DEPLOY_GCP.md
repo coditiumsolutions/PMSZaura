@@ -7,10 +7,11 @@
 | URL | https://zaura.coditium.com |
 | VM IP | `34.93.239.49` |
 | SSH user | `zaura_coditium` |
-| SSH key (local) | `D:\.ssh\key_gcp_zaura` |
+| SSH key (local) | `D:\.ssh\zauracoditium_gcp\key_gcp_zaura` |
 | App directory | `/var/www/pms` |
 | systemd unit | `pms.service` → `dotnet /var/www/pms/PMS.dll` |
 | Kestrel | `http://127.0.0.1:8080` (nginx reverse proxy) |
+| TLS | Let's Encrypt via Certbot for `zaura.coditium.com` (auto-renew `certbot.timer`) |
 | DataProtection keys | `/var/www/pms/data-protection-keys` |
 
 SQL Server runs on the VM. The app must use `127.0.0.1` (not the public IP) for `ConnectionStrings:DefaultConnection`.
@@ -25,7 +26,7 @@ Required repository secret:
 
 | Secret | Source |
 |--------|--------|
-| `SSH_PRIVATE_KEY` | Private key from `D:\.ssh\key_gcp_zaura` |
+| `SSH_PRIVATE_KEY` | Private key from `D:\.ssh\zauracoditium_gcp\key_gcp_zaura` |
 
 Optional secrets (defaults match this VM):
 
@@ -59,7 +60,7 @@ Uploads and data-protection keys under `/var/www/pms` are preserved (rsync exclu
 ## Manual SSH check
 
 ```powershell
-ssh -i "D:\.ssh\key_gcp_zaura" zaura_coditium@34.93.239.49
+ssh -i "D:\.ssh\zauracoditium_gcp\key_gcp_zaura" zaura_coditium@34.93.239.49
 sudo systemctl status pms --no-pager
 ```
 

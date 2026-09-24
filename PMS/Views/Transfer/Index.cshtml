@@ -22,30 +22,26 @@
 }
 
 <div class="pms-transfer-listing pms-listing-page">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-        <h5 class="pms-grid-title mb-0">Transfers</h5>
-        <span class="badge rounded-pill pms-record-badge">@transferCount record@(transferCount == 1 ? "" : "s")</span>
-    </div>
-
     <form method="get" asp-action="Index" class="mb-2">
-        <div class="pms-transfer-search-wrap pms-listing-search-wrap">
-            <div class="row g-1 align-items-end flex-lg-nowrap">
+        <div class="pms-transfer-search-wrap pms-listing-search-wrap pms-transfer-search-panel">
+            <div class="row g-1 align-items-center flex-lg-nowrap pms-transfer-search-fields">
                 <div class="col-12 col-md-5 col-lg-3">
                     <div class="pms-compact-field">
-                        <label for="customerIdFilter" class="form-label">Customer ID</label>
+                        <label for="customerIdFilter" class="visually-hidden">Customer ID</label>
                         <input type="text"
                                name="customerIdFilter"
                                id="customerIdFilter"
                                class="form-control"
-                               placeholder="Search customer ID"
+                               placeholder="Customer ID"
+                               aria-label="Customer ID"
                                value="@ViewBag.CustomerIdFilter" />
                     </div>
                 </div>
                 <div class="col-12 col-md-4 col-lg-3">
                     <div class="pms-compact-field pms-select-dropdown">
-                        <label for="workflowFilter" class="form-label">Workflow</label>
-                        <select name="workflowFilter" id="workflowFilter" class="form-select" onchange="this.form.submit()">
-                            <option value="">All</option>
+                        <label for="workflowFilter" class="visually-hidden">Workflow</label>
+                        <select name="workflowFilter" id="workflowFilter" class="form-select" onchange="this.form.submit()" aria-label="Workflow">
+                            <option value="">All Workflows</option>
                             @if (ViewBag.WorkflowStatuses != null)
                             {
                                 foreach (var s in (string[])ViewBag.WorkflowStatuses)
@@ -56,17 +52,18 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-12 col-lg">
-                    <div class="d-flex flex-wrap gap-2 pms-transfer-search-actions">
-                        <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="bi bi-search me-1" aria-hidden="true"></i>Search
-                        </button>
-                        @if (!string.IsNullOrWhiteSpace(ViewBag.CustomerIdFilter as string) || !string.IsNullOrWhiteSpace(ViewBag.WorkflowFilter as string))
-                        {
-                            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Clear</a>
-                        }
-                        <partial name="_OperationsDropdown" />
+                <div class="col-12 col-lg-auto">
+                    <div class="pms-compact-field pms-transfer-search-actions">
+                        <div class="d-flex flex-nowrap gap-2 align-items-center">
+                            <button type="submit" class="btn btn-sm pms-transfer-action-btn pms-transfer-action-btn--search">
+                                <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                            </button>
+                            <partial name="_OperationsDropdown" />
+                        </div>
                     </div>
+                </div>
+                <div class="col-12 col-lg ms-lg-auto text-lg-end">
+                    <span class="badge rounded-pill pms-record-badge">@transferCount record@(transferCount == 1 ? "" : "s")</span>
                 </div>
             </div>
         </div>
@@ -80,7 +77,7 @@
                         <tr>
                             <th>Transfer ID</th>
                             <th>Customer ID</th>
-                            <th>Customer / Project</th>
+                            <th>Customers</th>
                             <th>Seller</th>
                             <th>Buyer</th>
                             <th>Workflow</th>
@@ -96,7 +93,7 @@
                                     </a>
                                 </td>
                                 <td data-label="Customer ID"><code>@t.CustomerID</code></td>
-                                <td data-label="Customer / Project">
+                                <td data-label="Customers">
                                     @if (t.Customer?.PaymentPlan?.Project != null)
                                     {
                                         <span class="pms-pill pms-pill--info">@t.Customer.PaymentPlan.Project.ProjectName</span>
@@ -127,11 +124,119 @@
     </div>
 </div>
 
+<style>
+    /* Pull search section up — remove extra top gap */
+    .content-body:has(.pms-transfer-listing) {
+        padding-top: 0.5rem !important;
+    }
+
+    .pms-transfer-listing {
+        margin-top: 0;
+    }
+
+    .pms-transfer-search-panel {
+        padding: 0.55rem 0.85rem !important;
+        background: #e8eef8 !important;
+        border: 1px solid #c5d0e0 !important;
+        border-radius: 10px;
+    }
+
+    .pms-transfer-search-fields {
+        margin-top: 0 !important;
+        align-items: center !important;
+    }
+
+    .pms-transfer-listing .pms-transfer-search-panel .form-label:not(.visually-hidden) {
+        display: none !important;
+    }
+
+    .pms-transfer-listing .pms-transfer-search-wrap .form-control,
+    .pms-transfer-listing .pms-transfer-search-wrap .form-select {
+        min-height: 34px;
+        height: 34px;
+        padding: 0.25rem 0.65rem;
+        font-size: 0.8125rem;
+        border-radius: 0;
+    }
+
+    .pms-transfer-listing .pms-transfer-action-btn,
+    .pms-transfer-listing .pms-listing-operations-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 7.5rem !important;
+        min-width: 7.5rem !important;
+        max-width: 7.5rem !important;
+        height: 34px !important;
+        min-height: 34px !important;
+        padding: 0.25rem 0.75rem !important;
+        border-radius: 0 !important;
+        font-weight: 600;
+        font-size: 0.8125rem;
+        line-height: 1.2;
+        border: 1px solid transparent;
+        color: #fff !important;
+        white-space: nowrap;
+        flex: 0 0 7.5rem !important;
+    }
+
+    .pms-transfer-listing .pms-transfer-action-btn--search {
+        background-color: #CA7E2A !important;
+        border-color: #b56f24 !important;
+    }
+
+    .pms-transfer-listing .pms-transfer-action-btn--search:hover,
+    .pms-transfer-listing .pms-transfer-action-btn--search:focus {
+        background-color: #b56f24 !important;
+        border-color: #a06320 !important;
+        color: #fff !important;
+    }
+
+    .pms-transfer-listing .pms-listing-operations-btn {
+        background-color: #343E19 !important;
+        border-color: #2a3214 !important;
+    }
+
+    .pms-transfer-listing .pms-listing-operations-btn:hover,
+    .pms-transfer-listing .pms-listing-operations-btn:focus,
+    .pms-transfer-listing .pms-listing-operations-btn.show {
+        background-color: #2a3214 !important;
+        border-color: #222910 !important;
+        color: #fff !important;
+    }
+
+    .pms-transfer-listing .pms-saas-table thead th {
+        font-size: 0.68rem !important;
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        border-color: #524c96 !important;
+    }
+
+    .pms-transfer-listing .pms-saas-table,
+    .pms-transfer-listing .pms-saas-table tbody td,
+    .pms-transfer-listing .pms-saas-table tbody td a,
+    .pms-transfer-listing .pms-saas-table tbody td code,
+    .pms-transfer-listing .pms-saas-table tbody td .text-muted {
+        color: #000 !important;
+    }
+
+    .pms-transfer-listing .pms-transfer-row {
+        cursor: pointer;
+    }
+
+    .pms-transfer-listing .dataTables_length {
+        display: none !important;
+    }
+</style>
+
 @section Scripts {
     <script>
         $(document).ready(function() {
             PmsListingDataTable.init('#transfersTable', {
-                order: [[0, 'desc']]
+                order: [[0, 'desc']],
+                lengthChange: false,
+                pageLength: 20,
+                dom: 'rtip'
             });
             PmsListingDataTable.bindRowNavigation('#transfersTable', { rowSelector: 'tr.pms-transfer-row' });
         });

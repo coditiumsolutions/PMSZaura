@@ -568,8 +568,8 @@
                                             <div class="row">
                                                 <div class="col-md-4">
                                                     <div id="customerPicturePreview" class="text-center mb-3">
-                                                        <img id="customerPictureImg" src="" alt="Customer Picture" class="img-thumbnail" style="max-width: 200px; max-height: 200px; display: none;" />
-                                                        <div id="customerPicturePlaceholder" class="text-muted">
+                                                        <img id="customerPictureImg" class="js-customer-picture-img img-thumbnail" src="" alt="Customer Picture" style="max-width: 200px; max-height: 200px; display: none;" />
+                                                        <div id="customerPicturePlaceholder" class="js-customer-picture-placeholder text-muted">
                                                             <i class="fas fa-user-circle fa-5x"></i>
                                                             <p class="mt-2">No picture uploaded</p>
                                                         </div>
@@ -579,11 +579,16 @@
                                                     <div class="mb-3">
                                                         <label class="form-label">Upload Customer Picture</label>
                                                         <input type="file" id="customerPictureFile" class="form-control" accept="image/*" />
-                                                        <small class="text-muted">Only image files (JPG, PNG, GIF, BMP). Max size: 8MB</small>
+                                                        <small class="text-muted">Only image files (JPG, PNG, GIF, BMP). Max size: 8MB. A new upload replaces the current picture.</small>
                                                     </div>
-                                                    <button type="button" class="btn btn-primary btn-upload-attach" onclick="uploadAttachment('CustomerPicture', 'customerPictureFile')">
-                                                        <i class="fas fa-upload me-2"></i>Upload Picture
-                                                    </button>
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        <button type="button" class="btn btn-primary btn-upload-attach" onclick="uploadAttachment('CustomerPicture', 'customerPictureFile')">
+                                                            <i class="fas fa-upload me-2"></i>Upload Picture
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-secondary js-open-customer-picture-camera" title="Capture with webcam">
+                                                            <i class="fas fa-camera me-2"></i>Use Webcam
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -663,6 +668,30 @@
 
                 </form>
         </div>
+</div>
+
+<div class="modal fade" id="customerPictureCameraModal" tabindex="-1" aria-labelledby="customerPictureCameraModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h5 class="modal-title" id="customerPictureCameraModalLabel"><i class="fas fa-camera me-2"></i>Customer picture — webcam</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-2">
+                <p class="text-muted small mb-2">Allow camera access when prompted. Capture uploads immediately and replaces the current customer picture.</p>
+                <div class="ratio ratio-4x3 bg-dark rounded overflow-hidden position-relative">
+                    <video id="customerPictureCameraVideo" class="w-100 h-100" style="object-fit:contain;" playsinline muted autoplay></video>
+                </div>
+                <canvas id="customerPictureCameraCanvas" class="d-none"></canvas>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="customerPictureCameraCaptureBtn">
+                    <i class="fas fa-camera me-1"></i>Capture &amp; upload
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
@@ -1063,11 +1092,11 @@
 
             // Display Customer Picture
             if (customerPicture) {
-                $('#customerPictureImg').attr('src', customerPicture.filePath).show();
-                $('#customerPicturePlaceholder').hide();
+                $('.js-customer-picture-img').attr('src', customerPicture.filePath).show();
+                $('.js-customer-picture-placeholder').hide();
             } else {
-                $('#customerPictureImg').hide();
-                $('#customerPicturePlaceholder').show();
+                $('.js-customer-picture-img').hide().attr('src', '');
+                $('.js-customer-picture-placeholder').show();
             }
 
             // Display ID Cards (multiple supported)
@@ -1262,6 +1291,96 @@
             var i = Math.floor(Math.log(bytes) / Math.log(k));
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
+
+        var customerPictureCameraStream = null;
+
+        function stopCustomerPictureCamera() {
+            if (customerPictureCameraStream) {
+                customerPictureCameraStream.getTracks().forEach(function(t) { t.stop(); });
+                customerPictureCameraStream = null;
+            }
+            var video = document.getElementById('customerPictureCameraVideo');
+            if (video) video.srcObject = null;
+        }
+
+        function startCustomerPictureCamera() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Camera is not supported in this browser.');
+                var el = document.getElementById('customerPictureCameraModal');
+                if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).hide();
+                return;
+            }
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+                .then(function(stream) {
+                    customerPictureCameraStream = stream;
+                    var video = document.getElementById('customerPictureCameraVideo');
+                    video.srcObject = stream;
+                    return video.play();
+                })
+                .catch(function(err) {
+                    alert('Could not access the camera: ' + (err && err.message ? err.message : String(err)));
+                    var el = document.getElementById('customerPictureCameraModal');
+                    if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).hide();
+                });
+        }
+
+        $(document).on('click', '.js-open-customer-picture-camera', function() {
+            var el = document.getElementById('customerPictureCameraModal');
+            if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).show();
+        });
+
+        $('#customerPictureCameraModal').on('shown.bs.modal', function() {
+            startCustomerPictureCamera();
+        });
+        $('#customerPictureCameraModal').on('hidden.bs.modal', function() {
+            stopCustomerPictureCamera();
+            $('#customerPictureCameraCaptureBtn').prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+        });
+
+        $('#customerPictureCameraCaptureBtn').on('click', function() {
+            var video = document.getElementById('customerPictureCameraVideo');
+            var canvas = document.getElementById('customerPictureCameraCanvas');
+            var width = video ? video.videoWidth : 0;
+            var height = video ? video.videoHeight : 0;
+            if (!width || !height) {
+                alert('Camera preview is not ready yet. Wait a moment and try again.');
+                return;
+            }
+            var maxWidth = 1920;
+            var scale = width > maxWidth ? maxWidth / width : 1;
+            var outWidth = Math.round(width * scale);
+            var outHeight = Math.round(height * scale);
+            canvas.width = outWidth;
+            canvas.height = outHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, width, height, 0, 0, outWidth, outHeight);
+            var $capture = $('#customerPictureCameraCaptureBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Uploading...');
+            canvas.toBlob(function(blob) {
+                if (!blob) {
+                    $capture.prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+                    alert('Could not capture image.');
+                    return;
+                }
+                var file = new File([blob], 'customer-picture-' + Date.now() + '.jpg', { type: 'image/jpeg' });
+                var modalEl = document.getElementById('customerPictureCameraModal');
+                if (modalEl && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                uploadSingleAttachment(file, 'CustomerPicture', 'Webcam capture')
+                    .then(function(response) {
+                        $capture.prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+                        if (response.success) {
+                            loadAttachments();
+                        } else {
+                            alert('Error: ' + (response.message || 'Upload failed'));
+                        }
+                    })
+                    .catch(function(xhr) {
+                        $capture.prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+                        var err = xhr && xhr.responseJSON && xhr.responseJSON.message
+                            ? xhr.responseJSON.message
+                            : 'An error occurred while uploading the picture';
+                        alert('Error: ' + err);
+                    });
+            }, 'image/jpeg', 0.88);
+        });
 
         // (intentionally removed loadProperties() and selectedPropertyEdit handlers)
     </script>

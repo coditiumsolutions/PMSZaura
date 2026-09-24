@@ -14,6 +14,7 @@
         .ToList() ?? new();
     var categories = allConfigs.GroupBy(x => x.Category).OrderBy(g => g.Key).ToList();
     var totalCount = allConfigs.Count;
+    var canEdit = ViewBag.CanEdit == true;
 }
 
 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
@@ -22,6 +23,12 @@
         <small class="text-muted">All records from the Configuration table (@totalCount)</small>
     </div>
     <div class="d-flex flex-wrap gap-2">
+        @if (canEdit)
+        {
+            <button type="button" id="btnEditConfig" class="btn btn-outline-primary btn-sm" disabled title="Select a configuration first">
+                <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Edit Configuration
+            </button>
+        }
         <a asp-action="Create" class="btn btn-primary btn-sm">
             <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add Configuration
         </a>
@@ -72,42 +79,34 @@
 
 @if (allConfigs.Any())
 {
-    <div class="card pms-grid-card pms-listing-flat pms-saas-grid mb-3">
+    <div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page pms-settings-listing mb-3">
         <div class="card-body py-2">
             <div class="table-responsive pms-saas-table-wrap">
                 <table class="table pms-saas-table mb-0" id="settingsConfigTable">
                     <thead>
                         <tr>
+                            <th class="pms-settings-select-col text-center" aria-label="Select"></th>
                             <th>Key</th>
                             <th>Category</th>
                             <th>Value</th>
-                            <th class="pms-saas-th-actions">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var item in allConfigs)
                         {
                             var config = item.Config;
-                            <tr>
+                            <tr class="pms-settings-selectable-row"
+                                data-config-key="@config.ConfigKey">
+                                <td data-label="Select" class="text-center pms-settings-select-col">
+                                    <input type="radio"
+                                           name="selectedConfig"
+                                           class="form-check-input settings-select-radio m-0"
+                                           value="@config.ConfigKey"
+                                           aria-label="Select @config.ConfigKey" />
+                                </td>
                                 <td data-label="Key"><code class="pms-config-key">@config.ConfigKey</code></td>
                                 <td data-label="Category">@item.Category</td>
                                 <td data-label="Value"><span class="pms-config-value">@(config.ConfigValue ?? "")</span></td>
-                                <td class="pms-saas-td-actions" data-label="Actions">
-                                    <div class="pms-row-actions" role="group">
-                                        <a asp-action="Edit"
-                                           asp-route-id="@config.ConfigKey"
-                                           class="btn btn-sm btn-outline-primary"
-                                           title="Edit">
-                                            <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                        </a>
-                                        <button type="button"
-                                                class="btn btn-sm btn-outline-danger"
-                                                onclick="deleteConfig('@config.ConfigKey')"
-                                                title="Delete">
-                                            <i class="bi bi-trash" aria-hidden="true"></i>
-                                        </button>
-                                    </div>
-                                </td>
                             </tr>
                         }
                     </tbody>
@@ -129,11 +128,6 @@ else
         </div>
     </div>
 }
-
-<form id="deleteForm" asp-action="Delete" method="post" style="display: none;">
-    @Html.AntiForgeryToken()
-    <input type="hidden" id="deleteConfigKey" name="id" />
-</form>
 
 <style>
     .settings-stats-compact .stats-card {
@@ -192,31 +186,67 @@ else
     }
 
     /* Always show Edit/Delete (override hover-only grid actions) */
-    #settingsConfigTable .pms-row-actions,
-    .pms-saas-grid #settingsConfigTable tbody tr .pms-row-actions {
-        opacity: 1 !important;
-        transform: none !important;
-        visibility: visible !important;
+    .pms-settings-select-col {
+        width: 2.75rem;
+        min-width: 2.75rem;
+    }
+
+    .pms-settings-listing .pms-settings-selectable-row {
+        cursor: pointer;
+    }
+
+    .pms-settings-listing .pms-settings-selectable-row.pms-row-selected,
+    .pms-settings-listing .pms-settings-selectable-row.pms-row-selected > td {
+        background-color: #e7f1ff !important;
+    }
+
+    .pms-settings-listing .pms-saas-table-wrap {
+        max-height: none;
+        min-height: calc(64px * 20 + 3.5rem);
+        overflow-y: auto;
     }
 </style>
 
 @section Scripts {
     <script>
-        function deleteConfig(configKey) {
-            if (confirm('Are you sure you want to delete this configuration?\n\nKey: ' + configKey)) {
-                document.getElementById('deleteConfigKey').value = configKey;
-                document.getElementById('deleteForm').submit();
-            }
-        }
-
         $(document).ready(function () {
+            var canEdit = @canEdit.ToString().ToLowerInvariant();
+            var editConfigBaseUrl = '@Url.Action("Edit", "Settings")';
+            var selectedConfigKey = null;
+            var $editBtn = $('#btnEditConfig');
+
+            function clearSelection() {
+                selectedConfigKey = null;
+                $('#settingsConfigTable tbody tr.pms-settings-selectable-row').removeClass('pms-row-selected');
+                $('.settings-select-radio').prop('checked', false);
+                if ($editBtn.length) {
+                    $editBtn.prop('disabled', true).attr('title', 'Select a configuration first');
+                }
+            }
+
+            function setSelectedConfig($row) {
+                if (!$row || !$row.length) {
+                    clearSelection();
+                    return;
+                }
+
+                selectedConfigKey = String($row.data('config-key') || '');
+                $('#settingsConfigTable tbody tr.pms-settings-selectable-row').removeClass('pms-row-selected');
+                $row.addClass('pms-row-selected');
+                $row.find('.settings-select-radio').prop('checked', true);
+
+                if ($editBtn.length) {
+                    $editBtn.prop('disabled', false).attr('title', 'Edit selected configuration');
+                }
+            }
+
             if ($('#settingsConfigTable').length && $.fn.DataTable) {
                 $('#settingsConfigTable').DataTable({
-                    pageLength: 25,
-                    order: [[0, 'asc']],
-                    lengthMenu: [[25, 50, 100, -1], [25, 50, 100, 'All']],
+                    pageLength: 20,
+                    order: [[1, 'asc']],
+                    lengthMenu: [[20, 25, 50, 100, -1], [20, 25, 50, 100, 'All']],
                     columnDefs: [
-                        { orderable: false, targets: 3 }
+                        { orderable: false, targets: 0 }
                     ],
                     language: {
                         search: 'Search:',
@@ -230,6 +260,29 @@ else
                             previous: 'Previous'
                         }
                     }
+                });
+
+                $('#settingsConfigTable tbody').on('change', '.settings-select-radio', function () {
+                    setSelectedConfig($(this).closest('tr'));
+                });
+
+                $('#settingsConfigTable tbody').on('click', 'tr.pms-settings-selectable-row', function (e) {
+                    if ($(e.target).closest('a, button, form, select, textarea, input').length) {
+                        return;
+                    }
+                    var $row = $(this);
+                    if (selectedConfigKey === String($row.data('config-key') || '')) {
+                        clearSelection();
+                    } else {
+                        setSelectedConfig($row);
+                    }
+                });
+            }
+
+            if (canEdit) {
+                $editBtn.on('click', function () {
+                    if (!selectedConfigKey) return;
+                    window.location.href = editConfigBaseUrl + '/' + encodeURIComponent(selectedConfigKey);
                 });
             }
         });

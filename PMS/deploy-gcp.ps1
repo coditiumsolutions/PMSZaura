@@ -1,14 +1,16 @@
 param(
-    [string]$SshHost = "34.131.132.158",
-    [string]$SshUser = "coditiums",
-    [string]$IdentityFile = "D:\.ssh\Learning\gcp_coditium_vm",
+    [string]$SshHost = "34.93.239.49",
+    [string]$SshUser = "zaura_coditium",
+    [string]$IdentityFile = "D:\.ssh\zauracoditium_gcp\key_gcp_zaura",
     [string]$PublishOutput = "$PSScriptRoot/publish-out/linux-x64",
     [string]$RemoteDeployScript = "$PSScriptRoot/deploy-gcp-remote.sh",
     # Live systemd WorkingDirectory / ExecStart path (not /var/www/pms/app)
     [string]$AppDir = "/var/www/pms",
     [string]$KeysDir = "/var/www/pms/data-protection-keys",
     [string]$ServiceName = "pms",
-    [string]$DomainName = "pms.coditium.com"
+    [string]$DomainName = "zaura.coditium.com",
+    # Read from local (gitignored) appsettings.json so credentials stay out of source control.
+    [string]$DbConnection = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -18,6 +20,7 @@ function Resolve-SshIdentityFile {
 
     $candidates = @(
         $Preferred,
+        "D:\.ssh\zauracoditium_gcp\key_gcp_zaura",
         "D:\.ssh\Learning\gcp_coditium_vm",
         "D:\.ssh\GCP ssh\github_deploy_key"
     ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Select-Object -Unique
@@ -29,10 +32,30 @@ function Resolve-SshIdentityFile {
     throw "SSH private key not found. Tried:`n - $($candidates -join "`n - ")"
 }
 
+function Resolve-DbConnection {
+    param([string]$Preferred)
+
+    if (-not [string]::IsNullOrWhiteSpace($Preferred)) { return $Preferred }
+
+    $settings = Join-Path $PSScriptRoot "appsettings.json"
+    if (Test-Path -LiteralPath $settings) {
+        $value = (Get-Content -LiteralPath $settings -Raw |
+            ConvertFrom-Json).ConnectionStrings.DefaultConnection
+        if (-not [string]::IsNullOrWhiteSpace($value)) { return $value }
+    }
+
+    throw "No database connection string. Pass -DbConnection or set ConnectionStrings:DefaultConnection in $settings"
+}
+
 function Get-SshKeyPath {
     param([string]$SourceKey)
 
     $secureKey = Join-Path $env:TEMP "gcp_vm_key_deploy"
+    # A leftover copy from a failed run is read-only, which blocks Copy-Item.
+    if (Test-Path -LiteralPath $secureKey) {
+        icacls $secureKey /grant:r "$($env:USERNAME):F" | Out-Null
+        Remove-Item -LiteralPath $secureKey -Force
+    }
     Copy-Item -LiteralPath $SourceKey $secureKey -Force
     icacls $secureKey /inheritance:r | Out-Null
     icacls $secureKey /grant:r "$($env:USERNAME):R" | Out-Null
@@ -41,6 +64,13 @@ function Get-SshKeyPath {
 
 Write-Host "=== PMS GCP Deploy ===" -ForegroundColor Cyan
 $IdentityFile = Resolve-SshIdentityFile -Preferred $IdentityFile
+$DbConnection = Resolve-DbConnection -Preferred $DbConnection
+# SQL Server runs on the target VM itself and 1433 is not open to the internet,
+# so the app must reach it over loopback rather than the public IP.
+if ($DbConnection -match [regex]::Escape($SshHost)) {
+    $DbConnection = $DbConnection -replace [regex]::Escape($SshHost), "127.0.0.1"
+    Write-Host "DB host $SshHost rewritten to 127.0.0.1 (database is local to the VM)" -ForegroundColor Yellow
+}
 Write-Host "Target: ${SshUser}@${SshHost}" -ForegroundColor Yellow
 Write-Host "Key: $IdentityFile" -ForegroundColor Yellow
 Write-Host "App dir: $AppDir" -ForegroundColor Yellow
@@ -90,8 +120,14 @@ export DOMAIN_NAME='$DomainName'
 export APP_DIR='$AppDir'
 export SERVICE_NAME='$ServiceName'
 export KEYS_DIR='$KeysDir'
+export DB_CONNECTION='$DbConnection'
 "@
-    ($remoteEnv + "`n" + $remoteScript) | & ssh @sshBase $sshTarget "bash -s"
+    # Normalize the env block too: stray CRs leak into values (e.g. systemd "pms\x0d.service").
+    $remotePayload = ($remoteEnv + "`n" + $remoteScript) -replace "`r`n", "`n" -replace "`r", ""
+    # Send base64 rather than piping: PowerShell appends CRLF to piped native input,
+    # which bash reports as `$'\r': command not found` on the final line.
+    $encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($remotePayload))
+    & ssh @sshBase $sshTarget "echo $encoded | base64 -d | bash"
     if ($LASTEXITCODE -ne 0) { throw "Remote deploy failed (exit $LASTEXITCODE)" }
 
     Write-Host "`nDeployment complete." -ForegroundColor Cyan

@@ -316,7 +316,7 @@ namespace PMS.Controllers
         // GET: Registration/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
-            var denied = await EnsurePermissionAsync("Admin");
+            var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
             if (id == null)
             {
@@ -348,7 +348,7 @@ namespace PMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(string id)
         {
-            var denied = await EnsurePermissionAsync("Admin");
+            var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
             var registration = await _context.Registrations
                 .Include(r => r.Customers)

@@ -8,8 +8,16 @@
     ViewData["ListingAddUrl"] = Url.Action("CreateUser");
     ViewData["ListingAddText"] = "Add New User";
     ViewData["ListingExtraActions"] =
+        "<button type=\"button\" id=\"btnEditUser\" class=\"btn btn-outline-primary btn-sm\" disabled title=\"Select a user first\">" +
+        "<i class=\"bi bi-pencil-square me-1\" aria-hidden=\"true\"></i>Edit User</button>" +
+        "<button type=\"button\" id=\"btnDeleteUser\" class=\"btn btn-outline-danger btn-sm\" disabled title=\"Select a user first\">" +
+        "<i class=\"bi bi-trash me-1\" aria-hidden=\"true\"></i>Delete User</button>" +
+        "<button type=\"button\" id=\"btnToggleUserStatus\" class=\"btn btn-outline-warning btn-sm\" disabled title=\"Select a user first\">" +
+        "<i class=\"bi bi-slash-circle me-1\" aria-hidden=\"true\"></i>Toggle Status</button>" +
+        "<button type=\"button\" id=\"btnUserMtls\" class=\"btn btn-outline-secondary btn-sm\" disabled title=\"Select a user first\">" +
+        "<i class=\"bi bi-shield-check me-1\" aria-hidden=\"true\"></i>Manage mTLS</button>" +
         "<a href=\"" + Url.Action("Index", "UserMac") + "\" class=\"btn btn-outline-primary btn-sm\">" +
-        "<i class=\"bi bi-shield-check me-1\" aria-hidden=\"true\"></i>Manage mTLS Certificates</a>";
+        "<i class=\"bi bi-shield-check me-1\" aria-hidden=\"true\"></i>All mTLS Certificates</a>";
 }
 
 <div class="row g-2 mb-3 users-stats-compact">
@@ -47,26 +55,33 @@
             <table class="table pms-saas-table" id="usersTable">
                 <thead>
                     <tr>
-                        <th>ID</th>
+                        <th class="pms-users-select-col text-center" aria-label="Select"></th>
                         <th>Name</th>
-                        <th>Email</th>
                         <th>Desig</th>
                         <th>Dept</th>
                         <th>User Type</th>
                         <th>Role</th>
-                        <th>Status</th>
-                        <th class="pms-saas-th-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var user in Model.OrderBy(u => u.FullName))
                     {
-                        <tr>
-                            <td data-label="ID"><span class="pms-users-id">@user.UserID</span></td>
-                            <td data-label="Name">
-                                <span class="pms-cell-truncate" title="@user.FullName">@user.FullName</span>
+                        <tr class="pms-user-selectable-row"
+                            data-user-id="@user.UserID"
+                            data-user-active="@user.IsActive.ToString().ToLower()">
+                            <td data-label="Select" class="text-center pms-users-select-col">
+                                <input type="radio"
+                                       name="selectedUser"
+                                       class="form-check-input user-select-radio m-0"
+                                       value="@user.UserID"
+                                       aria-label="Select @user.FullName" />
                             </td>
-                            <td data-label="Email"><span class="pms-cell-truncate" title="@user.Email">@user.Email</span></td>
+                            <td data-label="Name">
+                                <a asp-action="EditUser"
+                                   asp-route-id="@user.UserID"
+                                   class="pms-user-name-link pms-cell-truncate"
+                                   title="Open @user.FullName">@user.FullName</a>
+                            </td>
                             <td data-label="Desig">@(user.Designation ?? "—")</td>
                             <td data-label="Dept">@(user.Department ?? "—")</td>
                             <td data-label="User Type">
@@ -88,45 +103,6 @@
                                 {
                                     <span class="text-muted">No Role</span>
                                 }
-                            </td>
-                            <td data-label="Status">
-                                @if (user.IsActive)
-                                {
-                                    <span class="pms-pill pms-pill--success">Active</span>
-                                }
-                                else
-                                {
-                                    <span class="pms-pill pms-pill--danger">Inactive</span>
-                                }
-                            </td>
-                            <td class="pms-saas-td-actions" data-label="Actions">
-                                <div class="pms-row-actions" role="group">
-                                    <a asp-action="EditUser"
-                                       asp-route-id="@user.UserID"
-                                       class="btn btn-sm btn-outline-secondary"
-                                       title="View / Edit User">
-                                        <i class="bi bi-eye" aria-hidden="true"></i>
-                                    </a>
-                                    <a asp-action="EditUser"
-                                       asp-route-id="@user.UserID"
-                                       class="btn btn-sm btn-outline-primary"
-                                       title="Edit User">
-                                        <i class="bi bi-pencil-square" aria-hidden="true"></i>
-                                    </a>
-                                    <button type="button"
-                                            class="btn btn-sm @(user.IsActive ? "btn-outline-warning" : "btn-outline-success")"
-                                            onclick="toggleUserStatus('@user.UserID', @user.IsActive.ToString().ToLower())"
-                                            title="@(user.IsActive ? "Deactivate" : "Activate")">
-                                        <i class="bi bi-@(user.IsActive ? "slash-circle" : "check-circle")" aria-hidden="true"></i>
-                                    </button>
-                                    <a class="btn btn-sm btn-outline-secondary"
-                                       asp-controller="UserMac"
-                                       asp-action="Index"
-                                       asp-route-userId="@user.UserID"
-                                       title="Manage mTLS certificates">
-                                        <i class="bi bi-shield-check" aria-hidden="true"></i>
-                                    </a>
-                                </div>
                             </td>
                         </tr>
                     }
@@ -163,10 +139,28 @@
         color: #000 !important;
     }
 
-    .pms-users-listing #usersTable tbody td:first-child,
-    .pms-users-listing #usersTable tbody td:first-child .pms-users-id {
+    .pms-users-listing .pms-user-name-link {
         color: #1e3a8a !important;
         font-weight: 600;
+        text-decoration: none;
+    }
+
+    .pms-users-listing .pms-user-name-link:hover {
+        text-decoration: underline;
+    }
+
+    .pms-users-listing .pms-users-select-col {
+        width: 2.75rem;
+        min-width: 2.75rem;
+    }
+
+    .pms-users-listing .pms-user-selectable-row {
+        cursor: pointer;
+    }
+
+    .pms-users-listing .pms-user-selectable-row.pms-row-selected,
+    .pms-users-listing .pms-user-selectable-row.pms-row-selected > td {
+        background-color: #e7f1ff !important;
     }
 
     .users-stats-compact .stats-card {
@@ -196,17 +190,121 @@
         margin: 0;
         line-height: 1.2;
     }
-
 </style>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
+            var editUserBaseUrl = '@Url.Action("EditUser", "Account")';
+            var userMacBaseUrl = '@Url.Action("Index", "UserMac")';
+            var selectedUserId = null;
+            var selectedUserActive = null;
+
+            var $editBtn = $('#btnEditUser');
+            var $deleteBtn = $('#btnDeleteUser');
+            var $toggleBtn = $('#btnToggleUserStatus');
+            var $mtlsBtn = $('#btnUserMtls');
+
+            function clearSelection() {
+                selectedUserId = null;
+                selectedUserActive = null;
+                $('#usersTable tbody tr.pms-user-selectable-row').removeClass('pms-row-selected');
+                $('.user-select-radio').prop('checked', false);
+                $editBtn.prop('disabled', true).attr('title', 'Select a user first');
+                $deleteBtn.prop('disabled', true).attr('title', 'Select a user first');
+                $toggleBtn.prop('disabled', true)
+                    .attr('title', 'Select a user first')
+                    .removeClass('btn-outline-success btn-outline-warning')
+                    .addClass('btn-outline-warning')
+                    .html('<i class="bi bi-slash-circle me-1" aria-hidden="true"></i>Toggle Status');
+                $mtlsBtn.prop('disabled', true).attr('title', 'Select a user first');
+            }
+
+            function setSelectedUser($row) {
+                if (!$row || !$row.length) {
+                    clearSelection();
+                    return;
+                }
+
+                selectedUserId = String($row.data('user-id') || '');
+                selectedUserActive = String($row.data('user-active') || '').toLowerCase() === 'true';
+
+                $('#usersTable tbody tr.pms-user-selectable-row').removeClass('pms-row-selected');
+                $row.addClass('pms-row-selected');
+                $row.find('.user-select-radio').prop('checked', true);
+
+                $editBtn.prop('disabled', false).attr('title', 'Edit selected user');
+                $deleteBtn.prop('disabled', false).attr('title', 'Delete selected user');
+                $mtlsBtn.prop('disabled', false).attr('title', 'Manage mTLS for selected user');
+
+                var toggleLabel = selectedUserActive ? 'Deactivate User' : 'Activate User';
+                var toggleIcon = selectedUserActive ? 'slash-circle' : 'check-circle';
+                $toggleBtn.prop('disabled', false)
+                    .attr('title', toggleLabel)
+                    .removeClass('btn-outline-success btn-outline-warning')
+                    .addClass(selectedUserActive ? 'btn-outline-warning' : 'btn-outline-success')
+                    .html('<i class="bi bi-' + toggleIcon + ' me-1" aria-hidden="true"></i>' + toggleLabel);
+            }
+
             $('#usersTable').DataTable({
                 pageLength: 25,
                 order: [[1, 'asc']],
-                columnDefs: [{ orderable: false, targets: 8 }],
+                columnDefs: [{ orderable: false, targets: 0 }],
                 dom: '<"d-flex justify-content-end mb-2"f>rt<"d-flex flex-wrap justify-content-between align-items-center gap-2 mt-2"lip>'
+            });
+
+            $('#usersTable tbody').on('change', '.user-select-radio', function() {
+                setSelectedUser($(this).closest('tr'));
+            });
+
+            $('#usersTable tbody').on('click', 'tr.pms-user-selectable-row', function(e) {
+                if ($(e.target).closest('a, button, form, select, textarea, input').length) {
+                    return;
+                }
+                var $row = $(this);
+                if (selectedUserId === String($row.data('user-id') || '')) {
+                    clearSelection();
+                } else {
+                    setSelectedUser($row);
+                }
+            });
+
+            $editBtn.on('click', function() {
+                if (!selectedUserId) return;
+                window.location.href = editUserBaseUrl + '/' + encodeURIComponent(selectedUserId);
+            });
+
+            $mtlsBtn.on('click', function() {
+                if (!selectedUserId) return;
+                window.location.href = userMacBaseUrl + '?userId=' + encodeURIComponent(selectedUserId);
+            });
+
+            $toggleBtn.on('click', function() {
+                if (!selectedUserId) return;
+                toggleUserStatus(selectedUserId, selectedUserActive);
+            });
+
+            $deleteBtn.on('click', function() {
+                if (!selectedUserId) return;
+                if (!confirm('Are you sure you want to permanently delete this user? This cannot be undone.')) {
+                    return;
+                }
+                $.ajax({
+                    url: '@Url.Action("DeleteUser", "Account")',
+                    type: 'POST',
+                    data: { userId: selectedUserId },
+                    success: function(response) {
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('An error occurred while deleting the user.');
+                    }
+                });
             });
         });
 
