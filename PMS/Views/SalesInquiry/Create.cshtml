@@ -1,0 +1,165 @@
+@{
+    ViewData["Title"] = "New Inquiry";
+}
+
+<div class="pms-sales-inquiry-create">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <h5 class="mb-0">New Inquiry</h5>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm py-0 px-2">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
+        </a>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show py-2 small" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card border-0 shadow-sm pms-mp-header mb-3">
+        <div class="card-header py-2 pms-mp-header-bar">
+            <h6 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Inquiry Details</h6>
+        </div>
+        <div class="card-body py-3 px-3">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="pms-registration-4col-form pms-si-create-form">
+                    <div class="row g-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-md-2">
+                            <label for="fullName" class="form-label pms-registration-4col-label mb-0">Full Name *</label>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <input type="text" name="fullName" id="fullName" class="form-control form-control-sm" required maxlength="150" placeholder="Customer full name" value="@(ViewBag.FullName as string)" />
+                        </div>
+                        <div class="col-12 col-md-2">
+                            <label for="phoneNumber" class="form-label pms-registration-4col-label mb-0">Phone Number *</label>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <input type="text" name="phoneNumber" id="phoneNumber" class="form-control form-control-sm" required maxlength="50" placeholder="03XXXXXXXXX" value="@(ViewBag.PhoneNumber as string)" />
+                        </div>
+                    </div>
+
+                    <div class="row g-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-md-2">
+                            <label for="emailAddress" class="form-label pms-registration-4col-label mb-0">Email Address</label>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <input type="email" name="emailAddress" id="emailAddress" class="form-control form-control-sm" maxlength="150" placeholder="optional@email.com" value="@(ViewBag.EmailAddress as string)" />
+                        </div>
+                        <div class="col-12 col-md-2">
+                            <label for="inquiryType" class="form-label pms-registration-4col-label mb-0">Inquiry Type</label>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            @{
+                                var inquiryType = ViewBag.InquiryType as string ?? "";
+                            }
+                            <select name="inquiryType" id="inquiryType" class="form-select form-select-sm">
+                                <option value="" selected="@(string.IsNullOrEmpty(inquiryType))">General</option>
+                                <option value="Plot" selected="@(inquiryType == "Plot")">Plot</option>
+                                <option value="Apartment" selected="@(inquiryType == "Apartment")">Apartment</option>
+                                <option value="Commercial" selected="@(inquiryType == "Commercial")">Commercial</option>
+                                <option value="Villa" selected="@(inquiryType == "Villa")">Villa</option>
+                                <option value="Other" selected="@(inquiryType == "Other")">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-md-2">
+                            <label for="message" class="form-label pms-registration-4col-label mb-0">Message</label>
+                        </div>
+                        <div class="col-12 col-md-10">
+                            <textarea name="message" id="message" class="form-control form-control-sm" rows="3" placeholder="Inquiry details / notes">@(ViewBag.Message as string)</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap justify-content-end gap-2 mt-3">
+                    <button type="submit" class="btn btn-sm pms-si-btn pms-si-btn--save">
+                        <i class="fas fa-check me-1"></i>Create Inquiry
+                    </button>
+                    <a asp-action="Index" class="btn btn-sm pms-si-btn pms-si-btn--cancel">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .pms-sales-inquiry-create .pms-registration-4col-label {
+        color: #1d3557 !important;
+        font-weight: 600 !important;
+        font-size: 0.8125rem !important;
+    }
+
+    .pms-si-create-form .pms-registration-4col-row {
+        margin-bottom: 0.35rem !important;
+        padding-bottom: 0.35rem !important;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-si-create-form .pms-registration-4col-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    .pms-si-create-form .form-control-sm,
+    .pms-si-create-form .form-select-sm {
+        border-radius: 0 !important;
+        min-height: 32px;
+        font-size: 0.875rem;
+    }
+
+    .pms-si-create-form select.form-select-sm {
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        padding-right: 2rem !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231d3557' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 0.55rem center !important;
+        background-size: 11px 9px !important;
+    }
+
+    .pms-si-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        min-width: 9.5rem;
+        border-radius: 0 !important;
+        font-weight: 600;
+        min-height: 32px;
+        padding: 0.3rem 0.75rem !important;
+    }
+
+    .pms-si-btn--save {
+        background-color: #1d3557 !important;
+        border-color: #1d3557 !important;
+        color: #fff !important;
+    }
+
+    .pms-si-btn--save:hover,
+    .pms-si-btn--save:focus {
+        background-color: #162843 !important;
+        color: #fff !important;
+    }
+
+    .pms-si-btn--cancel {
+        background-color: #fff !important;
+        border: 1px solid #1d3557 !important;
+        color: #1d3557 !important;
+        text-decoration: none;
+    }
+
+    .pms-si-btn--cancel:hover,
+    .pms-si-btn--cancel:focus {
+        background-color: #f1f5f9 !important;
+        color: #162843 !important;
+    }
+</style>

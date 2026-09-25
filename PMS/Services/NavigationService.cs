@@ -143,14 +143,16 @@ public sealed class NavigationService : INavigationService
                     Label = "Sales Inquiry",
                     Controller = "SalesInquiry",
                     Action = "Index",
-                    IconClass = "fas fa-envelope-open-text me-2"
+                    IconClass = "fas fa-envelope-open-text me-2",
+                    ActiveActions = new[] { "Index", "Create", "PerformanceReport" }
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Ticket Management",
+                    Label = "Ticket Mang",
                     Controller = "Ticket",
                     Action = "Index",
-                    IconClass = "fas fa-ticket-alt me-2"
+                    IconClass = "fas fa-ticket-alt me-2",
+                    ActiveControllerPrefix = "Ticket"
                 }
             }
         },

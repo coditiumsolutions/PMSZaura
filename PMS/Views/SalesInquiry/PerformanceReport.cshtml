@@ -3,67 +3,120 @@
     ViewData["Title"] = "Sales Agent Performance Report";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0">
-        <i class="fas fa-chart-line me-2"></i>Sales Agent Performance Report
-    </h2>
-    <div class="d-flex gap-2">
-        <a asp-action="Index" class="btn btn-outline-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Back to Inquiries
+<div class="pms-si-performance pms-listing-page">
+    <div class="d-flex justify-content-end align-items-center gap-2 mb-3 pms-si-performance-actions">
+        <a asp-action="Index" class="btn btn-sm pms-si-perf-btn pms-si-perf-btn--back">
+            <i class="fas fa-arrow-left me-1"></i>Back to Inquiries
         </a>
-        <button type="button" onclick="window.print()" class="btn btn-outline-primary">
-            <i class="fas fa-print me-2"></i>Print
+        <button type="button" onclick="window.print()" class="btn btn-sm pms-si-perf-btn pms-si-perf-btn--print">
+            <i class="fas fa-print me-1"></i>Print
         </button>
+    </div>
+
+    <div class="card border-0 shadow-sm pms-grid-card pms-listing-flat pms-saas-grid mb-2">
+        <div class="card-body py-2 pms-si-performance-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive pms-saas-table-wrap">
+                    <table id="performanceTable" class="table pms-saas-table align-middle mb-0 pms-si-performance-table">
+                        <thead>
+                            <tr>
+                                <th>Sales Agent</th>
+                                <th>Total Assigned</th>
+                                <th>New</th>
+                                <th>Contacted</th>
+                                <th>Follow-up</th>
+                                <th>Converted</th>
+                                <th>Closed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var row in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@(string.IsNullOrEmpty(row.AgentName) ? "(Unassigned)" : row.AgentName)</strong>
+                                    </td>
+                                    <td><span class="badge bg-primary">@row.Total</span></td>
+                                    <td>@row.New</td>
+                                    <td>@row.Contacted</td>
+                                    <td>@row.FollowUp</td>
+                                    <td>@row.Converted</td>
+                                    <td>@row.Closed</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No inquiry data to display.</p>
+            }
+        </div>
     </div>
 </div>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-        <h5 class="mb-0 text-white">
-            <i class="fas fa-user-tie me-2"></i>Inquiry counts by Sales Agent
-        </h5>
-    </div>
-    <div class="card-body">
-        @if (Model != null && Model.Any())
-        {
-            <div class="table-responsive">
-                <table id="performanceTable" class="table table-hover align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Sales Agent</th>
-                            <th>Total Assigned</th>
-                            <th class="text-info">New</th>
-                            <th class="text-warning">Contacted</th>
-                            <th class="text-secondary">Follow-up</th>
-                            <th class="text-success">Converted</th>
-                            <th class="text-danger">Closed</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var row in Model)
-                        {
-                            <tr>
-                                <td>
-                                    <strong>@(string.IsNullOrEmpty(row.AgentName) ? "(Unassigned)" : row.AgentName)</strong>
-                                </td>
-                                <td><span class="badge bg-primary">@row.Total</span></td>
-                                <td>@row.New</td>
-                                <td>@row.Contacted</td>
-                                <td>@row.FollowUp</td>
-                                <td>@row.Converted</td>
-                                <td>@row.Closed</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-        }
-        else
-        {
-            <p class="text-muted mb-0">No inquiry data to display.</p>
-        }
-    </div>
-</div>
+<style>
+    .pms-si-perf-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 9.5rem !important;
+        min-width: 9.5rem !important;
+        border-radius: 0 !important;
+        font-weight: 600;
+        min-height: 36px;
+        height: 36px;
+        padding: 0.35rem 0.5rem !important;
+        border: 1px solid transparent;
+        text-decoration: none;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
+
+    .pms-si-perf-btn--back {
+        background-color: #a8dadc !important;
+        border-color: #8fc9cc !important;
+        color: #1d3557 !important;
+    }
+
+    .pms-si-perf-btn--back:hover,
+    .pms-si-perf-btn--back:focus {
+        background-color: #95d0d3 !important;
+        color: #1d3557 !important;
+    }
+
+    .pms-si-perf-btn--print {
+        background-color: #457b9d !important;
+        border-color: #457b9d !important;
+        color: #fff !important;
+    }
+
+    .pms-si-perf-btn--print:hover,
+    .pms-si-perf-btn--print:focus {
+        background-color: #3a6a88 !important;
+        color: #fff !important;
+    }
+
+    .pms-si-performance-body,
+    .pms-si-performance-table,
+    .pms-si-performance-table tbody td,
+    .pms-si-performance-table tbody tr,
+    .pms-si-performance .dataTables_wrapper {
+        background-color: #fff !important;
+    }
+
+    .pms-si-performance #performanceTable thead th,
+    .pms-si-performance .pms-saas-table thead th,
+    .pms-si-performance-table thead th {
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        border-color: #524c96 !important;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+</style>
 
 @section Scripts {
     <script>

@@ -270,6 +270,15 @@ namespace PMS.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // GET: New inquiry form
+        [HttpGet]
+        public async Task<IActionResult> Create()
+        {
+            var denied = await EnsurePermissionAsync("Edit");
+            if (denied != null) return denied;
+            return View();
+        }
+
         // POST: Create new inquiry
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -281,7 +290,12 @@ namespace PMS.Controllers
             if (string.IsNullOrWhiteSpace(fullName) || string.IsNullOrWhiteSpace(phoneNumber))
             {
                 TempData["Error"] = "Full name and phone number are required.";
-                return RedirectToAction(nameof(Index));
+                ViewBag.FullName = fullName;
+                ViewBag.PhoneNumber = phoneNumber;
+                ViewBag.EmailAddress = emailAddress;
+                ViewBag.InquiryType = inquiryType;
+                ViewBag.Message = message;
+                return View();
             }
 
             var inquiry = new PropertyInquiry

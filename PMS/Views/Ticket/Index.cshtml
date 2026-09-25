@@ -21,19 +21,19 @@
 
     @if (ViewBag.CanCreate == true)
     {
-        <div class="mb-2 d-flex flex-wrap gap-2">
-            <a asp-action="Create" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">
+        <div class="mb-2 d-flex flex-wrap gap-2 pms-ticket-toolbar-actions">
+            <a asp-action="Create" class="btn btn-sm pms-ticket-rect-btn pms-ticket-rect-btn--primary">
                 <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New Ticket
             </a>
-            <button type="button" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--operations" onclick="window.location.reload()">
+            <button type="button" class="btn btn-sm pms-ticket-rect-btn pms-ticket-rect-btn--secondary" onclick="window.location.reload()">
                 <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh
             </button>
         </div>
     }
     else
     {
-        <div class="mb-2">
-            <button type="button" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--operations" onclick="window.location.reload()">
+        <div class="mb-2 d-flex flex-wrap gap-2 pms-ticket-toolbar-actions">
+            <button type="button" class="btn btn-sm pms-ticket-rect-btn pms-ticket-rect-btn--secondary" onclick="window.location.reload()">
                 <i class="bi bi-arrow-clockwise me-1" aria-hidden="true"></i>Refresh
             </button>
         </div>
@@ -105,35 +105,38 @@
     </div>
 </div>
 
-<div class="card pms-grid-card pms-listing-flat pms-saas-grid mb-2">
+<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-ticket-listing mb-2">
     <div class="card-body py-2">
         @if (Model != null && Model.Any())
         {
             <div class="table-responsive pms-saas-table-wrap">
-                <table id="ticketsTable" class="table pms-saas-table">
+                <table id="ticketsTable" class="table pms-saas-table pms-ticket-grid-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Date</th>
                             <th>Customer / Contact</th>
                             <th>Title</th>
                             <th>Status</th>
-                            <th>Assigned To</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var t in Model)
                         {
                             <tr class="@(t.Status == "Pending" ? "table-warning" : "") pms-ticket-row" data-row-id="@t.TicketID">
-                                <td><code><a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#detailsModal@(t.TicketID)">#@t.TicketID</a></code></td>
-                                <td><small><i class="fas fa-calendar-alt text-muted me-1"></i>@t.CreatedAt.ToString("MMM dd, yyyy")<br><i class="fas fa-clock text-muted me-1"></i>@t.CreatedAt.ToString("hh:mm tt")</small></td>
+                                <td>
+                                    <small>
+                                        <i class="fas fa-calendar-alt text-muted me-1"></i>@t.CreatedAt.ToString("MMM dd, yyyy")
+                                        <br>
+                                        <i class="fas fa-clock text-muted me-1"></i>@t.CreatedAt.ToString("hh:mm tt")
+                                    </small>
+                                </td>
                                 <td>
                                     @if (!string.IsNullOrEmpty(t.CustomerID)) { <strong>@t.CustomerID</strong><br /> }
                                     @if (!string.IsNullOrEmpty(t.Email)) { <a href="mailto:@t.Email" class="text-decoration-none"><i class="fas fa-envelope text-primary me-1"></i>@t.Email</a><br /> }
                                     @if (!string.IsNullOrEmpty(t.Contact)) { <a href="tel:@t.Contact" class="text-decoration-none"><i class="fas fa-phone text-success me-1"></i>@t.Contact</a> }
                                     @if (string.IsNullOrEmpty(t.CustomerID) && string.IsNullOrEmpty(t.Email) && string.IsNullOrEmpty(t.Contact)) { <span class="text-muted">-</span> }
                                 </td>
-                                <td><div style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">@(t.Title ?? "-")</div></td>
+                                <td><div class="pms-ticket-title-cell">@(t.Title ?? "-")</div></td>
                                 <td>
                                     @if (t.Status == "Pending") { <span class="badge bg-info">@t.Status</span> }
                                     else if (t.Status == "Assigned") { <span class="badge bg-primary">@t.Status</span> }
@@ -142,7 +145,6 @@
                                     else if (t.Status == "Discarded" || t.Status == "Duplicate") { <span class="badge bg-secondary">@t.Status</span> }
                                     else { <span class="badge bg-secondary">@t.Status</span> }
                                 </td>
-                                <td>@(t.AssignedTo ?? "-")</td>
                             </tr>
                         }
                     </tbody>
@@ -224,6 +226,95 @@
     body.modal-open::before { display: none !important; background: transparent !important; }
     .modal { background: transparent !important; }
     .modal.show { background: transparent !important; }
+
+    .pms-ticket-rect-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 9.5rem !important;
+        min-width: 9.5rem !important;
+        border-radius: 0 !important;
+        font-weight: 600;
+        min-height: 36px;
+        height: 36px;
+        padding: 0.35rem 0.5rem !important;
+        border: 1px solid transparent;
+        text-decoration: none;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
+
+    .pms-ticket-rect-btn--primary {
+        background-color: #a8dadc !important;
+        border-color: #8fc9cc !important;
+        color: #1d3557 !important;
+    }
+
+    .pms-ticket-rect-btn--primary:hover,
+    .pms-ticket-rect-btn--primary:focus {
+        background-color: #95d0d3 !important;
+        color: #1d3557 !important;
+    }
+
+    .pms-ticket-rect-btn--secondary {
+        background-color: #457b9d !important;
+        border-color: #457b9d !important;
+        color: #fff !important;
+    }
+
+    .pms-ticket-rect-btn--secondary:hover,
+    .pms-ticket-rect-btn--secondary:focus {
+        background-color: #3a6a88 !important;
+        color: #fff !important;
+    }
+
+    .pms-ticket-grid-table {
+        table-layout: fixed;
+        width: 100% !important;
+        font-size: 0.8125rem;
+    }
+
+    .pms-ticket-listing #ticketsTable thead th,
+    .pms-ticket-listing .pms-saas-table thead th,
+    .pms-ticket-grid-table thead th {
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        border-color: #524c96 !important;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.4rem 0.45rem !important;
+        line-height: 1.2;
+    }
+
+    .pms-ticket-grid-table tbody td {
+        padding: 0.4rem 0.45rem !important;
+        vertical-align: middle;
+        font-size: 0.8125rem;
+    }
+
+    .pms-ticket-grid-table th:nth-child(1),
+    .pms-ticket-grid-table td:nth-child(1) { width: 16%; }
+    .pms-ticket-grid-table th:nth-child(2),
+    .pms-ticket-grid-table td:nth-child(2) { width: 28%; }
+    .pms-ticket-grid-table th:nth-child(3),
+    .pms-ticket-grid-table td:nth-child(3) { width: 40%; }
+    .pms-ticket-grid-table th:nth-child(4),
+    .pms-ticket-grid-table td:nth-child(4) { width: 16%; }
+
+    .pms-ticket-title-cell {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .pms-ticket-grid-table .badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.4rem;
+    }
+
+    .pms-ticket-row {
+        cursor: pointer;
+    }
 </style>
 
 @section Scripts {
@@ -233,8 +324,16 @@
         $(document).ready(function () {
             if ($('#ticketsTable tbody tr').length > 0) {
                 $('#ticketsTable').DataTable({
-                    order: [[1, 'desc']],
-                    pageLength: 25
+                    order: [[0, 'desc']],
+                    pageLength: 15,
+                    autoWidth: false,
+                    language: {
+                        search: "Search:",
+                        lengthMenu: "Show _MENU_",
+                        info: "Showing _START_–_END_ of _TOTAL_",
+                        infoEmpty: "No tickets",
+                        infoFiltered: "(filtered from _MAX_)"
+                    }
                 });
                 PmsListingDataTable.bindModalRowOpen('#ticketsTable', 'tr.pms-ticket-row', 'detailsModal');
             }

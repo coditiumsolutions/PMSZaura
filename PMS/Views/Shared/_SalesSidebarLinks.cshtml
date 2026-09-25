@@ -1,0 +1,56 @@
+@{
+    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+
+    var isSalesInquiry = string.Equals(currentController, "SalesInquiry", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, "Index", StringComparison.OrdinalIgnoreCase);
+    var isNewInquiry = string.Equals(currentController, "SalesInquiry", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, "Create", StringComparison.OrdinalIgnoreCase);
+    var isPerformanceReport = string.Equals(currentController, "SalesInquiry", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, "PerformanceReport", StringComparison.OrdinalIgnoreCase);
+    var isTicket = string.Equals(currentController, "Ticket", StringComparison.OrdinalIgnoreCase);
+    var salesSectionActive = isSalesInquiry || isNewInquiry || isPerformanceReport || isTicket;
+}
+
+<li class="nav-item sidebar-subsection-block"
+    data-sidebar-section="sales-hub"
+    data-section-has-active="@(salesSectionActive ? "true" : "false")">
+    <button type="button"
+            class="sidebar-subsection-toggle"
+            aria-expanded="@(salesSectionActive ? "true" : "false")"
+            data-sidebar-section="sales-hub">
+        <i class="bi bi-chevron-right sidebar-subsection-chevron" aria-hidden="true"></i>
+        <i class="fas fa-chart-line me-2" aria-hidden="true"></i>
+        <span class="sidebar-subsection-title">Sales</span>
+    </button>
+    <ul class="sidebar-subsection-items list-unstyled mb-0">
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link @(isSalesInquiry ? "active" : "")"
+               asp-controller="SalesInquiry"
+               asp-action="Index">
+                <i class="fas fa-envelope-open-text me-2"></i>Sales Inquiry
+            </a>
+        </li>
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link @(isNewInquiry ? "active" : "")"
+               asp-controller="SalesInquiry"
+               asp-action="Create">
+                <i class="fas fa-plus-circle me-2"></i>New Inquiry
+            </a>
+        </li>
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link @(isPerformanceReport ? "active" : "")"
+               asp-controller="SalesInquiry"
+               asp-action="PerformanceReport">
+                <i class="fas fa-chart-bar me-2"></i>Performance
+            </a>
+        </li>
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link @(isTicket ? "active" : "")"
+               asp-controller="Ticket"
+               asp-action="Index">
+                <i class="fas fa-ticket-alt me-2"></i>Ticket Mang
+            </a>
+        </li>
+    </ul>
+</li>

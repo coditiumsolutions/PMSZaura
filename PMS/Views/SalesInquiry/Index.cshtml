@@ -12,14 +12,14 @@
         <span class="badge rounded-pill pms-record-badge">@inquiryCount record@(inquiryCount == 1 ? "" : "s")</span>
     </div>
 
-    <div class="d-flex flex-wrap gap-2 mb-2">
+    <div class="d-flex flex-wrap gap-2 mb-2 pms-si-toolbar-actions">
         @if (ViewBag.CanCreate == true || ViewBag.CanEdit == true)
         {
-            <button type="button" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search" data-bs-toggle="modal" data-bs-target="#newInquiryModal">
+            <a asp-action="Create" class="btn btn-sm pms-si-rect-btn pms-si-rect-btn--primary">
                 <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New Inquiry
-            </button>
+            </a>
         }
-        <a href="@Url.Action("PerformanceReport")" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--operations">
+        <a href="@Url.Action("PerformanceReport")" class="btn btn-sm pms-si-rect-btn pms-si-rect-btn--secondary">
             <i class="bi bi-graph-up me-1" aria-hidden="true"></i>Report
         </a>
     </div>
@@ -91,7 +91,7 @@
     </div>
 </div>
 
-<div class="card pms-grid-card pms-listing-flat pms-saas-grid mb-2">
+<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-sales-inquiry-listing mb-2">
     <div class="card-body py-2">
         @if (Model.Any())
         {
@@ -99,51 +99,17 @@
                 <table id="inquiriesTable" class="table pms-saas-table">
                     <thead>
                         <tr>
-                            <th>Contact Actions</th>
                             <th>Status</th>
-                            <th>ID</th>
                             <th>Date</th>
                             <th>Customer Name</th>
                             <th>Phone</th>
-                            <th>Email</th>
-                            <th>Type</th>
-                            <th>Message</th>
+                            <th>Contact</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var inquiry in Model)
                         {
                             <tr class="@(inquiry.Status == "New" ? "table-warning" : "") pms-inquiry-row" data-row-id="@inquiry.InquiryID">
-                                <!-- Contact Actions Column -->
-                                <td>
-                                    <div class="btn-group-vertical btn-group-sm" role="group">
-                                        <!-- Call Button -->
-                                        <a href="tel:@inquiry.PhoneNumber" 
-                                           class="btn btn-sm btn-success mb-1"
-                                           onclick="markContacted(@inquiry.InquiryID, 'Call')"
-                                           title="Call Customer">
-                                            <i class="fas fa-phone me-1"></i>Call
-                                        </a>
-                                        <!-- WhatsApp Button -->
-                                        <a href="https://wa.me/@inquiry.PhoneNumber.Replace("+", "").Replace("-", "").Replace(" ", "")" 
-                                           target="_blank"
-                                           class="btn btn-sm btn-success mb-1"
-                                           onclick="markContacted(@inquiry.InquiryID, 'WhatsApp')"
-                                           title="WhatsApp">
-                                            <i class="fab fa-whatsapp me-1"></i>WhatsApp
-                                        </a>
-                                        <!-- Email Button -->
-                                        @if (!string.IsNullOrEmpty(inquiry.EmailAddress))
-                                        {
-                                            <a href="mailto:@inquiry.EmailAddress?subject=Re: Property Inquiry - JUBA Smart City" 
-                                               class="btn btn-sm btn-primary"
-                                               onclick="markContacted(@inquiry.InquiryID, 'Email')"
-                                               title="Send Email">
-                                                <i class="fas fa-envelope me-1"></i>Email
-                                            </a>
-                                        }
-                                    </div>
-                                </td>
                                 <!-- Status Column -->
                                 <td>
                                     @if (inquiry.Status == "New")
@@ -181,8 +147,6 @@
                                         <span class="badge bg-secondary">@inquiry.Status</span>
                                     }
                                 </td>
-                                <!-- ID Column -->
-                                <td><code><a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#detailsModal@(inquiry.InquiryID)">#@inquiry.InquiryID</a></code></td>
                                 <!-- Date Column -->
                                 <td>
                                     <small>
@@ -207,42 +171,32 @@
                                         <i class="fas fa-phone text-primary me-1"></i>@inquiry.PhoneNumber
                                     </a>
                                 </td>
-                                <!-- Email Column -->
+                                <!-- Contact Actions Column (last) -->
                                 <td>
-                                    @if (!string.IsNullOrEmpty(inquiry.EmailAddress))
-                                    {
-                                        <a href="mailto:@inquiry.EmailAddress" class="text-decoration-none">
-                                            <i class="fas fa-envelope text-primary me-1"></i>@inquiry.EmailAddress
+                                    <div class="pms-inquiry-contact-actions">
+                                        <a href="tel:@inquiry.PhoneNumber"
+                                           class="btn btn-sm pms-si-contact-btn pms-si-contact-btn--call"
+                                           onclick="markContacted(@inquiry.InquiryID, 'Call')"
+                                           title="Call Customer">
+                                            <i class="fas fa-phone me-1"></i>Call
                                         </a>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">-</span>
-                                    }
-                                </td>
-                                <!-- Type Column -->
-                                <td>
-                                    @if (!string.IsNullOrEmpty(inquiry.InquiryType))
-                                    {
-                                        <span class="badge bg-info">@inquiry.InquiryType</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">General</span>
-                                    }
-                                </td>
-                                <!-- Message Column (Last) -->
-                                <td>
-                                    @if (!string.IsNullOrEmpty(inquiry.Message))
-                                    {
-                                        <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                            @inquiry.Message
-                                        </div>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">-</span>
-                                    }
+                                        <a href="https://wa.me/@inquiry.PhoneNumber.Replace("+", "").Replace("-", "").Replace(" ", "")"
+                                           target="_blank"
+                                           class="btn btn-sm pms-si-contact-btn pms-si-contact-btn--wa"
+                                           onclick="markContacted(@inquiry.InquiryID, 'WhatsApp')"
+                                           title="WhatsApp">
+                                            <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                                        </a>
+                                        @if (!string.IsNullOrEmpty(inquiry.EmailAddress))
+                                        {
+                                            <a href="mailto:@inquiry.EmailAddress?subject=Re: Property Inquiry - JUBA Smart City"
+                                               class="btn btn-sm pms-si-contact-btn pms-si-contact-btn--email"
+                                               onclick="markContacted(@inquiry.InquiryID, 'Email')"
+                                               title="Send Email">
+                                                <i class="fas fa-envelope me-1"></i>Email
+                                            </a>
+                                        }
+                                    </div>
                                 </td>
                             </tr>
                         }
@@ -499,60 +453,6 @@
     </div>
 }
 
-<!-- New Inquiry Modal -->
-<div class="modal fade" id="newInquiryModal" tabindex="-1" aria-labelledby="newInquiryModalLabel" aria-hidden="true" data-bs-backdrop="false">
-    <div class="modal-dialog modal-dialog-centered sales-inquiry-edit-modal sales-inquiry-new-modal">
-        <div class="modal-content">
-            <form asp-action="Create" method="post">
-                @Html.AntiForgeryToken()
-                <div class="modal-header py-2" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-                    <h6 class="modal-title text-white mb-0" id="newInquiryModalLabel">
-                        <i class="fas fa-plus-circle me-2"></i>New Inquiry
-                    </h6>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body py-2 px-3">
-                    <div class="row g-2">
-                        <div class="col-md-6">
-                            <label class="form-label form-label-sm fw-semibold mb-1">Full Name <span class="text-danger">*</span></label>
-                            <input type="text" name="fullName" class="form-control form-control-sm" required maxlength="150" placeholder="Customer full name" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label form-label-sm fw-semibold mb-1">Phone Number <span class="text-danger">*</span></label>
-                            <input type="text" name="phoneNumber" class="form-control form-control-sm" required maxlength="50" placeholder="03XXXXXXXXX" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label form-label-sm fw-semibold mb-1">Email Address</label>
-                            <input type="email" name="emailAddress" class="form-control form-control-sm" maxlength="150" placeholder="optional@email.com" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label form-label-sm fw-semibold mb-1">Inquiry Type</label>
-                            <select name="inquiryType" class="form-select form-select-sm">
-                                <option value="">General</option>
-                                <option value="Plot">Plot</option>
-                                <option value="Apartment">Apartment</option>
-                                <option value="Commercial">Commercial</option>
-                                <option value="Villa">Villa</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label form-label-sm fw-semibold mb-1">Message</label>
-                            <textarea name="message" class="form-control form-control-sm sales-inquiry-message" rows="2" placeholder="Inquiry details / notes"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer py-2">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="fas fa-check me-1"></i>Create Inquiry
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <!-- Delete Form (Hidden) -->
 <form id="deleteForm" asp-action="Delete" method="post" style="display: none;">
     @Html.AntiForgeryToken()
@@ -567,6 +467,130 @@
 </form>
 
 <style>
+    .pms-inquiry-contact-actions {
+        display: inline-flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center;
+        gap: 0.35rem;
+        white-space: nowrap;
+    }
+
+    .pms-si-rect-btn,
+    .pms-si-contact-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0 !important;
+        font-weight: 600;
+        min-height: 32px;
+        height: 32px;
+        padding: 0.25rem 0.4rem !important;
+        border: 1px solid transparent;
+        text-decoration: none;
+        box-sizing: border-box;
+        white-space: nowrap;
+    }
+
+    .pms-si-rect-btn {
+        width: 9.5rem !important;
+        min-width: 9.5rem !important;
+        min-height: 36px;
+        height: 36px;
+    }
+
+    .pms-si-rect-btn--primary {
+        background-color: #a8dadc !important;
+        border-color: #8fc9cc !important;
+        color: #1d3557 !important;
+    }
+
+    .pms-si-rect-btn--primary:hover,
+    .pms-si-rect-btn--primary:focus {
+        background-color: #95d0d3 !important;
+        color: #1d3557 !important;
+    }
+
+    .pms-si-rect-btn--secondary {
+        background-color: #457b9d !important;
+        border-color: #457b9d !important;
+        color: #fff !important;
+    }
+
+    .pms-si-rect-btn--secondary:hover,
+    .pms-si-rect-btn--secondary:focus {
+        background-color: #3a6a88 !important;
+        color: #fff !important;
+    }
+
+    .pms-si-contact-btn {
+        width: 5.75rem !important;
+        min-width: 5.75rem !important;
+        font-size: 0.75rem;
+    }
+
+    .pms-si-contact-btn--call,
+    .pms-si-contact-btn--wa {
+        background-color: #198754 !important;
+        border-color: #198754 !important;
+        color: #fff !important;
+    }
+
+    .pms-si-contact-btn--email {
+        background-color: #0d6efd !important;
+        border-color: #0d6efd !important;
+        color: #fff !important;
+    }
+
+    #inquiriesTable {
+        table-layout: fixed;
+        width: 100% !important;
+    }
+
+    #inquiriesTable th:nth-child(1),
+    #inquiriesTable td:nth-child(1) {
+        width: 7% !important;
+        max-width: 6.5rem;
+    }
+
+    #inquiriesTable th:nth-child(2),
+    #inquiriesTable td:nth-child(2) {
+        width: 14% !important;
+    }
+
+    #inquiriesTable th:nth-child(3),
+    #inquiriesTable td:nth-child(3) {
+        width: 26% !important;
+    }
+
+    #inquiriesTable th:nth-child(4),
+    #inquiriesTable td:nth-child(4) {
+        width: 12% !important;
+        max-width: 8.5rem;
+    }
+
+    #inquiriesTable th:nth-child(5),
+    #inquiriesTable td:nth-child(5) {
+        width: 41% !important;
+        min-width: 16rem;
+    }
+
+    #inquiriesTable td:nth-child(1),
+    #inquiriesTable td:nth-child(4) {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .pms-sales-inquiry-listing #inquiriesTable thead th,
+    .pms-sales-inquiry-listing .pms-saas-table thead th {
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        border-color: #524c96 !important;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
     .avatar-sm {
         width: 48px;
         height: 48px;
@@ -757,9 +781,17 @@
     <script>
         $(document).ready(function () {
             $('#inquiriesTable').DataTable({
-                order: [[3, 'desc']],
+                order: [[1, 'desc']],
                 pageLength: 25,
-                columnDefs: [{ orderable: false, targets: [0] }],
+                autoWidth: false,
+                columnDefs: [
+                    { orderable: false, targets: [4] },
+                    { width: '7%', targets: 0 },   // Status
+                    { width: '14%', targets: 1 },  // Date
+                    { width: '26%', targets: 2 },  // Customer Name
+                    { width: '12%', targets: 3 },  // Phone
+                    { width: '41%', targets: 4 }   // Contact
+                ],
                 language: {
                     "search": "Search inquiries:",
                     "lengthMenu": "Show _MENU_ inquiries per page",

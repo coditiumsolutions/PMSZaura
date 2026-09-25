@@ -1569,6 +1569,8 @@
                             || (!string.IsNullOrEmpty(layoutCtrl) && layoutCtrl.StartsWith("Ams", StringComparison.Ordinal));
                         var isAuditShell = ViewData["IsAuditShell"] as bool? == true
                             || string.Equals(layoutCtrl, "PaymentAudit", StringComparison.OrdinalIgnoreCase);
+                        var isSalesShell = string.Equals(layoutCtrl, "SalesInquiry", StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(layoutCtrl, "Ticket", StringComparison.OrdinalIgnoreCase);
                         var hidePageBanner = ViewData["HidePageBanner"] as bool? == true;
                         var showPageBanner = !hidePageBanner
                             && !string.IsNullOrEmpty(layoutCtrl)
@@ -1577,7 +1579,7 @@
                                 || layoutCtrl.StartsWith("Ams", StringComparison.Ordinal));
                     }
                     <!-- Sidebar -->
-                    <nav id="appSidebar" class="col-md-3 col-lg-3 d-md-block sidebar collapse@(isAmsSidebarShell ? " sidebar--ams" : "")@(isAuditShell ? " sidebar--audit" : "")">
+                    <nav id="appSidebar" class="col-md-3 col-lg-3 d-md-block sidebar collapse@(isAmsSidebarShell ? " sidebar--ams" : "")@(isAuditShell ? " sidebar--audit" : "")@(isSalesShell ? " sidebar--sales" : "")">
                 <div class="position-sticky sidebar-sticky-inner">
                     <div class="brand-section" style="background: var(--sidebar-bg);">
                         @{
@@ -1593,6 +1595,10 @@
                         else if (isAuditShell)
                         {
                             <div class="brand-subtitle">Payment Audit</div>
+                        }
+                        else if (isSalesShell)
+                        {
+                            <div class="brand-subtitle">Sales</div>
                         }
                     </div>
                     
@@ -1619,6 +1625,11 @@
 @if (isAuditShell)
 {
                         <partial name="_AuditSidebarLinks" />
+                        <partial name="_DashboardWorkspaceLinks" />
+}
+else if (isSalesShell)
+{
+                        <partial name="_SalesSidebarLinks" />
                         <partial name="_DashboardWorkspaceLinks" />
 }
 else if (isAmsArea)
