@@ -97,6 +97,17 @@ namespace PMS.Controllers
 
         public async Task<IActionResult> Index(string projectFilter = "All", string statusFilter = "All", string searchTerm = "")
         {
+            return await CustomerListCore(projectFilter, statusFilter, searchTerm, isPendingCustomers: false);
+        }
+
+        /// <summary>Customers whose Status is Pending (Admin/Manager only).</summary>
+        public async Task<IActionResult> PendingCustomers(string projectFilter = "All", string searchTerm = "")
+        {
+            return await CustomerListCore(projectFilter, statusFilter: "Pending", searchTerm, isPendingCustomers: true);
+        }
+
+        private async Task<IActionResult> CustomerListCore(string projectFilter, string statusFilter, string searchTerm, bool isPendingCustomers)
+        {
             var denied = await EnsurePermissionAsync("Read");
             if (denied != null) return denied;
 
@@ -117,6 +128,7 @@ namespace PMS.Controllers
             ViewBag.ProjectFilter = projectFilter;
             ViewBag.StatusFilter = statusFilter;
             ViewBag.SearchTerm = searchTerm;
+            ViewBag.IsPendingCustomers = isPendingCustomers;
             ViewBag.PendingCustomersCount = await _context.Customers.CountAsync(c => c.Status == "Pending");
 
             // Build query
@@ -146,7 +158,7 @@ namespace PMS.Controllers
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 searchTerm = searchTerm.ToLower();
-                query = query.Where(c => 
+                query = query.Where(c =>
                     (c.CustomerID != null && c.CustomerID.ToLower().Contains(searchTerm)) ||
                     (c.FormNo != null && c.FormNo.ToLower().Contains(searchTerm)) ||
                     (c.FullName != null && c.FullName.ToLower().Contains(searchTerm)) ||
@@ -162,7 +174,7 @@ namespace PMS.Controllers
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
 
-            return View(customers);
+            return View("Index", customers);
         }
 
         [HttpGet]
@@ -481,7 +493,7 @@ namespace PMS.Controllers
             if (!selectedIds.Any())
             {
                 TempData["ErrorMessage"] = "Please select at least one pending customer.";
-                return RedirectToAction(nameof(Index), new { projectFilter, statusFilter = "Pending", searchTerm });
+                return RedirectToAction(nameof(PendingCustomers), new { projectFilter, searchTerm });
             }
 
             var targetStatus = bulkAction switch
@@ -494,14 +506,14 @@ namespace PMS.Controllers
             if (string.IsNullOrEmpty(targetStatus))
             {
                 TempData["ErrorMessage"] = "Invalid bulk action.";
-                return RedirectToAction(nameof(Index), new { projectFilter, statusFilter = "Pending", searchTerm });
+                return RedirectToAction(nameof(PendingCustomers), new { projectFilter, searchTerm });
             }
 
             var commentsText = (comments ?? string.Empty).Trim();
             if (string.IsNullOrWhiteSpace(commentsText))
             {
                 TempData["ErrorMessage"] = "Comments are required for status change.";
-                return RedirectToAction(nameof(Index), new { projectFilter, statusFilter = "Pending", searchTerm });
+                return RedirectToAction(nameof(PendingCustomers), new { projectFilter, searchTerm });
             }
 
             var customersToUpdate = await _context.Customers
@@ -511,7 +523,7 @@ namespace PMS.Controllers
             if (!customersToUpdate.Any())
             {
                 TempData["ErrorMessage"] = "No pending customers matched the selected records.";
-                return RedirectToAction(nameof(Index), new { projectFilter, statusFilter = "Pending", searchTerm });
+                return RedirectToAction(nameof(PendingCustomers), new { projectFilter, searchTerm });
             }
 
             List<Customer> customersMissingRequiredAttachments = new();
@@ -575,7 +587,7 @@ namespace PMS.Controllers
                         .Where(id => !string.IsNullOrWhiteSpace(id)));
 
                     TempData["ErrorMessage"] = $"Cannot activate pending customer(s) without both required attachments (Customer Picture and ID Card). Blocked: {blockedIds}";
-                    return RedirectToAction(nameof(Index), new { projectFilter, statusFilter = "Pending", searchTerm });
+                    return RedirectToAction(nameof(PendingCustomers), new { projectFilter, searchTerm });
                 }
             }
 
@@ -629,7 +641,7 @@ namespace PMS.Controllers
             {
                 TempData["SuccessMessage"] = $"{customersEligibleForUpdate.Count} customer(s) updated to '{targetStatus}' with comments logged.";
             }
-            return RedirectToAction(nameof(Index), new { projectFilter, statusFilter = "Pending", searchTerm });
+            return RedirectToAction(nameof(PendingCustomers), new { projectFilter, searchTerm });
         }
 
         public async Task<IActionResult> ByProject()

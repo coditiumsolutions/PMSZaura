@@ -11,7 +11,7 @@ public sealed class NavigationService : INavigationService
         new NavigationModuleViewModel
         {
             Key = NavigationModuleKeys.Customer,
-            Label = "Customer",
+            Label = "Customers",
             IconClass = "fas fa-users",
             Items = new[]
             {
@@ -21,7 +21,15 @@ public sealed class NavigationService : INavigationService
                     Controller = "Customer",
                     Action = "Index",
                     IconClass = "fas fa-user-friends me-2",
-                    ExcludeActiveAction = "ByProject"
+                    ActiveAction = "Index"
+                },
+                new NavigationMenuItemViewModel
+                {
+                    Label = "Pending Customers",
+                    Controller = "Customer",
+                    Action = "PendingCustomers",
+                    IconClass = "fas fa-user-clock me-2",
+                    ActiveAction = "PendingCustomers"
                 },
                 new NavigationMenuItemViewModel
                 {
@@ -35,8 +43,8 @@ public sealed class NavigationService : INavigationService
         new NavigationModuleViewModel
         {
             Key = NavigationModuleKeys.Operations,
-            Label = "Operations",
-            IconClass = "fas fa-cogs",
+            Label = "Modules",
+            IconClass = "fas fa-th-large",
             Items = new[]
             {
                 new NavigationMenuItemViewModel { Label = "Transfer", Controller = "Transfer", Action = "Index", IconClass = "fas fa-exchange-alt me-2" },
@@ -91,14 +99,6 @@ public sealed class NavigationService : INavigationService
             {
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Paid Payments",
-                    Controller = "Payment",
-                    Action = "CustomerPayments",
-                    IconClass = "fas fa-money-bill-wave me-2",
-                    ActiveAction = "CustomerPayments"
-                },
-                new NavigationMenuItemViewModel
-                {
                     Label = "Add Payment",
                     Controller = "Payment",
                     Action = "AddPayment",
@@ -107,7 +107,23 @@ public sealed class NavigationService : INavigationService
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Payment Plans",
+                    Label = "All Payments",
+                    Controller = "Payment",
+                    Action = "CustomerPayments",
+                    IconClass = "fas fa-money-bill-wave me-2",
+                    ActiveAction = "CustomerPayments"
+                },
+                new NavigationMenuItemViewModel
+                {
+                    Label = "Pending Payments",
+                    Controller = "Payment",
+                    Action = "PendingPayments",
+                    IconClass = "fas fa-clock me-2",
+                    ActiveAction = "PendingPayments"
+                },
+                new NavigationMenuItemViewModel
+                {
+                    Label = "Schedules / Plans",
                     Controller = "Payment",
                     Action = "PaymentPlans",
                     IconClass = "fas fa-file-invoice-dollar me-2",
@@ -288,21 +304,6 @@ public sealed class NavigationService : INavigationService
                     Action = "Index",
                     IconClass = "fas fa-calculator me-2",
                     ActiveControllerPrefix = "Ams"
-                },
-                new NavigationMenuItemViewModel
-                {
-                    Label = "Dealers",
-                    Controller = "Dealer",
-                    Action = "Index",
-                    IconClass = "fas fa-store me-2"
-                },
-                new NavigationMenuItemViewModel
-                {
-                    Label = "Configuration",
-                    Controller = "Settings",
-                    Action = "Index",
-                    IconClass = "fas fa-cogs me-2",
-                    RequiresAdminRole = true
                 }
             }
         }
@@ -341,6 +342,12 @@ public sealed class NavigationService : INavigationService
 
         if (string.Equals(controller, "Reports", StringComparison.OrdinalIgnoreCase))
             return NavigationModuleKeys.Reports;
+
+        if (string.Equals(controller, "Home", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(action, "Modules", StringComparison.OrdinalIgnoreCase))
+        {
+            return NavigationModuleKeys.Operations;
+        }
 
         if (string.Equals(controller, "Home", StringComparison.OrdinalIgnoreCase)
             && string.Equals(action, "Workspace", StringComparison.OrdinalIgnoreCase))

@@ -1,0 +1,26 @@
+@inject PMS.Services.INavigationService NavigationService
+@{
+    ViewData["Title"] = "Modules";
+    var module = NavigationService.GetModule(PMS.ViewModels.NavigationModuleKeys.Operations);
+    var items = module?.Items
+        .Where(i => !i.IsSectionHeader && (!i.RequiresAdminRole || User.IsInRole("Admin")))
+        .ToList() ?? new List<PMS.ViewModels.NavigationMenuItemViewModel>();
+}
+
+<div class="mb-4">
+    <h2 class="h4 mb-1">Modules</h2>
+    <p class="text-muted mb-0">Open a module from the list below or use the side navigation.</p>
+</div>
+
+<div class="workspace-grid" id="modulesGrid">
+    @foreach (var item in items)
+    {
+        <a href="@Url.Action(item.Action, item.Controller, new { id = item.RouteId, title = item.RouteTitle })"
+           class="workspace-tile">
+            <div class="tile-icon">
+                <i class="@item.IconClass.Replace(" me-2", "")"></i>
+            </div>
+            <div class="tile-label">@item.Label</div>
+        </a>
+    }
+</div>

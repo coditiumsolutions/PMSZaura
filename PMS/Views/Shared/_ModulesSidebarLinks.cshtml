@@ -1,0 +1,48 @@
+@inject PMS.Services.INavigationService NavigationService
+
+@{
+    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+    var module = NavigationService.GetModule(PMS.ViewModels.NavigationModuleKeys.Operations);
+    var items = module?.Items
+        .Where(i => !i.IsSectionHeader && (!i.RequiresAdminRole || User.IsInRole("Admin")))
+        .ToList() ?? new List<PMS.ViewModels.NavigationMenuItemViewModel>();
+    var sectionHasActive = items.Any(i => NavigationService.IsMenuItemActive(i, currentController, currentAction, Context))
+        || (string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(currentAction, "Modules", StringComparison.OrdinalIgnoreCase));
+}
+
+<li class="nav-item sidebar-subsection-block"
+    data-sidebar-section="modules-hub"
+    data-section-has-active="@(sectionHasActive ? "true" : "false")">
+    <button type="button"
+            class="sidebar-subsection-toggle"
+            aria-expanded="@(sectionHasActive ? "true" : "false")"
+            data-sidebar-section="modules-hub">
+        <i class="bi bi-chevron-right sidebar-subsection-chevron" aria-hidden="true"></i>
+        <i class="fas fa-th-large me-2" aria-hidden="true"></i>
+        <span class="sidebar-subsection-title">Modules</span>
+    </button>
+    <ul class="sidebar-subsection-items list-unstyled mb-0">
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link @(string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase) && string.Equals(currentAction, "Modules", StringComparison.OrdinalIgnoreCase) ? "active" : "")"
+               asp-controller="Home"
+               asp-action="Modules">
+                <i class="fas fa-th me-2"></i>Overview
+            </a>
+        </li>
+        @foreach (var child in items)
+        {
+            var isActive = NavigationService.IsMenuItemActive(child, currentController, currentAction, Context);
+            <li class="nav-item sidebar-module-item sidebar-subsection-child">
+                <a class="nav-link @(isActive ? "active" : "")"
+                   asp-controller="@child.Controller"
+                   asp-action="@child.Action"
+                   asp-route-id="@child.RouteId"
+                   asp-route-title="@child.RouteTitle">
+                    <i class="@child.IconClass"></i>@child.Label
+                </a>
+            </li>
+        }
+    </ul>
+</li>

@@ -24,6 +24,10 @@ public sealed class NavigationController : Controller
         if (string.Equals(module, NavigationModuleKeys.OtherLinks, StringComparison.OrdinalIgnoreCase))
             return RedirectToAction("Workspace", "Home");
 
+        if (string.Equals(module, NavigationModuleKeys.Operations, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(module, "Modules", StringComparison.OrdinalIgnoreCase))
+            return RedirectToAction("Modules", "Home");
+
         var firstItem = _navigationService.GetFirstNavigableItem(module);
         if (firstItem == null)
             return RedirectToAction("Coditium", "Home");

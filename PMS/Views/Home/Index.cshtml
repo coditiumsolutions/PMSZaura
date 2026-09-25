@@ -1,66 +1,9 @@
 @model PMS.Models.DashboardViewModel
 @{
     ViewData["Title"] = "Dashboard";
-    var monthlyRevenue = Model.MonthlyPaymentsData.Any()
-        ? Model.MonthlyPaymentsData.Last().Value
-        : Model.TotalPayments;
-    var pendingRequests = Model.PendingTransfers + Model.PendingAllotments + Model.PendingWaivers
-        + Model.PendingRefunds + Model.PendingCustomers;
-    string FormatCurrency(decimal value)
-    {
-        if (value >= 1_000_000m) return $"{(value / 1_000_000m):0.##}M";
-        if (value >= 1_000m) return $"{(value / 1_000m):0.#}K";
-        return value.ToString("N0");
-    }
 }
 
 <div class="pms-dashboard">
-    <!-- KPI Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-xl-2">
-            <div class="pms-kpi-card">
-                <div class="pms-kpi-icon blue"><i class="bi bi-buildings" aria-hidden="true"></i></div>
-                <div class="pms-kpi-value">@Model.TotalProperties</div>
-                <div class="pms-kpi-label">Total Properties</div>
-            </div>
-        </div>
-        <div class="col-6 col-xl-2">
-            <div class="pms-kpi-card">
-                <div class="pms-kpi-icon green"><i class="bi bi-door-open" aria-hidden="true"></i></div>
-                <div class="pms-kpi-value">@Model.AllottedProperties</div>
-                <div class="pms-kpi-label">Occupied Units</div>
-            </div>
-        </div>
-        <div class="col-6 col-xl-2">
-            <div class="pms-kpi-card">
-                <div class="pms-kpi-icon amber"><i class="bi bi-house" aria-hidden="true"></i></div>
-                <div class="pms-kpi-value">@Model.AvailableProperties</div>
-                <div class="pms-kpi-label">Vacant Units</div>
-            </div>
-        </div>
-        <div class="col-6 col-xl-2">
-            <div class="pms-kpi-card">
-                <div class="pms-kpi-icon indigo"><i class="bi bi-people" aria-hidden="true"></i></div>
-                <div class="pms-kpi-value">@Model.TotalCustomers</div>
-                <div class="pms-kpi-label">Total Residents</div>
-            </div>
-        </div>
-        <div class="col-6 col-xl-2">
-            <div class="pms-kpi-card">
-                <div class="pms-kpi-icon red"><i class="bi bi-tools" aria-hidden="true"></i></div>
-                <div class="pms-kpi-value">@pendingRequests</div>
-                <div class="pms-kpi-label">Pending Requests</div>
-            </div>
-        </div>
-        <div class="col-6 col-xl-2">
-            <div class="pms-kpi-card">
-                <div class="pms-kpi-icon slate"><i class="bi bi-cash-stack" aria-hidden="true"></i></div>
-                <div class="pms-kpi-value">@FormatCurrency(monthlyRevenue)</div>
-                <div class="pms-kpi-label">Monthly Revenue (PKR)</div>
-            </div>
-        </div>
-    </div>
-
     <!-- Charts -->
     <div class="row g-3 mb-4">
         <div class="col-lg-6">

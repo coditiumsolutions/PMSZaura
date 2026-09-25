@@ -518,6 +518,66 @@
             color: #e5c76b;
         }
 
+        .sidebar .sidebar-subsection-toggle > .fas,
+        .sidebar .sidebar-subsection-toggle > .far,
+        .sidebar .sidebar-subsection-toggle > .fab {
+            flex: 0 0 auto;
+            width: 1.1rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #c9a227;
+        }
+
+        .sidebar .sidebar-subsection-toggle:hover > .fas,
+        .sidebar .sidebar-subsection-toggle:hover > .far,
+        .sidebar .sidebar-subsection-toggle:hover > .fab {
+            color: #e5c76b;
+        }
+
+        .sidebar a.sidebar-main-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .sidebar a.sidebar-main-link .sidebar-subsection-chevron--spacer {
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .sidebar a.sidebar-main-link .sidebar-subsection-title {
+            color: #c9a227;
+        }
+
+        .sidebar a.sidebar-main-link:hover .sidebar-subsection-title,
+        .sidebar a.sidebar-main-link.active .sidebar-subsection-title {
+            color: #e5c76b;
+        }
+
+        .sidebar a.sidebar-main-link > .fas,
+        .sidebar a.sidebar-main-link > .far,
+        .sidebar a.sidebar-main-link > .fab {
+            flex: 0 0 auto;
+            width: 1.1rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: #c9a227;
+        }
+
+        .sidebar a.sidebar-main-link:hover > .fas,
+        .sidebar a.sidebar-main-link:hover > .far,
+        .sidebar a.sidebar-main-link:hover > .fab,
+        .sidebar a.sidebar-main-link.active > .fas,
+        .sidebar a.sidebar-main-link.active > .far,
+        .sidebar a.sidebar-main-link.active > .fab {
+            color: #e5c76b;
+        }
+
+        .sidebar .sidebar-footer-main-links {
+            margin-top: 1.3em;
+            padding-top: 0;
+            border-top: none;
+        }
+
         .sidebar.sidebar--ams {
             box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
         }
@@ -1546,23 +1606,23 @@
                                 ?? NavigationService.BuildShellViewModel(Context, currentController, currentAction, showModuleNavigation: !isAmsArea && !isAuditShell);
                             ViewData["AmsNavCollapsePrefix"] = isAmsArea ? "amsSA" : "amsMain";
                             ViewData["AmsNavStandalone"] = isAmsArea;
+                            var isCoditiumPage = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase)
+                                && string.Equals(currentAction, "Coditium", StringComparison.OrdinalIgnoreCase);
+                            var isWorkspacePage = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase)
+                                && string.Equals(currentAction, "Workspace", StringComparison.OrdinalIgnoreCase);
+                            var useCoditiumSidebar = isCoditiumPage || isWorkspacePage;
+                            var isModulesHubPage = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase)
+                                && string.Equals(currentAction, "Modules", StringComparison.OrdinalIgnoreCase);
+                            var useModulesSidebar = isModulesHubPage
+                                || string.Equals(navigationShell.ActiveModuleKey, NavigationModuleKeys.Operations, StringComparison.OrdinalIgnoreCase);
                         }
 @if (isAuditShell)
 {
                         <partial name="_AuditSidebarLinks" />
+                        <partial name="_DashboardWorkspaceLinks" />
 }
 else if (isAmsArea)
 {
-                        <li class="nav-item mb-2">
-                            <a class="nav-link fw-semibold" asp-controller="Home" asp-action="Workspace">
-                                <i class="fas fa-arrow-left me-2"></i>Back to PMS workspace
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(currentController == "Home" && currentAction == "Coditium" ? "active" : "")" asp-controller="Home" asp-action="Coditium">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link @(currentController == "AccountsManagement" ? "active" : "")" asp-controller="AccountsManagement" asp-action="Index">
                                 <i class="fas fa-calculator me-2"></i>Finance
@@ -1584,29 +1644,23 @@ else if (isAmsArea)
                             </a>
                         </li>
                         }
+                        <partial name="_DashboardWorkspaceLinks" />
 }
 else
 {
+                        if (useCoditiumSidebar)
+                        {
+                        <partial name="_CoditiumSidebarLinks" />
+                        }
+                        else if (useModulesSidebar)
+                        {
+                        <partial name="_ModulesSidebarLinks" />
+                        }
+                        else
+                        {
                         <partial name="_PmsModuleSidebarLinks" model="navigationShell" />
-
-                        <li class="nav-item sidebar-section-label sidebar-section-label--general">
-                            <h6 class="sidebar-section-title">General</h6>
-                        </li>
-                        <li class="nav-item sidebar-module-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" 
-                               asp-controller="Home" asp-action="Coditium">
-                                <i class="fas fa-tachometer-alt"></i>
-                                Dashboard
-                            </a>
-                        </li>
-                        
-                        <li class="nav-item sidebar-module-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Workspace" ? "active" : "")" 
-                               asp-controller="Home" asp-action="Workspace">
-                                <i class="fas fa-th-large"></i>
-                                Workspace
-                            </a>
-                        </li>
+                        }
+                        <partial name="_DashboardWorkspaceLinks" />
 }
                     </ul>
                 </div>

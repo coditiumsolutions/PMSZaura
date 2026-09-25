@@ -33,6 +33,9 @@
         });
 
         document.querySelectorAll('.sidebar-subsection-toggle').forEach(function (toggle) {
+            if (toggle.classList.contains('sidebar-main-link')) {
+                return;
+            }
             if (toggle.dataset.sidebarSectionBound === 'true') {
                 return;
             }

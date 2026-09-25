@@ -56,9 +56,21 @@
                             </td>
                         }
                         <td data-label="Customer ID">
-                            <a asp-action="Details" asp-route-id="@customerId" class="text-decoration-none">
-                                <span class="pms-cell-primary-title">@customerId</span>
-                            </a>
+                            <div class="d-inline-flex align-items-center gap-1 pms-customer-id-cell">
+                                <a asp-action="Details" asp-route-id="@customerId" class="text-decoration-none">
+                                    <span class="pms-cell-primary-title">@customerId</span>
+                                </a>
+                                @if (!string.IsNullOrWhiteSpace(customerId))
+                                {
+                                    <button type="button"
+                                            class="btn btn-link btn-sm p-0 pms-copy-customer-id"
+                                            data-customer-id="@customerId"
+                                            title="Copy Customer ID"
+                                            aria-label="Copy Customer ID @customerId">
+                                        <i class="bi bi-clipboard" aria-hidden="true"></i>
+                                    </button>
+                                }
+                            </div>
                         </td>
                         <td data-label="Full Name">
                             <span class="pms-cell-primary-title">@customer.FullName</span>

@@ -7,6 +7,7 @@ using Microsoft.Data.SqlClient;
 using PMS.Data;
 using PMS.Models;
 using PMS.Services;
+using PMS.ViewModels;
 
 namespace PMS.Controllers
 {
@@ -478,6 +479,15 @@ namespace PMS.Controllers
 
         public IActionResult Workspace()
         {
+            return View();
+        }
+
+        [HttpGet("/Modules")]
+        public IActionResult Modules()
+        {
+            var navigationService = HttpContext.RequestServices.GetRequiredService<INavigationService>();
+            navigationService.TrySetActiveModule(HttpContext, NavigationModuleKeys.Operations);
+            ViewData["Title"] = "Modules";
             return View();
         }
 

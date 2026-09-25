@@ -90,9 +90,9 @@
 
 <form method="get" asp-action="Index" class="mb-2">
     <div class="pms-registration-search-wrap pms-listing-search-wrap pms-registration-search-panel">
-        <div class="row g-1 align-items-end flex-lg-nowrap pms-registration-search-fields">
-            <div class="col-12 col-lg-3">
-                <div class="pms-compact-field pms-select-dropdown">
+        <div class="row g-2 pms-registration-search-fields">
+            <div class="col-12 col-md-6">
+                <div class="pms-compact-field pms-select-dropdown pms-registration-equal-field">
                     <label for="statusFilter" class="visually-hidden">Status</label>
                     <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()" aria-label="Status">
                         <option value="All" selected="@(ViewBag.StatusFilter == "All")">All Status</option>
@@ -102,8 +102,8 @@
                     </select>
                 </div>
             </div>
-            <div class="col-12 col-lg">
-                <div class="pms-compact-field">
+            <div class="col-12 col-md-6">
+                <div class="pms-compact-field pms-registration-equal-field">
                     <label for="searchTerm" class="visually-hidden">Search Registration</label>
                     <input type="text"
                            name="searchTerm"
@@ -114,21 +114,19 @@
                            value="@ViewBag.SearchTerm" />
                 </div>
             </div>
-            <div class="col-12 col-lg-auto">
-                <div class="pms-compact-field pms-registration-inline-action">
-                    <button type="submit" class="btn btn-primary btn-sm w-100">
-                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
-                    </button>
-                </div>
+        </div>
+        <div class="row g-2 mt-2 pms-registration-search-actions-row">
+            <div class="col-12 @(ViewBag.CanCreate == true ? "col-md-6" : "col-md-12")">
+                <button type="submit" class="btn btn-sm pms-registration-action-btn pms-registration-action-btn--search">
+                    <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                </button>
             </div>
             @if (ViewBag.CanCreate == true)
             {
-                <div class="col-12 col-lg-auto">
-                    <div class="pms-compact-field pms-registration-inline-action">
-                        <a asp-action="Create" class="btn btn-primary btn-sm w-100">
-                            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New Registration
-                        </a>
-                    </div>
+                <div class="col-12 col-md-6">
+                    <a asp-action="Create" class="btn btn-sm pms-registration-action-btn pms-registration-action-btn--create">
+                        <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>New Registration
+                    </a>
                 </div>
             }
         </div>
@@ -255,16 +253,71 @@
 
     .pms-registration-search-fields {
         margin-top: 0 !important;
-        align-items: center !important;
+        align-items: stretch !important;
     }
 
     .pms-registration-listing .pms-registration-search-panel .form-label:not(.visually-hidden) {
         display: none !important;
     }
 
-    .pms-registration-inline-action .btn {
+    .pms-registration-equal-field .form-select,
+    .pms-registration-equal-field .form-control {
+        width: 100% !important;
+        border-radius: 0 !important;
         min-height: var(--pms-listing-control-h, 36px);
+        height: var(--pms-listing-control-h, 36px);
+    }
+
+    .pms-registration-search-actions-row .pms-registration-action-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 100% !important;
+        border-radius: 0 !important;
+        font-weight: 600;
+        min-height: var(--pms-listing-control-h, 36px);
+        height: var(--pms-listing-control-h, 36px);
+        padding: 0.35rem 0.5rem !important;
+        border: 1px solid transparent;
         white-space: nowrap;
+        box-sizing: border-box;
+        text-decoration: none;
+    }
+
+    .pms-registration-action-btn--search {
+        background-color: #a8dadc !important;
+        border-color: #8fc9cc !important;
+        color: #1d3557 !important;
+    }
+
+    .pms-registration-action-btn--search:hover,
+    .pms-registration-action-btn--search:focus {
+        background-color: #95d0d3 !important;
+        border-color: #7dbec2 !important;
+        color: #1d3557 !important;
+    }
+
+    .pms-registration-action-btn--create {
+        background-color: #457b9d !important;
+        border-color: #3a6a88 !important;
+        color: #fff !important;
+    }
+
+    .pms-registration-action-btn--create:hover,
+    .pms-registration-action-btn--create:focus {
+        background-color: #3a6a88 !important;
+        border-color: #315c76 !important;
+        color: #fff !important;
+    }
+
+    .pms-listing-scope .pms-registration-listing .table.pms-enterprise-table thead th,
+    .pms-listing-scope .pms-registration-listing .table-responsive > table.table thead th,
+    .pms-registration-listing .pms-enterprise-table thead th,
+    .pms-registration-listing #registrationsTable thead th {
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        border-color: #524c96 !important;
+        border-bottom-color: #524c96 !important;
     }
 
     .pms-registration-listing .pms-reg-id {

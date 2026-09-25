@@ -282,7 +282,18 @@ namespace PMS.Controllers
         }
 
         // Customer Payments - All payments received from customers  
-        public async Task<IActionResult> CustomerPayments(string customerId = null, string auditFilter = "")
+        public async Task<IActionResult> CustomerPayments(string customerId = null, string auditFilter = "", string statusFilter = "")
+        {
+            return await CustomerPaymentsCore(customerId, auditFilter, statusFilter);
+        }
+
+        /// <summary>Payments whose payment Status is Pending.</summary>
+        public async Task<IActionResult> PendingPayments(string customerId = null, string auditFilter = "")
+        {
+            return await CustomerPaymentsCore(customerId, auditFilter, statusFilter: "Pending");
+        }
+
+        private async Task<IActionResult> CustomerPaymentsCore(string customerId, string auditFilter, string statusFilter)
         {
             var denied = await EnsurePermissionAsync("Read");
             if (denied != null) return denied;
@@ -304,7 +315,7 @@ namespace PMS.Controllers
                 return View("CustomerPaymentDetails", customer);
             }
 
-            // Otherwise, show all customer payments
+            // Otherwise, show all customer payments (optionally filtered)
             var query = _context.Payments
                 .Include(p => p.Customer)
                 .Include(p => p.PaymentSchedule)
@@ -323,14 +334,22 @@ namespace PMS.Controllers
                 }
             }
 
+            if (!string.IsNullOrWhiteSpace(statusFilter))
+            {
+                query = query.Where(p => p.Status == statusFilter);
+            }
+
             var payments = await query
                 .OrderByDescending(p => p.PaymentDate)
                 .ToListAsync();
 
+            var isPendingPayments = string.Equals(statusFilter, "Pending", StringComparison.OrdinalIgnoreCase);
             ViewBag.AuditFilter = auditFilter;
+            ViewBag.StatusFilter = statusFilter ?? "";
+            ViewBag.IsPendingPayments = isPendingPayments;
             ViewBag.PendingAuditCount = await _context.Payments.CountAsync(p => p.AuditStatus == null || p.AuditStatus == "Pending");
-            
-            return View(payments);
+
+            return View("CustomerPayments", payments);
         }
 
         /// <summary>Print-friendly payment receipt. Opens in new tab for printing.</summary>
@@ -509,13 +528,17 @@ namespace PMS.Controllers
         }
 
         /// <summary>
-        /// Step 1: pick a customer (searchable list), then continue to RecordPayment form.
+        /// Step 1: pick a customer (same filters as Customer list), then open RecordPayment for the selected row.
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> AddPayment(string projectFilter = "All", string searchTerm = "")
+        public async Task<IActionResult> AddPayment(string projectFilter = "All", string statusFilter = "All", string searchTerm = "")
         {
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
+
+            projectFilter = string.IsNullOrWhiteSpace(projectFilter) ? "All" : projectFilter.Trim();
+            statusFilter = string.IsNullOrWhiteSpace(statusFilter) ? "All" : statusFilter.Trim();
+            searchTerm = searchTerm?.Trim() ?? "";
 
             var projects = await _context.Projects
                 .AsNoTracking()
@@ -523,8 +546,9 @@ namespace PMS.Controllers
                 .Select(p => new { p.ProjectID, p.ProjectName })
                 .ToListAsync();
             ViewBag.Projects = projects;
-            ViewBag.ProjectFilter = projectFilter ?? "All";
-            ViewBag.SearchTerm = searchTerm ?? "";
+            ViewBag.ProjectFilter = projectFilter;
+            ViewBag.StatusFilter = statusFilter;
+            ViewBag.SearchTerm = searchTerm;
 
             var query = _context.Customers
                 .AsNoTracking()
@@ -532,19 +556,23 @@ namespace PMS.Controllers
                 .Include(c => c.PaymentPlan)
                     .ThenInclude(p => p!.Project)
                 .Include(c => c.Allotments)
-                .Where(c => (c.Status ?? "Active") == "Active")
                 .AsQueryable();
 
-            if (!string.IsNullOrWhiteSpace(projectFilter) && projectFilter != "All")
+            if (!string.Equals(projectFilter, "All", StringComparison.OrdinalIgnoreCase))
             {
                 query = query.Where(c =>
                     c.ProjectID == projectFilter ||
                     (c.PaymentPlan != null && c.PaymentPlan.ProjectID == projectFilter));
             }
 
+            if (!string.Equals(statusFilter, "All", StringComparison.OrdinalIgnoreCase))
+            {
+                query = query.Where(c => c.Status == statusFilter);
+            }
+
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
-                var term = searchTerm.Trim().ToLower();
+                var term = searchTerm.ToLower();
                 query = query.Where(c =>
                     (c.CustomerID != null && c.CustomerID.ToLower().Contains(term)) ||
                     (c.FormNo != null && c.FormNo.ToLower().Contains(term)) ||
@@ -557,9 +585,8 @@ namespace PMS.Controllers
             }
 
             var customers = await query
-                .OrderBy(c => c.FullName)
+                .OrderByDescending(c => c.CreatedAt)
                 .ThenBy(c => c.CustomerID)
-                .Take(500)
                 .ToListAsync();
 
             return View(customers);

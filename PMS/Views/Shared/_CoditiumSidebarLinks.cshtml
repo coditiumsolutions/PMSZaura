@@ -1,0 +1,83 @@
+<li class="nav-item sidebar-subsection-block"
+    data-sidebar-section="coditium-pms"
+    data-section-has-active="false">
+    <button type="button" class="sidebar-subsection-toggle" aria-expanded="true" data-sidebar-section="coditium-pms">
+        <i class="bi bi-chevron-right sidebar-subsection-chevron" aria-hidden="true"></i>
+        <i class="fas fa-building me-2" aria-hidden="true"></i>
+        <span class="sidebar-subsection-title">PMS</span>
+    </button>
+    <ul class="sidebar-subsection-items list-unstyled mb-0">
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link" asp-controller="Customer" asp-action="Index"><i class="fas fa-user-friends me-2"></i>Customers</a>
+        </li>
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link" asp-controller="Project" asp-action="Index"><i class="fas fa-building me-2"></i>Property</a>
+        </li>
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link" asp-controller="Payment" asp-action="CustomerPayments"><i class="fas fa-money-bill-wave me-2"></i>Payments</a>
+        </li>
+    </ul>
+</li>
+
+<li class="nav-item sidebar-subsection-block"
+    data-sidebar-section="coditium-modules"
+    data-section-has-active="false">
+    <button type="button" class="sidebar-subsection-toggle" aria-expanded="true" data-sidebar-section="coditium-modules">
+        <i class="bi bi-chevron-right sidebar-subsection-chevron" aria-hidden="true"></i>
+        <i class="fas fa-th-large me-2" aria-hidden="true"></i>
+        <span class="sidebar-subsection-title">Modules</span>
+    </button>
+    <ul class="sidebar-subsection-items list-unstyled mb-0">
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link" asp-controller="Transfer" asp-action="Index"><i class="fas fa-exchange-alt me-2"></i>Transfer</a>
+        </li>
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link" asp-controller="NDC" asp-action="Index"><i class="fas fa-certificate me-2"></i>NDC</a>
+        </li>
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link" asp-controller="Possession" asp-action="Index"><i class="fas fa-key me-2"></i>Possession</a>
+        </li>
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link" asp-controller="Allotment" asp-action="Index"><i class="fas fa-hand-holding me-2"></i>Allotment</a>
+        </li>
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link" asp-controller="AccountsManagement" asp-action="Index"><i class="fas fa-calculator me-2"></i>Finance</a>
+        </li>
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link" asp-controller="SalesInquiry" asp-action="Index"><i class="fas fa-chart-line me-2"></i>Sales</a>
+        </li>
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link"
+               asp-controller="Reports"
+               asp-action="RequestedReport"
+               asp-route-id="total-active-members"
+               asp-route-title="Active Members">
+                <i class="fas fa-chart-bar me-2"></i>Reports
+            </a>
+        </li>
+    </ul>
+</li>
+
+<li class="nav-item sidebar-subsection-block"
+    data-sidebar-section="coditium-setup"
+    data-section-has-active="false">
+    <button type="button" class="sidebar-subsection-toggle" aria-expanded="true" data-sidebar-section="coditium-setup">
+        <i class="bi bi-chevron-right sidebar-subsection-chevron" aria-hidden="true"></i>
+        <i class="fas fa-cogs me-2" aria-hidden="true"></i>
+        <span class="sidebar-subsection-title">Setup</span>
+    </button>
+    <ul class="sidebar-subsection-items list-unstyled mb-0">
+        @if (User.IsInRole("Admin"))
+        {
+            <li class="nav-item sidebar-module-item sidebar-subsection-child">
+                <a class="nav-link" asp-controller="Account" asp-action="Users"><i class="fas fa-user-cog me-2"></i>System Users</a>
+            </li>
+            <li class="nav-item sidebar-module-item sidebar-subsection-child">
+                <a class="nav-link" asp-controller="Settings" asp-action="Index"><i class="fas fa-cogs me-2"></i>Configuration</a>
+            </li>
+        }
+        <li class="nav-item sidebar-module-item sidebar-subsection-child">
+            <a class="nav-link" asp-controller="Dealer" asp-action="Index"><i class="fas fa-store me-2"></i>Dealers</a>
+        </li>
+    </ul>
+</li>

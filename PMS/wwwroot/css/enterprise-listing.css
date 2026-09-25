@@ -1450,7 +1450,15 @@
 .pms-customer-listing .pms-saas-table thead th,
 .pms-customer-listing #customersTable thead th,
 .pms-transfer-listing .pms-saas-table thead th,
-.pms-transfer-listing #transfersTable thead th {
+.pms-transfer-listing #transfersTable thead th,
+.pms-payment-listing .pms-saas-table thead th,
+.pms-payment-listing #paymentsTable thead th,
+.pms-payment-listing .pms-payment-grid-table thead th,
+.pms-payment-listing #addPaymentCustomersTable thead th,
+.pms-registration-listing .pms-enterprise-table thead th,
+.pms-registration-listing #registrationsTable thead th,
+.pms-listing-scope .pms-registration-listing .table.pms-enterprise-table thead th,
+.pms-listing-scope .pms-registration-listing .table-responsive > table.table thead th {
     background-color: #6059A6 !important;
     color: #fff !important;
     border-color: #524c96 !important;

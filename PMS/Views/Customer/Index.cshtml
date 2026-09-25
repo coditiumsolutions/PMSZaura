@@ -1,15 +1,18 @@
 @model IEnumerable<PMS.Models.Customer>
 
 @{
-    ViewData["Title"] = "Search Customers";
+    ViewData["Title"] = ViewBag.IsPendingCustomers == true ? "Pending Customers" : "Search Customers";
     ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
     ViewData["ListingShowAdd"] = false;
     ViewData["ListingHideRefresh"] = true;
     ViewData["ListingHideToolbarActions"] = true;
 
-    var showBulkSelection = (ViewBag.StatusFilter as string) == "Pending" && ViewBag.CanEdit == true;
+    var isPendingCustomers = ViewBag.IsPendingCustomers == true || (ViewBag.StatusFilter as string) == "Pending";
+    var showBulkSelection = isPendingCustomers && ViewBag.CanEdit == true;
     ViewData["ShowBulkSelection"] = showBulkSelection;
     var customerCount = Model?.Count() ?? 0;
+    var listAction = isPendingCustomers ? "PendingCustomers" : "Index";
+    var pageHeading = isPendingCustomers ? "Pending Customers" : "Customers";
 }
 
 @if (TempData["SuccessMessage"] != null)
@@ -29,15 +32,15 @@
 
 <div class="pms-customer-listing pms-listing-page">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-        <h5 class="pms-grid-title pms-customer-page-heading mb-0">Customers</h5>
+        <h5 class="pms-grid-title pms-customer-page-heading mb-0">@pageHeading</h5>
         <span class="badge rounded-pill pms-record-badge">@customerCount record@(customerCount == 1 ? "" : "s")</span>
     </div>
 
-<form method="get" asp-action="Index" class="mb-2">
+<form method="get" asp-action="@listAction" class="mb-2">
     <div class="pms-customer-search-wrap pms-listing-search-wrap pms-customer-search-panel">
-        <div class="row g-1 align-items-center flex-lg-nowrap pms-customer-search-fields">
-            <div class="col-12 col-md-6 col-lg-3">
-                <div class="pms-compact-field pms-select-dropdown">
+        <div class="row g-2 pms-customer-search-fields">
+            <div class="col-12 @(isPendingCustomers ? "col-md-6" : "col-md-4")">
+                <div class="pms-compact-field pms-select-dropdown pms-customer-equal-field">
                     <label for="projectFilter" class="visually-hidden">Project</label>
                     <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()" aria-label="Project">
                         <option value="All" selected="@(ViewBag.ProjectFilter == "All")">All Projects</option>
@@ -53,20 +56,27 @@
                     </select>
                 </div>
             </div>
-            <div class="col-12 col-md-6 col-lg-2">
-                <div class="pms-compact-field pms-select-dropdown">
-                    <label for="statusFilter" class="visually-hidden">Status</label>
-                    <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()" aria-label="Status">
-                        <option value="All" selected="@(ViewBag.StatusFilter == "All")">All Status</option>
-                        <option value="Active" selected="@(ViewBag.StatusFilter == "Active")">Active</option>
-                        <option value="Pending" selected="@(ViewBag.StatusFilter == "Pending")">Pending</option>
-                        <option value="Inactive" selected="@(ViewBag.StatusFilter == "Inactive")">Inactive</option>
-                        <option value="Marked for Deletion" selected="@(ViewBag.StatusFilter == "Marked for Deletion")">Marked for Deletion</option>
-                    </select>
+            @if (!isPendingCustomers)
+            {
+                <div class="col-12 col-md-4">
+                    <div class="pms-compact-field pms-select-dropdown pms-customer-equal-field">
+                        <label for="statusFilter" class="visually-hidden">Status</label>
+                        <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()" aria-label="Status">
+                            <option value="All" selected="@(ViewBag.StatusFilter == "All")">All Status</option>
+                            <option value="Active" selected="@(ViewBag.StatusFilter == "Active")">Active</option>
+                            <option value="Pending" selected="@(ViewBag.StatusFilter == "Pending")">Pending</option>
+                            <option value="Inactive" selected="@(ViewBag.StatusFilter == "Inactive")">Inactive</option>
+                            <option value="Marked for Deletion" selected="@(ViewBag.StatusFilter == "Marked for Deletion")">Marked for Deletion</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div class="col-12 col-lg pms-customer-search-term-field">
-                <div class="pms-compact-field">
+            }
+            else
+            {
+                <input type="hidden" name="statusFilter" value="Pending" />
+            }
+            <div class="col-12 @(isPendingCustomers ? "col-md-6" : "col-md-4")">
+                <div class="pms-compact-field pms-customer-equal-field">
                     <label for="searchTerm" class="visually-hidden">Search Customer</label>
                     <input type="text"
                            name="searchTerm"
@@ -77,17 +87,27 @@
                            value="@ViewBag.SearchTerm" />
                 </div>
             </div>
-            <div class="col-12 col-lg-auto">
-                <div class="pms-compact-field pms-customer-search-actions pms-customer-inline-action">
-                    <div class="d-flex flex-nowrap gap-2">
-                        <button type="submit" class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--search">
-                            <i class="bi bi-search me-1" aria-hidden="true"></i>Search
-                        </button>
-                        <partial name="_OperationsDropdown" />
-                    </div>
-                </div>
+        </div>
+        <div class="row g-2 mt-2 pms-customer-search-actions-row">
+            <div class="col-12 col-md-4">
+                <button type="submit" class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--search pms-customer-action-btn--row">
+                    <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                </button>
+            </div>
+            <div class="col-12 col-md-4">
+                <partial name="_OperationsDropdown" />
+            </div>
+            <div class="col-12 col-md-4">
+                <button type="button"
+                        id="btnAccountReport"
+                        class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--report pms-customer-action-btn--row"
+                        disabled
+                        title="Select a customer with the radio first">
+                    <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Account Report
+                </button>
             </div>
         </div>
+        <small class="text-muted d-block mt-2">Use the radio to select a customer, then open Account Report. Click a row to open details.</small>
     </div>
 </form>
 
@@ -125,17 +145,6 @@
             </div>
         </div>
 
-        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-            <button type="button"
-                    id="btnAccountReport"
-                    class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--report"
-                    disabled
-                    title="Select a customer with the radio first">
-                <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Account Report
-            </button>
-            <small class="text-muted">Use the radio to select a customer, then open Account Report. Click a row to open details.</small>
-        </div>
-
         <div class="card pms-grid-card pms-listing-flat pms-customer-listing pms-customer-grid-compact mb-2">
             <div class="card-body py-2">
                 <partial name="_CustomerDataGrid" model="Model" />
@@ -145,17 +154,6 @@
 }
 else
 {
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-        <button type="button"
-                id="btnAccountReport"
-                class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--report"
-                disabled
-                title="Select a customer with the radio first">
-            <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Account Report
-        </button>
-        <small class="text-muted">Use the radio to select a customer, then open Account Report. Click a row to open details.</small>
-    </div>
-
     <div class="card pms-grid-card pms-listing-flat pms-customer-listing pms-customer-grid-compact mb-2">
         <div class="card-body py-2">
             <partial name="_CustomerDataGrid" model="Model" />
@@ -180,16 +178,34 @@ else
 
     .pms-customer-search-fields {
         margin-top: 0 !important;
-        align-items: center !important;
+        align-items: stretch !important;
     }
 
     .pms-customer-listing .pms-customer-search-panel .form-label:not(.visually-hidden) {
         display: none !important;
     }
 
-    .pms-customer-inline-action .btn {
+    .pms-customer-equal-field .form-select,
+    .pms-customer-equal-field .form-control {
+        width: 100% !important;
+        border-radius: 0 !important;
         min-height: var(--pms-listing-control-h, 36px);
-        white-space: nowrap;
+        height: var(--pms-listing-control-h, 36px);
+    }
+
+    .pms-customer-search-actions-row .pms-customer-operations-dropdown,
+    .pms-customer-search-actions-row .pms-customer-action-btn--row {
+        width: 100% !important;
+        display: block;
+    }
+
+    .pms-customer-search-actions-row .pms-customer-action-btn--row,
+    .pms-customer-search-actions-row .pms-customer-operations-btn,
+    .pms-customer-search-actions-row .pms-customer-action-btn--operations {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        flex: 1 1 auto !important;
     }
 
     .pms-customer-grid-compact > .card-body {
@@ -251,6 +267,22 @@ else
         color: #000 !important;
     }
 
+    .pms-customer-listing .pms-copy-customer-id {
+        color: #475569 !important;
+        line-height: 1;
+        text-decoration: none !important;
+        vertical-align: middle;
+    }
+
+    .pms-customer-listing .pms-copy-customer-id:hover,
+    .pms-customer-listing .pms-copy-customer-id:focus {
+        color: #1d3557 !important;
+    }
+
+    .pms-customer-listing .pms-copy-customer-id.pms-copied {
+        color: #198754 !important;
+    }
+
     .pms-customer-listing .pms-customer-selectable-row {
         cursor: pointer;
     }
@@ -260,24 +292,20 @@ else
         background-color: #e7f1ff !important;
     }
 
-    /* Rectangle action buttons — green / red; Search & Operations equal width */
+    /* Rectangle action buttons — equal width on action row */
     .pms-customer-listing .pms-customer-action-btn--search,
     .pms-customer-listing .pms-customer-action-btn--operations,
-    .pms-customer-listing .pms-customer-operations-btn {
+    .pms-customer-listing .pms-customer-operations-btn,
+    .pms-customer-listing .pms-customer-action-btn--report {
         display: inline-flex !important;
         align-items: center;
         justify-content: center;
-        width: 7.5rem !important;
-        min-width: 7.5rem !important;
-        max-width: 7.5rem !important;
-        flex: 0 0 7.5rem !important;
         border-radius: 0 !important;
         font-weight: 600;
         min-height: var(--pms-listing-control-h, 36px);
         height: var(--pms-listing-control-h, 36px);
         padding: 0.35rem 0.5rem !important;
         border: 1px solid transparent;
-        color: #fff !important;
         white-space: nowrap;
         box-sizing: border-box;
     }
@@ -288,52 +316,58 @@ else
         min-height: var(--pms-listing-control-h, 36px);
         padding: 0.35rem 0.95rem;
         border: 1px solid transparent;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--operations,
+    .pms-customer-listing .pms-customer-operations-btn {
         color: #fff !important;
     }
 
     .pms-customer-listing .pms-customer-action-btn--search {
-        background-color: #2f9e66 !important;
-        border-color: #288f5b !important;
+        background-color: #a8dadc !important;
+        border-color: #8fc9cc !important;
+        color: #1d3557 !important;
     }
 
     .pms-customer-listing .pms-customer-action-btn--search:hover,
     .pms-customer-listing .pms-customer-action-btn--search:focus {
-        background-color: #27915c !important;
-        border-color: #228553 !important;
-        color: #fff !important;
+        background-color: #95d0d3 !important;
+        border-color: #7dbec2 !important;
+        color: #1d3557 !important;
     }
 
     .pms-customer-listing .pms-customer-action-btn--operations {
-        background-color: #e45a67 !important;
-        border-color: #d94c5a !important;
+        background-color: #457b9d !important;
+        border-color: #3a6a88 !important;
+        color: #fff !important;
     }
 
     .pms-customer-listing .pms-customer-action-btn--operations:hover,
     .pms-customer-listing .pms-customer-action-btn--operations:focus,
     .pms-customer-listing .pms-customer-action-btn--operations.show {
-        background-color: #d94c5a !important;
-        border-color: #cc4452 !important;
+        background-color: #3a6a88 !important;
+        border-color: #315c76 !important;
         color: #fff !important;
     }
 
-    .pms-customer-listing .pms-customer-action-btn--report {
-        background-color: #198754 !important;
-        border-color: #157347 !important;
-        color: #000 !important;
+    .pms-customer-listing .pms-customer-action-btn--report,
+    .pms-customer-listing .pms-customer-action-btn--report:disabled {
+        background-color: #1d3557 !important;
+        border-color: #1d3557 !important;
+        color: #fff !important;
     }
 
     .pms-customer-listing .pms-customer-action-btn--report:hover:not(:disabled),
     .pms-customer-listing .pms-customer-action-btn--report:focus:not(:disabled) {
-        background-color: #157347 !important;
-        border-color: #146c43 !important;
-        color: #000 !important;
+        background-color: #1d3557 !important;
+        border-color: #1d3557 !important;
+        color: #fff !important;
+        filter: brightness(1.08);
     }
 
     .pms-customer-listing .pms-customer-action-btn--report:disabled {
-        background-color: #94a3b8 !important;
-        border-color: #94a3b8 !important;
-        color: #000 !important;
-        opacity: 0.85;
+        opacity: 0.7;
+        cursor: not-allowed;
     }
 </style>
 
@@ -381,6 +415,32 @@ else
                 // Account Report selection via the row radio only.
                 $('#customersTable tbody').on('change', '.customer-report-radio', function () {
                     setSelectedCustomer($(this).val());
+                });
+
+                $('#customersTable tbody').on('click', '.pms-copy-customer-id', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var $btn = $(this);
+                    var id = String($btn.data('customer-id') || '').trim();
+                    if (!id) return;
+
+                    var $icon = $btn.find('i');
+                    var markCopied = function () {
+                        $btn.addClass('pms-copied').attr('title', 'Copied!');
+                        $icon.removeClass('bi-clipboard').addClass('bi-clipboard-check');
+                        setTimeout(function () {
+                            $btn.removeClass('pms-copied').attr('title', 'Copy Customer ID');
+                            $icon.removeClass('bi-clipboard-check').addClass('bi-clipboard');
+                        }, 1200);
+                    };
+
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(id).then(markCopied).catch(function () {
+                            window.prompt('Copy Customer ID:', id);
+                        });
+                    } else {
+                        window.prompt('Copy Customer ID:', id);
+                    }
                 });
             }
 

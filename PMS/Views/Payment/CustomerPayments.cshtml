@@ -1,18 +1,21 @@
 @model IEnumerable<PMS.Models.Payment>
 
 @{
-    ViewData["Title"] = "Customer Payments";
+    ViewData["Title"] = ViewBag.IsPendingPayments == true ? "Pending Payments" : "Customer Payments";
     var paymentList = Model?.ToList() ?? new List<PMS.Models.Payment>();
     var totalCount = paymentList.Count;
     var totalReceived = paymentList.Sum(p => p.Amount);
     var thisMonthCount = paymentList.Count(p => p.PaymentDate.Month == DateTime.Now.Month && p.PaymentDate.Year == DateTime.Now.Year);
     var uniqueCustomers = paymentList.Select(p => p.CustomerID).Distinct().Count();
     var auditFilter = ViewBag.AuditFilter as string ?? "";
+    var isPendingPayments = ViewBag.IsPendingPayments == true;
+    var listAction = isPendingPayments ? "PendingPayments" : "CustomerPayments";
+    var pageHeading = isPendingPayments ? "Pending Payments" : "Customer Payments";
 }
 
 <div class="pms-payment-listing pms-listing-page">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-        <h5 class="pms-grid-title mb-0">Customer Payments</h5>
+        <h5 class="pms-grid-title mb-0">@pageHeading</h5>
         <span class="badge rounded-pill pms-record-badge">@totalCount record@(totalCount == 1 ? "" : "s")</span>
     </div>
 
@@ -53,9 +56,9 @@
         </div>
     </div>
 
-    <form method="get" asp-action="CustomerPayments" class="mb-2">
+    <form method="get" asp-action="@listAction" class="mb-2" id="paymentsFilterForm">
         <div class="pms-listing-search-wrap">
-            <div class="row g-1 align-items-end flex-lg-nowrap">
+            <div class="row g-2 align-items-end">
                 <div class="col-12 col-md-4 col-lg-3">
                     <div class="pms-compact-field pms-select-dropdown">
                         <label for="auditFilter" class="form-label">Audit Status</label>
@@ -67,11 +70,21 @@
                         </select>
                     </div>
                 </div>
-                <div class="col-12 col-md-8 col-lg-9">
-                    <div class="d-flex flex-wrap gap-2 pms-listing-search-actions">
+                <div class="col-12 col-md-4 col-lg-4">
+                    <div class="pms-compact-field">
+                        <label for="paymentsSearch" class="form-label">Search</label>
+                        <input type="text"
+                               id="paymentsSearch"
+                               class="form-control"
+                               placeholder="Search payments…"
+                               autocomplete="off" />
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 col-lg-5">
+                    <div class="d-flex flex-wrap gap-2 pms-listing-search-actions align-items-end pb-1">
                         @if (!string.IsNullOrEmpty(auditFilter))
                         {
-                            <a asp-action="CustomerPayments" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">Clear</a>
+                            <a asp-action="@listAction" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">Clear</a>
                         }
                         <partial name="_OperationsDropdown" />
                     </div>
@@ -94,6 +107,7 @@
                                 <th>Entry Date</th>
                                 <th>Deposit</th>
                                 <th class="text-end">Amount</th>
+                                <th>Status</th>
                                 <th>Audit</th>
                                 <th>Method</th>
                             </tr>
@@ -101,6 +115,12 @@
                         <tbody>
                             @foreach (var payment in paymentList)
                             {
+                                var paymentStatus = string.IsNullOrWhiteSpace(payment.Status) ? "Pending" : payment.Status;
+                                var statusPill = paymentStatus == "Paid"
+                                    ? "pms-pill--success"
+                                    : paymentStatus == "Partially Paid"
+                                        ? "pms-pill--info"
+                                        : "pms-pill--warning";
                                 var auditPill = payment.AuditStatus == "Approved"
                                     ? "pms-pill--success"
                                     : payment.AuditStatus == "Declined"
@@ -135,6 +155,7 @@
                                     <td data-label="Entry Date">@payment.PaymentDate.ToString("dd-MM-yyyy")</td>
                                     <td data-label="Deposit">@(payment.DepositDate?.ToString("dd-MM-yyyy") ?? "—")</td>
                                     <td class="text-end fw-semibold text-success" data-label="Amount">@payment.Amount.ToString("N0")</td>
+                                    <td data-label="Status"><span class="pms-pill @statusPill">@paymentStatus</span></td>
                                     <td data-label="Audit"><span class="pms-pill @auditPill">@(payment.AuditStatus ?? "Pending")</span></td>
                                     <td data-label="Method"><span class="pms-pill pms-pill--neutral">@payment.Method</span></td>
                                 </tr>
@@ -147,9 +168,13 @@
             {
                 <div class="text-center py-4">
                     <i class="fas fa-money-bill-wave fa-2x mb-2 text-muted"></i>
-                    <h6 class="text-muted mb-1">No Payments Recorded Yet</h6>
-                    <p class="text-muted small mb-2">Start recording customer payments to track transactions.</p>
-                    @if (ViewBag.CanCreate == true)
+                    <h6 class="text-muted mb-1">@(isPendingPayments ? "No Pending Payments" : "No Payments Recorded Yet")</h6>
+                    <p class="text-muted small mb-2">
+                        @(isPendingPayments
+                            ? "There are no payments with Status = Pending."
+                            : "Start recording customer payments to track transactions.")
+                    </p>
+                    @if (!isPendingPayments && ViewBag.CanCreate == true)
                     {
                         <a asp-action="RecordPayment" class="btn btn-primary btn-sm">
                             <i class="fas fa-plus me-1"></i>Record Payment
@@ -274,9 +299,14 @@
         padding: 0.5rem 0.35rem;
     }
 
-    .pms-payment-listing .pms-payment-grid-table thead th {
+    .pms-payment-listing .pms-payment-grid-table thead th,
+    .pms-payment-listing #paymentsTable thead th,
+    .pms-payment-listing .pms-saas-table thead th {
         font-size: 0.75rem;
         line-height: 1.2;
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        border-color: #524c96 !important;
     }
 
     .pms-payment-listing .pms-payment-grid-table .pms-saas-td-actions {
@@ -298,7 +328,17 @@
         overflow-x: hidden !important;
     }
 
+    .pms-payment-listing .dataTables_wrapper .dataTables_length,
+    .pms-payment-listing .dataTables_wrapper .dataTables_filter {
+        display: none !important;
+    }
+
+    .pms-payment-listing .dataTables_wrapper .dataTables_info,
     .pms-payment-listing .dataTables_wrapper .dataTables_paginate {
+        margin-top: 0.5rem;
+    }
+
+    .pms-payment-listing .pms-payments-dt-footer {
         margin-top: 0.5rem;
     }
 
@@ -328,26 +368,27 @@
             @if (paymentList.Any())
             {
                 <text>
-                $('#paymentsTable').DataTable({
+                var paymentsTable = $('#paymentsTable').DataTable({
                     order: [[3, 'desc']],
-                    pageLength: 10,
-                    lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                    pageLength: 20,
+                    lengthChange: false,
                     paging: true,
+                    searching: true,
                     scrollX: false,
                     autoWidth: false,
+                    dom: 'rt<"pms-payments-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2"ip>',
                     columnDefs: [
-                        { width: '15%', targets: 0 }, // Customer
-                        { width: '16%', targets: 1 }, // Plan
-                        { width: '10%', targets: 2 }, // Inst.
-                        { width: '15%', targets: 3 }, // Entry Date
-                        { width: '12%', targets: 4 }, // Deposit
-                        { width: '14%', targets: 5 }, // Amount
-                        { width: '14%', targets: 6 }, // Audit
-                        { width: '13%', targets: 7 }  // Method
+                        { width: '14%', targets: 0 }, // Customer
+                        { width: '14%', targets: 1 }, // Plan
+                        { width: '8%', targets: 2 },  // Inst.
+                        { width: '12%', targets: 3 }, // Entry Date
+                        { width: '11%', targets: 4 }, // Deposit
+                        { width: '11%', targets: 5 }, // Amount
+                        { width: '10%', targets: 6 }, // Status
+                        { width: '10%', targets: 7 }, // Audit
+                        { width: '10%', targets: 8 }  // Method
                     ],
                     language: {
-                        search: "Search:",
-                        lengthMenu: "Show _MENU_ per page",
                         info: "Showing _START_ to _END_ of _TOTAL_ payments",
                         infoEmpty: "No payments",
                         infoFiltered: "(filtered from _MAX_)",
@@ -357,6 +398,17 @@
                             next: "Next",
                             previous: "Previous"
                         }
+                    }
+                });
+
+                $('#paymentsSearch').on('keyup input', function () {
+                    paymentsTable.search(this.value || '').draw();
+                });
+                $('#paymentsFilterForm').on('submit', function (e) {
+                    // Audit filter still posts via select onchange; block search-input Enter from navigating
+                    if (document.activeElement && document.activeElement.id === 'paymentsSearch') {
+                        e.preventDefault();
+                        paymentsTable.search($('#paymentsSearch').val() || '').draw();
                     }
                 });
                 </text>

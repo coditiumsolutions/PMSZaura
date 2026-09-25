@@ -1,0 +1,30 @@
+@{
+    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+    var isDashboard = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, "Coditium", StringComparison.OrdinalIgnoreCase);
+    var isWorkspace = string.Equals(currentController, "Home", StringComparison.OrdinalIgnoreCase)
+        && string.Equals(currentAction, "Workspace", StringComparison.OrdinalIgnoreCase);
+}
+
+<li class="nav-item sidebar-subsection-block sidebar-main-link-block sidebar-footer-main-links">
+    <a class="sidebar-subsection-toggle sidebar-main-link @(isDashboard ? "active" : "")"
+       asp-controller="Home"
+       asp-action="Coditium"
+       aria-current="@(isDashboard ? "page" : null)">
+        <i class="bi bi-chevron-right sidebar-subsection-chevron sidebar-subsection-chevron--spacer" aria-hidden="true"></i>
+        <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+        <span class="sidebar-subsection-title">Dashboard</span>
+    </a>
+</li>
+
+<li class="nav-item sidebar-subsection-block sidebar-main-link-block">
+    <a class="sidebar-subsection-toggle sidebar-main-link @(isWorkspace ? "active" : "")"
+       asp-controller="Home"
+       asp-action="Workspace"
+       aria-current="@(isWorkspace ? "page" : null)">
+        <i class="bi bi-chevron-right sidebar-subsection-chevron sidebar-subsection-chevron--spacer" aria-hidden="true"></i>
+        <i class="fas fa-th-large" aria-hidden="true"></i>
+        <span class="sidebar-subsection-title">Workspace</span>
+    </a>
+</li>

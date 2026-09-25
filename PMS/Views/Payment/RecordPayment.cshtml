@@ -1,7 +1,7 @@
 @using System.Globalization
 @using System.Linq
 @{
-    ViewData["Title"] = "Add Payment";
+    ViewData["Title"] = "Payment Form";
     var preSelectedCustomerId = (ViewBag.PreSelectedCustomerId as string)?.Trim();
     var preSelectedScheduleId = ViewBag.PreSelectedScheduleId as string;
     var schedule = ViewBag.Schedule as PMS.Models.PaymentSchedule;
@@ -9,13 +9,25 @@
 }
 
 <div class="pms-record-payment">
-    <div class="d-flex justify-content-end align-items-center mb-2 flex-wrap gap-2">
-        <a asp-action="AddPayment" class="btn btn-outline-secondary btn-sm py-0 px-2">
-            <i class="fas fa-users me-1"></i>Select Customer
-        </a>
-        <a asp-action="CustomerPayments" class="btn btn-outline-secondary btn-sm py-0 px-2">
-            <i class="fas fa-arrow-left me-1"></i>Back to Payments
-        </a>
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2 pms-rp-toolbar">
+        <div class="d-flex align-items-center gap-3 flex-grow-1 me-2 min-w-0">
+            <h5 class="pms-rp-form-title mb-0 flex-shrink-0">Payment Form</h5>
+            <div id="customerStatusRow" class="pms-rp-header-status small mb-0 flex-grow-1 min-w-0">
+                <span id="customerSearchMessage" class="fw-semibold"></span>
+                <span id="customerNameDisplay" class="text-success" style="display: none;">
+                    <span id="customerNameText"></span>
+                    <span id="customerPlanText" class="ms-1 text-primary fw-semibold"></span>
+                </span>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+            <a asp-action="AddPayment" class="btn btn-outline-secondary btn-sm py-0 px-2">
+                <i class="fas fa-users me-1"></i>Select Customer
+            </a>
+            <a asp-action="CustomerPayments" class="btn btn-outline-secondary btn-sm py-0 px-2">
+                <i class="fas fa-arrow-left me-1"></i>Back to Payments
+            </a>
+        </div>
     </div>
 
     @if (schedule != null)
@@ -94,54 +106,42 @@
 
                 <div class="pms-registration-4col-form pms-record-payment-form">
                     <div class="row g-1 pms-registration-4col-row align-items-center">
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label for="customerIdInput" class="form-label pms-registration-4col-label mb-0">Customer ID *</label>
                         </div>
-                        <div class="col-auto pms-rp-field">
-                            <div class="d-flex gap-1 align-items-center">
+                        <div class="col-12 col-md-4">
+                            <div class="d-flex gap-1 align-items-center pms-rp-equal-field">
                                 <input type="text" id="customerIdInput" class="form-control form-control-sm" placeholder="Enter Customer ID" value="@preSelectedCustomerId" autocomplete="off" />
-                                <button type="button" id="btnSearchCustomer" class="btn btn-primary btn-sm flex-shrink-0 py-0">
+                                <button type="button" id="btnSearchCustomer" class="btn btn-sm pms-rp-search-icon-btn flex-shrink-0">
                                     <i class="fas fa-search"></i>
                                 </button>
                             </div>
                             <input type="hidden" name="customerId" id="customerId" value="" />
                         </div>
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label for="scheduleId" class="form-label pms-registration-4col-label mb-0">Installment *</label>
                         </div>
-                        <div class="col-auto pms-rp-field pms-rp-field-wide">
-                            <select name="scheduleId" id="scheduleId" class="form-select form-select-sm" required disabled>
+                        <div class="col-12 col-md-4">
+                            <select name="scheduleId" id="scheduleId" class="form-select form-select-sm pms-rp-equal-control" required disabled>
                                 <option value="">Search by Customer ID first</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="row g-0 pms-registration-4col-row pms-rp-status-row align-items-center">
-                        <div class="col-12">
-                            <div id="customerStatusRow" class="pms-rp-status-space small mb-0">
-                                <span id="customerSearchMessage" class="fw-semibold text-success"></span>
-                                <span id="customerNameDisplay" class="text-success" style="display: none;">
-                                    <span id="customerNameText"></span>
-                                    <span id="customerPlanText" class="ms-1 text-primary fw-semibold"></span>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="row g-1 pms-registration-4col-row align-items-center">
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label for="amount" class="form-label pms-registration-4col-label mb-0">Amount (PKR) *</label>
                         </div>
-                        <div class="col-auto pms-rp-field">
-                            <input type="text" name="amount" id="amount" class="form-control form-control-sm"
+                        <div class="col-12 col-md-4">
+                            <input type="text" name="amount" id="amount" class="form-control form-control-sm pms-rp-equal-control"
                                    placeholder="Enter amount" value="" required disabled inputmode="numeric" />
                             <div id="amountValidationError" class="invalid-feedback d-block" style="display: none !important;"></div>
                         </div>
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label for="method" class="form-label pms-registration-4col-label mb-0">Payment Method *</label>
                         </div>
-                        <div class="col-auto pms-rp-field">
-                            <select name="method" id="method" class="form-select form-select-sm" required>
+                        <div class="col-12 col-md-4">
+                            <select name="method" id="method" class="form-select form-select-sm pms-rp-equal-control" required>
                                 <option value="">Select Payment Method</option>
                                 <option value="DD/DS" selected>DD/DS</option>
                                 <option value="Cash">Cash</option>
@@ -154,18 +154,18 @@
                     </div>
 
                     <div class="row g-1 pms-registration-4col-row align-items-center">
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label for="referenceNo" class="form-label pms-registration-4col-label mb-0">Reference Number *</label>
                         </div>
-                        <div class="col-auto pms-rp-field">
-                            <input type="text" name="referenceNo" id="referenceNo" class="form-control form-control-sm"
+                        <div class="col-12 col-md-4">
+                            <input type="text" name="referenceNo" id="referenceNo" class="form-control form-control-sm pms-rp-equal-control"
                                    placeholder="Transaction/Receipt/Cheque Number" required />
                         </div>
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label for="bankName" class="form-label pms-registration-4col-label mb-0">Bank Name *</label>
                         </div>
-                        <div class="col-auto pms-rp-field">
-                            <select name="bankName" id="bankName" class="form-select form-select-sm" required>
+                        <div class="col-12 col-md-4">
+                            <select name="bankName" id="bankName" class="form-select form-select-sm pms-rp-equal-control" required>
                                 <option value="">Select Bank</option>
                                 @foreach (var bank in (ViewBag.BankNames as IEnumerable<string> ?? Array.Empty<string>()))
                                 {
@@ -176,17 +176,17 @@
                     </div>
 
                     <div class="row g-1 pms-registration-4col-row align-items-center">
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label for="depositDate" class="form-label pms-registration-4col-label mb-0">Deposit Date *</label>
                         </div>
-                        <div class="col-auto pms-rp-field">
-                            <input type="date" name="depositDate" id="depositDate" class="form-control form-control-sm" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                        <div class="col-12 col-md-4">
+                            <input type="date" name="depositDate" id="depositDate" class="form-control form-control-sm pms-rp-equal-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
                         </div>
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label for="status" class="form-label pms-registration-4col-label mb-0">Payment Status *</label>
                         </div>
-                        <div class="col-auto pms-rp-field">
-                            <select name="status" id="status" class="form-select form-select-sm" required>
+                        <div class="col-12 col-md-4">
+                            <select name="status" id="status" class="form-select form-select-sm pms-rp-equal-control" required>
                                 @{ var paymentStatusList = ViewBag.PaymentStatuses as IEnumerable<string> ?? new[] { "Pending", "Paid", "Partially Paid" }; }
                                 @foreach (var s in paymentStatusList)
                                 {
@@ -196,41 +196,43 @@
                         </div>
                     </div>
 
+                    <hr class="pms-rp-section-divider" />
+
                     <div class="row g-1 pms-registration-4col-row align-items-center">
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label for="remarks" class="form-label pms-registration-4col-label mb-0">Remarks</label>
                         </div>
-                        <div class="col-auto pms-rp-field">
-                            <textarea name="remarks" id="remarks" class="form-control form-control-sm" rows="1"
+                        <div class="col-12 col-md-4">
+                            <textarea name="remarks" id="remarks" class="form-control form-control-sm pms-rp-equal-control" rows="1"
                                       placeholder="Additional notes"></textarea>
                         </div>
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label for="proofAttachment" class="form-label pms-registration-4col-label mb-0">Payment Proof</label>
                         </div>
-                        <div class="col-auto pms-rp-field">
-                            <input type="file" name="proofAttachment" id="proofAttachment" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
+                        <div class="col-12 col-md-4">
+                            <input type="file" name="proofAttachment" id="proofAttachment" class="form-control form-control-sm pms-rp-equal-control" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
                         </div>
                     </div>
 
                     <div class="row g-1 pms-registration-4col-row align-items-center">
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label for="proofDescription" class="form-label pms-registration-4col-label mb-0">Proof Title</label>
                         </div>
-                        <div class="col-auto pms-rp-field">
-                            <input type="text" name="proofDescription" id="proofDescription" class="form-control form-control-sm" maxlength="500" placeholder="e.g. Deposit Slip" />
+                        <div class="col-12 col-md-4">
+                            <input type="text" name="proofDescription" id="proofDescription" class="form-control form-control-sm pms-rp-equal-control" maxlength="500" placeholder="e.g. Deposit Slip" />
                         </div>
-                        <div class="col-auto pms-rp-label">
+                        <div class="col-12 col-md-2">
                             <label class="form-label pms-registration-4col-label mb-0">Extra Payment</label>
                         </div>
-                        <div class="col-auto pms-rp-field">
-                            <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="col-12 col-md-4">
+                            <div class="d-flex flex-wrap align-items-center gap-2 pms-rp-equal-field">
                                 <div class="form-check form-switch mb-0">
                                     <input class="form-check-input" type="checkbox" id="addExtraPayment" name="addExtraPayment" value="true" />
                                     <label class="form-check-label small" for="addExtraPayment">Extra</label>
                                 </div>
-                                <div class="input-group input-group-sm" style="max-width: 9rem;">
+                                <div class="input-group input-group-sm flex-grow-1">
                                     <span class="input-group-text py-0">PKR</span>
-                                    <input type="text" name="extraAmount" id="extraAmount" class="form-control form-control-sm"
+                                    <input type="text" name="extraAmount" id="extraAmount" class="form-control form-control-sm pms-rp-equal-control"
                                            inputmode="numeric" placeholder="Amount" disabled />
                                 </div>
                             </div>
@@ -260,11 +262,11 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end gap-2 mt-2 pt-2 border-top">
-                    <button type="submit" id="btnSubmitPayment" class="btn btn-sm fw-semibold pms-mp-btn-save" disabled>
+                <div class="d-flex flex-wrap justify-content-end gap-2 mt-2 pms-rp-actions-row">
+                    <button type="submit" id="btnSubmitPayment" class="btn btn-sm pms-rp-action-btn pms-rp-action-btn--save" disabled>
                         <i class="fas fa-check me-1"></i>Record Payment
                     </button>
-                    <a asp-action="CustomerPayments" class="btn btn-sm btn-outline-secondary">
+                    <a asp-action="CustomerPayments" class="btn btn-sm pms-rp-action-btn pms-rp-action-btn--cancel">
                         <i class="fas fa-times me-1"></i>Cancel
                     </a>
                 </div>
@@ -317,86 +319,163 @@
 </div>
 
 <style>
+    .pms-rp-form-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #1d3557;
+        letter-spacing: 0.01em;
+    }
+
     .pms-record-payment .pms-registration-4col-label,
     .pms-record-payment .pms-registration-4col-form .form-label {
-        color: #2563eb !important;
+        color: #1d3557 !important;
         font-weight: 600 !important;
         font-size: 0.75rem !important;
-        line-height: 1.2;
+        line-height: 1.15;
     }
 
     .pms-record-payment .card-body {
-        padding: 0.5rem 0.75rem !important;
+        padding: 0.4rem 0.65rem !important;
     }
 
     .pms-record-payment-form .pms-registration-4col-row {
-        margin-bottom: 0.25rem !important;
-        padding-bottom: 0.25rem !important;
-        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 0.1rem !important;
+        padding-bottom: 0.1rem !important;
+        border-bottom: none;
     }
 
     .pms-record-payment-form .pms-registration-4col-row:last-child {
-        border-bottom: none;
         margin-bottom: 0 !important;
         padding-bottom: 0 !important;
     }
 
-    .pms-record-payment-form .pms-rp-status-row {
-        min-height: 1.35rem;
-        border-bottom: none !important;
-        margin-bottom: 0.15rem !important;
-        padding-bottom: 0.15rem !important;
+    .pms-record-payment-form .pms-rp-section-divider {
+        margin: 0.35rem 0 0.4rem;
+        border: 0;
+        border-top: 1px solid #94a3b8;
+        opacity: 1;
     }
 
-    .pms-record-payment-form .pms-rp-status-space {
-        min-height: 1.2rem;
-        line-height: 1.2rem;
+    .pms-rp-header-status {
+        min-height: 1.25rem;
+        line-height: 1.3;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        color: #1d3557;
     }
 
-    .pms-record-payment-form .pms-rp-label {
-        flex: 0 0 auto;
-        width: 8.75rem;
-        max-width: 8.75rem;
+    .pms-rp-header-status .text-success {
+        color: #198754 !important;
     }
 
-    .pms-record-payment-form .pms-rp-field {
-        flex: 0 0 20%;
-        width: 20%;
-        max-width: 20%;
+    .pms-record-payment-form .pms-rp-equal-control,
+    .pms-record-payment-form .pms-rp-equal-field .form-control,
+    .pms-record-payment-form .form-control-sm {
+        width: 100% !important;
+        border-radius: 0 !important;
+        min-height: 26px;
+        height: 26px;
+        font-size: 0.75rem;
+        padding: 0.1rem 0.4rem;
     }
 
-    .pms-record-payment-form .pms-rp-field-wide {
-        flex: 0 0 28%;
-        width: 28%;
-        max-width: 28%;
+    .pms-record-payment-form select.form-select,
+    .pms-record-payment-form select.pms-rp-equal-control {
+        width: 100% !important;
+        border-radius: 0 !important;
+        min-height: 26px;
+        height: 26px;
+        font-size: 0.75rem;
+        padding: 0.1rem 1.75rem 0.1rem 0.4rem !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+        appearance: none !important;
+        background-color: #fff !important;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%231d3557' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 0.45rem center !important;
+        background-size: 10px 8px !important;
+        cursor: pointer;
     }
 
-    .pms-record-payment-form .pms-rp-field .form-control,
-    .pms-record-payment-form .pms-rp-field .form-select,
-    .pms-record-payment-form .pms-rp-field .input-group {
-        width: 100%;
-        max-width: 100%;
+    .pms-record-payment-form select.form-select:disabled {
+        background-color: #e9ecef !important;
+        cursor: not-allowed;
+        opacity: 1;
     }
 
-    .pms-record-payment-form .form-control-sm,
-    .pms-record-payment-form .form-select-sm {
-        min-height: 1.7rem;
-        padding-top: 0.15rem;
-        padding-bottom: 0.15rem;
+    .pms-record-payment-form textarea.pms-rp-equal-control {
+        height: auto !important;
+        min-height: 26px;
+    }
+
+    .pms-record-payment-form .pms-rp-search-icon-btn {
+        border-radius: 0 !important;
+        min-height: 26px;
+        height: 26px;
+        width: 26px;
+        padding: 0;
+        font-size: 0.7rem;
+        background-color: #457b9d !important;
+        border-color: #457b9d !important;
+        color: #fff !important;
+    }
+
+    .pms-record-payment-form .input-group-text {
+        border-radius: 0 !important;
+        min-height: 26px;
+        font-size: 0.75rem;
+        padding: 0.1rem 0.4rem;
+    }
+
+    .pms-rp-actions-row .pms-rp-action-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 10.5rem !important;
+        min-width: 10.5rem !important;
+        border-radius: 0 !important;
+        font-weight: 600;
+        min-height: 28px;
+        height: 28px;
+        padding: 0.2rem 0.5rem !important;
+        border: 1px solid transparent;
+        text-decoration: none;
+        box-sizing: border-box;
         font-size: 0.8125rem;
     }
 
-    @@media (max-width: 991.98px) {
-        .pms-record-payment-form .pms-rp-label,
-        .pms-record-payment-form .pms-rp-field,
-        .pms-record-payment-form .pms-rp-field-wide {
-            flex: 0 0 100%;
-            width: 100%;
-            max-width: 100%;
-        }
+    .pms-rp-action-btn--save,
+    .pms-rp-action-btn--save:disabled {
+        background-color: #1d3557 !important;
+        border-color: #1d3557 !important;
+        color: #fff !important;
+    }
+
+    .pms-rp-action-btn--save:hover:not(:disabled),
+    .pms-rp-action-btn--save:focus:not(:disabled) {
+        background-color: #162843 !important;
+        border-color: #162843 !important;
+        color: #fff !important;
+    }
+
+    .pms-rp-action-btn--save:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+
+    .pms-rp-action-btn--cancel {
+        background-color: #fff !important;
+        border-color: #1d3557 !important;
+        color: #1d3557 !important;
+    }
+
+    .pms-rp-action-btn--cancel:hover,
+    .pms-rp-action-btn--cancel:focus {
+        background-color: #f1f5f9 !important;
+        border-color: #162843 !important;
+        color: #162843 !important;
     }
 </style>
 
