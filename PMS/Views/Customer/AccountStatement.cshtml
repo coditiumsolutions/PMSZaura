@@ -96,9 +96,14 @@
                 <div class="a4-info-block">
                     <h6>Project / Plan Information</h6>
                     @{
-                        var property = Model.Allotments?
-                            .FirstOrDefault(a => string.Equals(a.WorkFlowStatus, "Approved", StringComparison.OrdinalIgnoreCase))?
-                            .Property;
+                        var property = (Model.Allotments?
+                            .Where(a => !string.IsNullOrWhiteSpace(a.Property?.PlotNo))
+                            .OrderByDescending(a => string.Equals(a.WorkFlowStatus, "Approved", StringComparison.OrdinalIgnoreCase))
+                            .ThenByDescending(a => a.AllotmentDate)
+                            .FirstOrDefault()
+                            ?? Model.Allotments?
+                                .OrderByDescending(a => a.AllotmentDate)
+                                .FirstOrDefault())?.Property;
                     }
                     <div class="a4-info-row">
                         <span class="a4-info-label">Project Name:</span>
@@ -110,7 +115,7 @@
                     </div>
                     <div class="a4-info-row">
                         <span class="a4-info-label">Unit:</span>
-                        <span class="a4-info-value">@(property != null ? ($"{property.PlotNo}, {property.Block}{(string.IsNullOrWhiteSpace(property.Street) ? string.Empty : ", Street " + property.Street)}") : "-")</span>
+                        <span class="a4-info-value">@(string.IsNullOrWhiteSpace(property?.PlotNo) ? "-" : property!.PlotNo)</span>
                     </div>
                     <div class="a4-info-row">
                         <span class="a4-info-label">Registered Size:</span>

@@ -70,7 +70,13 @@ namespace PMS.Services
                 : (customer.FullName ?? "-");
 
             var allotment = customer.Allotments?
-                .FirstOrDefault(a => string.Equals(a.WorkFlowStatus, "Approved", StringComparison.OrdinalIgnoreCase));
+                .Where(a => !string.IsNullOrWhiteSpace(a.Property?.PlotNo))
+                .OrderByDescending(a => string.Equals(a.WorkFlowStatus, "Approved", StringComparison.OrdinalIgnoreCase))
+                .ThenByDescending(a => a.AllotmentDate)
+                .FirstOrDefault()
+                ?? customer.Allotments?
+                    .OrderByDescending(a => a.AllotmentDate)
+                    .FirstOrDefault();
             var property = allotment?.Property;
 
             // Customer info (Address/Phone/Mobiles)
@@ -85,9 +91,8 @@ namespace PMS.Services
                 ?? customer.SubProject
                 ?? customer.PaymentPlan?.SubProject
                 ?? "-";
-            var unit = property != null
-                ? $"{(string.IsNullOrWhiteSpace(property.PlotNo) ? "-" : property.PlotNo)}, {(string.IsNullOrWhiteSpace(property.Block) ? "-" : property.Block)}{(string.IsNullOrWhiteSpace(property.Street) ? string.Empty : ", Street " + property.Street)}"
-                : "-";
+            var plotNo = property?.PlotNo?.Trim();
+            var unit = string.IsNullOrWhiteSpace(plotNo) ? "-" : plotNo;
             var registeredSize = property?.Size
                 ?? customer.RegisteredSize
                 ?? customer.PaymentPlan?.RegisteredSize
