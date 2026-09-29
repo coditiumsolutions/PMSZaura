@@ -222,19 +222,19 @@
   <Width>7.5in</Width>
   <Page>
     <PageHeader>
-      <Height>1.05in</Height>
+      <Height>1.45in</Height>
       <PrintOnFirstPage>true</PrintOnFirstPage>
       <PrintOnLastPage>true</PrintOnLastPage>
       <ReportItems>
         <Image Name="CompanyLogo">
           <Source>Database</Source>
           <Value>=First(Fields!CompanyLogo.Value, "AccountStatementHeader")</Value>
-          <MIMEType>image/png</MIMEType>
+          <MIMEType>image/jpeg</MIMEType>
           <Sizing>FitProportional</Sizing>
-          <Top>0.05in</Top>
+          <Top>0.06in</Top>
           <Left>0in</Left>
-          <Height>0.7in</Height>
-          <Width>1.1in</Width>
+          <Height>1.25in</Height>
+          <Width>2.01in</Width>
           <ZIndex>1</ZIndex>
           <Style>
             <Border>
@@ -263,10 +263,10 @@
               </Style>
             </Paragraph>
           </Paragraphs>
-          <Top>0.2in</Top>
-          <Left>1.2in</Left>
+          <Top>0.48in</Top>
+          <Left>2.15in</Left>
           <Height>0.35in</Height>
-          <Width>5in</Width>
+          <Width>3.8in</Width>
           <ZIndex>3</ZIndex>
           <Style>
             <Border>

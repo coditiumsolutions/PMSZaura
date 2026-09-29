@@ -365,6 +365,7 @@ FodyWeavers.xsd
 # Local publish output and app runtime data (do not commit)
 PMS/publish-out/
 PMS/App_Data/
+PMS/wwwroot/uploads/
 # Local SSH keys (never commit)
 .ssh/
 *.pem

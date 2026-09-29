@@ -20,16 +20,13 @@ namespace PMS.Services
         private static readonly CultureInfo EnUs = CultureInfo.GetCultureInfo("en-US");
 
         private readonly IAccountStatementService _accountStatementService;
-        private readonly ISiteConfigService _siteConfigService;
         private readonly IWebHostEnvironment _env;
 
         public AccountStatementReportService(
             IAccountStatementService accountStatementService,
-            ISiteConfigService siteConfigService,
             IWebHostEnvironment env)
         {
             _accountStatementService = accountStatementService;
-            _siteConfigService = siteConfigService;
             _env = env;
         }
 
@@ -62,7 +59,6 @@ namespace PMS.Services
             AccountStatementData data)
         {
             var customer = data.Customer;
-            var site = await _siteConfigService.GetAsync();
 
             var jointOwnerNames = (customer.JointOwners ?? new List<JointOwner>())
                 .Select(j => j.JointOwnerName?.Trim())
@@ -195,7 +191,7 @@ namespace PMS.Services
                 GrandTotalText = Math.Round(grandTotal, 0, MidpointRounding.AwayFromZero).ToString("N0", EnUs),
                 TotalPaidText = Math.Round(totalPaid, 0, MidpointRounding.AwayFromZero).ToString("N0", EnUs),
                 OutstandingBalanceText = Math.Round(outstanding, 0, MidpointRounding.AwayFromZero).ToString("N0", EnUs),
-                CompanyLogo = await LoadLogoBytesAsync(site.LogoPath) ?? Array.Empty<byte>()
+                CompanyLogo = await LoadAccountStatementLogoAsync() ?? Array.Empty<byte>()
             };
 
             return (header, lines);
@@ -215,6 +211,23 @@ namespace PMS.Services
                 && !string.Equals(lastStatus, "Paid", StringComparison.OrdinalIgnoreCase))
                 return lastStatus!;
             return "Partially Paid";
+        }
+
+        private async Task<byte[]?> LoadAccountStatementLogoAsync()
+        {
+            var candidates = new[]
+            {
+                Path.Combine(_env.ContentRootPath, "images", "logo-main.jpeg"),
+                Path.Combine(_env.WebRootPath ?? string.Empty, "images", "logo-main.jpeg"),
+                Path.Combine(_env.ContentRootPath, "wwwroot", "images", "logo-main.jpeg")
+            };
+
+            foreach (var path in candidates.Where(p => !string.IsNullOrWhiteSpace(p) && File.Exists(p)))
+            {
+                return await File.ReadAllBytesAsync(path);
+            }
+
+            return await LoadLogoBytesAsync(null);
         }
 
         private async Task<byte[]?> LoadLogoBytesAsync(string? logoPath)

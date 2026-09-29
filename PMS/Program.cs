@@ -11,6 +11,13 @@ using System.Security.Cryptography.X509Certificates;
 
 var builder = WebApplication.CreateBuilder(args);
 
+if (builder.Environment.IsDevelopment())
+{
+    PMS.Services.DevSqlTunnel.EnsureStarted(
+        builder.Environment.ContentRootPath,
+        builder.Configuration.GetConnectionString("DefaultConnection"));
+}
+
 // acc.Voucher.BankAccountID — omit EF mapping when DB predates Scripts/AMS_Alter_Voucher_BankAccount.sql (SqlException: Invalid column name 'BankAccountID').
 PMSDbContextAccCompat.MapVoucherBankAccountColumn =
     builder.Configuration.GetValue<bool>("AmsAccCompat:MapVoucherBankAccountColumn", defaultValue: true);
