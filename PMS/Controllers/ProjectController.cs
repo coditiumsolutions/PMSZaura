@@ -272,6 +272,9 @@ namespace PMS.Controllers
                 return NotFound();
             }
 
+            var blockers = await GetProjectDeleteBlockersAsync(id);
+            ViewBag.DeleteBlockers = blockers;
+            ViewBag.CanConfirmDelete = blockers.Count == 0;
             return View(project);
         }
 
@@ -281,8 +284,28 @@ namespace PMS.Controllers
         {
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
+
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                TempData["Error"] = "Project ID is required.";
+                return RedirectToAction(nameof(Index));
+            }
+
             var project = await _context.Projects.FindAsync(id);
-            if (project != null)
+            if (project == null)
+            {
+                TempData["Error"] = "Project was not found.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var blockers = await GetProjectDeleteBlockersAsync(id);
+            if (blockers.Count > 0)
+            {
+                TempData["Error"] = BuildProjectDeleteBlockedMessage(project.ProjectName ?? id, blockers);
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
             {
                 _context.Projects.Remove(project);
                 await _context.SaveChangesAsync();
@@ -295,8 +318,129 @@ namespace PMS.Controllers
 
                 TempData["Success"] = "Project deleted successfully.";
             }
+            catch (DbUpdateException ex)
+            {
+                var root = ex.InnerException?.Message ?? ex.Message;
+                if (root.Contains("REFERENCE constraint", StringComparison.OrdinalIgnoreCase) ||
+                    root.Contains("FK__", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Re-check in case a related row was added between the guard and SaveChanges.
+                    blockers = await GetProjectDeleteBlockersAsync(id);
+                    TempData["Error"] = blockers.Count > 0
+                        ? BuildProjectDeleteBlockedMessage(project.ProjectName ?? id, blockers)
+                        : $"Cannot delete project \"{project.ProjectName ?? id}\" because related records still reference it. Remove linked properties and other project data first, then try again.";
+                }
+                else
+                {
+                    TempData["Error"] = $"Could not delete project: {root}";
+                }
+            }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        /// <summary>
+        /// Counts related rows that block project delete (FK from Property, plans, customers, etc.).
+        /// </summary>
+        private async Task<List<ProjectDeleteBlocker>> GetProjectDeleteBlockersAsync(string projectId)
+        {
+            var blockers = new List<ProjectDeleteBlocker>();
+
+            var propertyCount = await _context.Properties.AsNoTracking()
+                .CountAsync(p => p.ProjectID == projectId);
+            if (propertyCount > 0)
+            {
+                blockers.Add(new ProjectDeleteBlocker
+                {
+                    Label = "Properties",
+                    Count = propertyCount,
+                    HowToClear = "Open Property listing for this project and delete or reassign those properties first."
+                });
+            }
+
+            var paymentPlanCount = await _context.PaymentPlans.AsNoTracking()
+                .CountAsync(p => p.ProjectID == projectId);
+            if (paymentPlanCount > 0)
+            {
+                blockers.Add(new ProjectDeleteBlocker
+                {
+                    Label = "Payment plans",
+                    Count = paymentPlanCount,
+                    HowToClear = "Delete payment plans linked to this project (Payments → Payment Plans), after clearing any payments on those plans."
+                });
+            }
+
+            var customerCount = await _context.Customers.AsNoTracking()
+                .CountAsync(c => c.ProjectID == projectId);
+            if (customerCount > 0)
+            {
+                blockers.Add(new ProjectDeleteBlocker
+                {
+                    Label = "Customers",
+                    Count = customerCount,
+                    HowToClear = "Move or delete customers assigned to this project first."
+                });
+            }
+
+            var registrationCount = await _context.Registrations.AsNoTracking()
+                .CountAsync(r => r.ProjectID == projectId);
+            if (registrationCount > 0)
+            {
+                blockers.Add(new ProjectDeleteBlocker
+                {
+                    Label = "Registrations",
+                    Count = registrationCount,
+                    HowToClear = "Remove registrations linked to this project first."
+                });
+            }
+
+            var ballotingCount = await _context.Ballotings.AsNoTracking()
+                .CountAsync(b => b.ProjectID == projectId);
+            if (ballotingCount > 0)
+            {
+                blockers.Add(new ProjectDeleteBlocker
+                {
+                    Label = "Balloting records",
+                    Count = ballotingCount,
+                    HowToClear = "Remove balloting records for this project first."
+                });
+            }
+
+            var subProjectCount = await _context.ProjectSubProjects.AsNoTracking()
+                .CountAsync(s => s.ProjectID == projectId);
+            if (subProjectCount > 0)
+            {
+                blockers.Add(new ProjectDeleteBlocker
+                {
+                    Label = "Sub-projects",
+                    Count = subProjectCount,
+                    HowToClear = "Remove sub-projects under this project first."
+                });
+            }
+
+            var transferFeeCount = await _context.TransferFees.AsNoTracking()
+                .CountAsync(t => t.ProjectID == projectId);
+            if (transferFeeCount > 0)
+            {
+                blockers.Add(new ProjectDeleteBlocker
+                {
+                    Label = "Transfer fees",
+                    Count = transferFeeCount,
+                    HowToClear = "Remove transfer fee records for this project first."
+                });
+            }
+
+            return blockers;
+        }
+
+        private static string BuildProjectDeleteBlockedMessage(
+            string projectName,
+            List<ProjectDeleteBlocker> blockers)
+        {
+            var parts = blockers.Select(b => $"{b.Count} {b.Label.ToLowerInvariant()}");
+            var summary = string.Join(", ", parts);
+            var firstHow = blockers[0].HowToClear;
+            return $"Cannot delete project \"{projectName}\": it still has {summary}. {firstHow}";
         }
 
         [HttpGet]

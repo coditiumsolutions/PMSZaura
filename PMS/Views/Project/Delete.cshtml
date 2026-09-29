@@ -2,6 +2,11 @@
 
 @{
     ViewData["Title"] = "Delete Project";
+    var blockers = ViewBag.DeleteBlockers as IList<PMS.Models.ProjectDeleteBlocker>
+        ?? new List<PMS.Models.ProjectDeleteBlocker>();
+    var canConfirmDelete = ViewBag.CanConfirmDelete == true;
+    var propertyCount = blockers.FirstOrDefault(b => b.Label == "Properties")?.Count ?? 0;
+    var paymentPlanCount = blockers.FirstOrDefault(b => b.Label == "Payment plans")?.Count ?? 0;
 }
 
 <div class="row">
@@ -13,12 +18,51 @@
             </a>
         </div>
 
-        <div class="alert alert-warning" role="alert">
-            <h4 class="alert-heading">Warning!</h4>
-            <p>Are you sure you want to delete this project? This action cannot be undone.</p>
-            <hr>
-            <p class="mb-0">This will also affect all related properties, payment plans, and other associated data.</p>
-        </div>
+        @if (!canConfirmDelete)
+        {
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Cannot delete this project yet</h4>
+                <p class="mb-2">
+                    Related records still reference <strong>@Model.ProjectName</strong>
+                    (<span class="badge bg-secondary">@Model.ProjectID</span>).
+                    Remove the linked data below, then try again.
+                </p>
+                <ul class="mb-3">
+                    @foreach (var b in blockers)
+                    {
+                        <li>
+                            <strong>@b.Count @b.Label</strong> — @b.HowToClear
+                        </li>
+                    }
+                </ul>
+                <div class="d-flex flex-wrap gap-2">
+                    @if (propertyCount > 0)
+                    {
+                        <a class="btn btn-sm btn-outline-dark"
+                           asp-controller="Property" asp-action="Index" asp-route-projectFilter="@Model.ProjectID">
+                            <i class="fas fa-home me-1"></i>Open properties for this project
+                        </a>
+                    }
+                    @if (paymentPlanCount > 0)
+                    {
+                        <a class="btn btn-sm btn-outline-dark"
+                           asp-controller="Payment" asp-action="PaymentPlans">
+                            <i class="fas fa-file-invoice-dollar me-1"></i>Open payment plans
+                        </a>
+                    }
+                    <a class="btn btn-sm btn-outline-secondary" asp-action="Index">Back to projects</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning" role="alert">
+                <h4 class="alert-heading">Warning!</h4>
+                <p>Are you sure you want to delete this project? This action cannot be undone.</p>
+                <hr>
+                <p class="mb-0">No blocking related records were found. The project row will be permanently removed.</p>
+            </div>
+        }
 
         <div class="card">
             <div class="card-header">
@@ -52,14 +96,14 @@
                             <dt class="col-sm-4">Created Date:</dt>
                             <dd class="col-sm-8">@Model.CreatedAt.ToString("MMM dd, yyyy")</dd>
 
-                            <dt class="col-sm-4">Total Properties:</dt>
+                            <dt class="col-sm-4">Linked properties:</dt>
                             <dd class="col-sm-8">
-                                <span class="badge bg-success">@(Model.Properties?.Count ?? 0) Properties</span>
+                                <span class="badge @(propertyCount > 0 ? "bg-danger" : "bg-success")">@propertyCount</span>
                             </dd>
 
-                            <dt class="col-sm-4">Payment Plans:</dt>
+                            <dt class="col-sm-4">Payment plans:</dt>
                             <dd class="col-sm-8">
-                                <span class="badge bg-primary">@(Model.PaymentPlans?.Count ?? 0) Plans</span>
+                                <span class="badge @(paymentPlanCount > 0 ? "bg-danger" : "bg-primary")">@paymentPlanCount</span>
                             </dd>
                         </dl>
                     </div>
@@ -74,16 +118,25 @@
             </div>
         </div>
 
-        <form asp-action="Delete" method="post" class="mt-4">
-            <input type="hidden" asp-for="ProjectID" />
-            <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-danger me-2">
+        <div class="d-flex justify-content-end mt-4">
+            @if (canConfirmDelete)
+            {
+                <form asp-action="Delete" method="post" class="me-2">
+                    <input type="hidden" asp-for="ProjectID" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Yes, Delete Project
+                    </button>
+                </form>
+            }
+            else
+            {
+                <button type="button" class="btn btn-danger me-2" disabled title="Remove linked records first">
                     <i class="fas fa-trash me-2"></i>Yes, Delete Project
                 </button>
-                <a asp-action="Index" class="btn btn-secondary">
-                    <i class="fas fa-times me-2"></i>Cancel
-                </a>
-            </div>
-        </form>
+            }
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-times me-2"></i>Cancel
+            </a>
+        </div>
     </div>
 </div>
