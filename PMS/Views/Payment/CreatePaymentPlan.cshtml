@@ -328,6 +328,11 @@
 </div>
 
 <style>
+    .pms-create-payment-plan > .d-flex > h5 {
+        color: #000 !important;
+        font-weight: 700;
+    }
+
     .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-row {
         margin-bottom: 0.35rem !important;
         padding-bottom: 0.35rem;
@@ -341,8 +346,15 @@
     }
 
     .pms-create-payment-plan .pms-cpp-form .form-label,
-    .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-label {
-        color: #111827 !important;
+    .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-label,
+    .pms-create-payment-plan .pms-cpp-form .form-check-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-lg-2 .form-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-md-2 .form-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-md-2 .pms-registration-4col-label,
+    .pms-create-payment-plan .pms-mp-header .form-label,
+    .pms-create-payment-plan .pms-mp-header label.form-label {
+        color: #000 !important;
         font-weight: 600 !important;
         font-size: 0.75rem;
         margin-bottom: 0;
@@ -354,7 +366,10 @@
     .pms-create-payment-plan .pms-cpp-form .form-select,
     .pms-create-payment-plan .pms-cpp-form .form-control-sm,
     .pms-create-payment-plan .pms-cpp-form .form-select-sm {
-        color: #1e40af !important;
+        color: #1d4ed8 !important;
+        background-color: #e8f0fe !important;
+        border: 1px solid #93c5fd !important;
+        border-radius: 0 !important;
         font-size: 0.8125rem;
         min-height: 28px;
         height: 28px;
@@ -362,15 +377,34 @@
         padding-bottom: 0.15rem;
     }
 
+    .pms-create-payment-plan .pms-cpp-form .form-control:focus,
+    .pms-create-payment-plan .pms-cpp-form .form-select:focus,
+    .pms-create-payment-plan .pms-cpp-form .form-control-sm:focus,
+    .pms-create-payment-plan .pms-cpp-form .form-select-sm:focus {
+        color: #1e3a8a !important;
+        background-color: #dbeafe !important;
+        border-color: #3b82f6 !important;
+        box-shadow: none !important;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-control:disabled,
+    .pms-create-payment-plan .pms-cpp-form .form-control[readonly],
+    .pms-create-payment-plan .pms-cpp-form .form-select:disabled {
+        color: #1d4ed8 !important;
+        background-color: #e8f0fe !important;
+        opacity: 1;
+    }
+
     .pms-create-payment-plan .pms-cpp-form textarea.form-control,
     .pms-create-payment-plan .pms-cpp-form textarea.form-control-sm {
         height: auto;
         min-height: 48px;
-        color: #1e40af !important;
+        color: #1d4ed8 !important;
+        background-color: #e8f0fe !important;
+        border-radius: 0 !important;
     }
 
     .pms-create-payment-plan .pms-cpp-form .form-check-label {
-        color: #111827 !important;
         font-size: 0.8125rem;
     }
 </style>

@@ -6,14 +6,11 @@
     var EnUs = CultureInfo.GetCultureInfo("en-US");
     var plansOrdered = Model?.OrderBy(p => p.PlanName).ToList() ?? new List<PMS.Models.PaymentPlan>();
     var totalCount = plansOrdered.Count;
-    var totalCustomers = plansOrdered.Sum(p => p.Customers?.Count ?? 0);
-    var totalValueSsp = plansOrdered.Sum(p => p.TotalAmount);
-    var totalSchedules = plansOrdered.Sum(p => p.PaymentSchedules?.Count ?? 0);
 }
 
 <div class="pms-payment-listing pms-listing-page">
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-        <h5 class="pms-grid-title mb-0">Payment Plans</h5>
+        <h4 class="pms-grid-title pms-payment-plans-heading mb-0">Payment Plans</h4>
         <span class="badge rounded-pill pms-record-badge">@totalCount plan@(totalCount == 1 ? "" : "s")</span>
     </div>
 
@@ -32,45 +29,15 @@
         </div>
     }
 
-    <div class="row g-2 mb-2">
-        <div class="col-6 col-md-3">
-            <div class="card border-0 h-100" style="background:#e8f0fe;">
-                <div class="card-body text-center py-2 px-2">
-                    <div class="small text-muted text-uppercase fw-semibold mb-0">Total Plans</div>
-                    <div class="fs-5 fw-bold text-primary mb-0">@totalCount</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 h-100" style="background:#d1ecf1;">
-                <div class="card-body text-center py-2 px-2">
-                    <div class="small text-muted text-uppercase fw-semibold mb-0">Customers</div>
-                    <div class="fs-5 fw-bold text-info mb-0">@totalCustomers</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 h-100" style="background:#d4edda;">
-                <div class="card-body text-center py-2 px-2">
-                    <div class="small text-muted text-uppercase fw-semibold mb-0">Total Value</div>
-                    <div class="fs-6 fw-bold text-success mb-0">@totalValueSsp.ToString("N0", EnUs)</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="card border-0 h-100" style="background:#fff3cd;">
-                <div class="card-body text-center py-2 px-2">
-                    <div class="small text-muted text-uppercase fw-semibold mb-0">Schedules</div>
-                    <div class="fs-5 fw-bold text-warning mb-0">@totalSchedules</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="mb-2">
-        <div class="pms-listing-search-wrap">
-            <div class="d-flex flex-wrap gap-2 pms-listing-search-actions">
-                <partial name="_PaymentPlansOperationsDropdown" />
+    <div class="pms-payment-plans-search mb-2">
+        <div class="row g-2 align-items-center">
+            <div class="col-12 col-md-6">
+                <label for="planSearchTerm" class="visually-hidden">Search plans</label>
+                <input type="text"
+                       id="planSearchTerm"
+                       class="form-control"
+                       placeholder="Search by Plan Name or Frequency"
+                       aria-label="Search by Plan Name or Frequency" />
             </div>
         </div>
     </div>
@@ -82,69 +49,41 @@
                     <thead>
                         <tr>
                             <th>Plan Name</th>
-                            <th>Project</th>
                             <th class="text-end">Total (PKR)</th>
                             <th>Curr.</th>
                             <th>Duration</th>
                             <th>Freq.</th>
-                            <th>Cust.</th>
                             <th>Sched.</th>
-                            <th class="text-end">Balance</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var plan in plansOrdered)
                         {
-                            var schedulesSumPkr = plan.PaymentSchedules?.Sum(s => s.Amount) ?? 0m;
-                            var balancePkr = plan.TotalAmount - schedulesSumPkr;
-                            var hasBalanceRemaining = balancePkr > 0.0000001m;
-                            <tr class="@(hasBalanceRemaining ? "plan-balance-remaining" : null)">
+                            <tr>
                                 <td data-label="Plan Name">
-                                    <div>
-                                        <a asp-action="PaymentSchedule"
-                                           asp-route-planId="@plan.PlanID"
-                                           class="text-decoration-none fw-semibold">
-                                            @plan.PlanName
-                                        </a>
-                                    </div>
-                                    @if (!string.IsNullOrEmpty(plan.Description))
-                                    {
-                                        <div class="small text-muted">@(plan.Description.Length > 40 ? plan.Description.Substring(0, 40) + "…" : plan.Description)</div>
-                                    }
+                                    <a asp-action="PaymentSchedule"
+                                       asp-route-planId="@plan.PlanID"
+                                       class="text-decoration-none fw-semibold">
+                                        @plan.PlanName
+                                    </a>
                                 </td>
-                                <td data-label="Project">
-                                    @if (plan.Project != null)
-                                    {
-                                        <span class="pms-pill pms-pill--info">@plan.Project.ProjectName</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">—</span>
-                                    }
-                                </td>
-                                <td class="text-end fw-semibold text-success" data-label="Total (PKR)">
+                                <td class="text-end fw-semibold" data-label="Total (PKR)">
                                     @plan.TotalAmount.ToString("N0", EnUs)
                                 </td>
                                 <td data-label="Curr.">
                                     <span class="pms-pill pms-pill--neutral text-uppercase">@plan.Currency</span>
                                 </td>
-                                <td data-label="Duration">@(plan.DurationMonths?.ToString() ?? "—") mo</td>
+                                <td data-label="Duration">
+                                    @(plan.DurationMonths.HasValue
+                                        ? (plan.DurationMonths.Value == 1 ? "1 Month" : $"{plan.DurationMonths.Value} Months")
+                                        : "—")
+                                </td>
                                 <td data-label="Freq.">
                                     <span class="pms-pill pms-pill--neutral">@plan.Frequency</span>
                                 </td>
-                                <td data-label="Cust.">
-                                    <span class="pms-pill pms-pill--info">@(plan.Customers?.Count ?? 0)</span>
-                                </td>
                                 <td data-label="Sched.">
-                                    <span class="pms-pill @(plan.PaymentSchedules?.Any() == true ? "pms-pill--success" : "pms-pill--warning")">
-                                        @(plan.PaymentSchedules?.Count ?? 0)
-                                    </span>
-                                </td>
-                                <td class="text-end" data-label="Balance">
-                                    <span class="fw-semibold @(hasBalanceRemaining ? "text-success" : balancePkr < -0.0000001m ? "text-danger" : "text-muted")">
-                                        @balancePkr.ToString("N0", EnUs)
-                                    </span>
+                                    @(plan.PaymentSchedules?.Count ?? 0)
                                 </td>
                                 <td class="text-center" data-label="Actions">
                                     <a asp-action="PaymentSchedule"
@@ -164,48 +103,94 @@
 </div>
 
 <style>
-    .pms-payment-listing .pms-saas-table thead th {
-        font-size: 11.5px !important;
+    .pms-payment-listing .pms-payment-plans-heading {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #0f172a;
     }
 
-    .pms-payment-listing #plansTable tbody tr.plan-balance-remaining {
-        box-shadow: inset 3px 0 0 0 var(--accent-gold, #f59e0b);
-        background-color: rgba(245, 158, 11, 0.1);
+    .pms-payment-listing .pms-payment-plans-search {
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        background: transparent !important;
     }
 
-    .pms-payment-listing #plansTable tbody tr.plan-balance-remaining:hover {
-        background-color: rgba(245, 158, 11, 0.16);
+    .pms-payment-listing .pms-payment-plans-search .form-control {
+        min-height: 34px;
+        height: 34px;
+        border-radius: 0 !important;
+        border: 1px solid #94a3b8;
     }
 
     .pms-payment-listing .pms-payment-plans-grid-wrap {
         overflow-x: hidden;
         overflow-y: visible;
         max-height: none;
-        min-height: 486px;
+        min-height: 420px;
     }
 
     .pms-payment-listing #plansTable {
         table-layout: fixed;
         width: 100% !important;
+        border-collapse: collapse;
+    }
+
+    .pms-payment-listing #plansTable thead th {
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        border-color: #524c96 !important;
+        font-size: 0.72rem !important;
+        font-weight: 700;
+        padding: 0.25rem 0.35rem !important;
+        line-height: 1.15;
+        cursor: default !important;
+    }
+
+    .pms-payment-listing #plansTable thead th.sorting,
+    .pms-payment-listing #plansTable thead th.sorting_asc,
+    .pms-payment-listing #plansTable thead th.sorting_desc,
+    .pms-payment-listing #plansTable thead th.sorting_asc_disabled,
+    .pms-payment-listing #plansTable thead th.sorting_desc_disabled {
+        background-image: none !important;
+        padding-right: 0.35rem !important;
+    }
+
+    .pms-payment-listing #plansTable tbody td,
+    .pms-payment-listing #plansTable tbody td a,
+    .pms-payment-listing #plansTable tbody td .pms-pill,
+    .pms-payment-listing #plansTable tbody td .fw-semibold {
+        color: #000 !important;
     }
 
     .pms-payment-listing #plansTable th,
     .pms-payment-listing #plansTable td {
-        white-space: normal;
+        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         vertical-align: middle;
-        font-size: 0.8125rem;
-        padding: 0.5rem 0.35rem;
+        font-size: 0.78rem;
+        padding: 0.15rem 0.35rem !important;
+        line-height: 1.15;
     }
 
-    .pms-payment-listing #plansTable thead th {
-        font-size: 11.5px !important;
+    .pms-payment-listing #plansTable tbody tr {
+        height: auto;
     }
 
     .pms-payment-listing #plansTable .pms-pill {
-        font-size: 0.7rem;
-        padding: 0.15rem 0.4rem;
+        font-size: 0.68rem;
+        padding: 0.05rem 0.3rem;
+        background: transparent !important;
+        border: 1px solid #cbd5e1;
+        line-height: 1.15;
+        border-radius: 0;
+    }
+
+    .pms-payment-listing #plansTable .btn {
+        padding: 0.05rem 0.35rem !important;
+        font-size: 0.72rem;
+        line-height: 1.15;
     }
 
     .pms-payment-listing .dataTables_wrapper .dataTables_scroll,
@@ -217,24 +202,24 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            $('#plansTable').DataTable({
+            var table = $('#plansTable').DataTable({
                 pageLength: 10,
-                order: [[0, 'asc']],
+                ordering: false,
+                order: [],
                 lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
                 paging: true,
                 scrollX: false,
                 autoWidth: false,
+                searching: true,
+                dom: 'rt<"d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>',
                 columnDefs: [
-                    { width: '18%', targets: 0 },  // Plan Name
-                    { width: '14%', targets: 1 },  // Project
-                    { width: '12%', targets: 2 },  // Total
-                    { width: '7%', targets: 3 },   // Curr.
-                    { width: '8%', targets: 4 },   // Duration
-                    { width: '8%', targets: 5 },   // Freq.
-                    { width: '6%', targets: 6 },   // Cust.
-                    { width: '6%', targets: 7 },   // Sched.
-                    { width: '10%', targets: 8 },  // Balance
-                    { width: '11%', orderable: false, targets: 9 }  // Actions
+                    { width: '28%', searchable: true, targets: 0 },   // Plan Name
+                    { width: '14%', searchable: false, targets: 1 },  // Total
+                    { width: '10%', searchable: false, targets: 2 },  // Curr.
+                    { width: '14%', searchable: false, targets: 3 },  // Duration
+                    { width: '12%', searchable: true, targets: 4 },   // Freq.
+                    { width: '8%', searchable: false, targets: 5 },   // Sched.
+                    { width: '14%', searchable: false, targets: 6 }   // Actions
                 ],
                 language: {
                     search: 'Search:',
@@ -251,6 +236,9 @@
                 }
             });
 
+            $('#planSearchTerm').on('keyup input', function () {
+                table.search(this.value || '').draw();
+            });
         });
     </script>
 }

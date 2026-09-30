@@ -117,4 +117,50 @@
             }
         </ul>
     </li>
+
+    @if (string.Equals(activeModule.Key, PMS.ViewModels.NavigationModuleKeys.Payments, StringComparison.OrdinalIgnoreCase))
+    {
+        var isAllPlansPage = string.Equals(currentController, "Payment", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(currentAction, "PaymentPlans", StringComparison.OrdinalIgnoreCase);
+        var isNewPlanPage = string.Equals(currentController, "Payment", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(currentAction, "CreatePaymentPlan", StringComparison.OrdinalIgnoreCase);
+        var isAddPlanPage = string.Equals(currentController, "Payment", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(currentAction, "AddPlan", StringComparison.OrdinalIgnoreCase);
+        var paymentPlansHasActive = isAllPlansPage || isNewPlanPage || isAddPlanPage;
+        <li class="nav-item sidebar-subsection-block"
+            data-sidebar-section="payment-plans"
+            data-section-has-active="@(paymentPlansHasActive ? "true" : "false")">
+            <button type="button"
+                    class="sidebar-subsection-toggle"
+                    aria-expanded="@(paymentPlansHasActive ? "true" : "false")"
+                    data-sidebar-section="payment-plans">
+                <i class="bi bi-chevron-right sidebar-subsection-chevron" aria-hidden="true"></i>
+                <i class="fas fa-file-invoice-dollar me-2" aria-hidden="true"></i>
+                <span class="sidebar-subsection-title">Payment Plans</span>
+            </button>
+            <ul class="sidebar-subsection-items list-unstyled mb-0">
+                <li class="nav-item sidebar-module-item sidebar-subsection-child">
+                    <a class="nav-link @(isAddPlanPage ? "active" : "")"
+                       asp-controller="Payment"
+                       asp-action="AddPlan">
+                        <i class="fas fa-plus me-2"></i>Add Plan
+                    </a>
+                </li>
+                <li class="nav-item sidebar-module-item sidebar-subsection-child">
+                    <a class="nav-link @(isNewPlanPage ? "active" : "")"
+                       asp-controller="Payment"
+                       asp-action="CreatePaymentPlan">
+                        <i class="fas fa-plus-circle me-2"></i>New Plan
+                    </a>
+                </li>
+                <li class="nav-item sidebar-module-item sidebar-subsection-child">
+                    <a class="nav-link @(isAllPlansPage ? "active" : "")"
+                       asp-controller="Payment"
+                       asp-action="PaymentPlans">
+                        <i class="fas fa-list me-2"></i>All Plans
+                    </a>
+                </li>
+            </ul>
+        </li>
+    }
 }

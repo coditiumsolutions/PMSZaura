@@ -6,6 +6,21 @@
     var canDelete = ViewBag.CanDelete as bool? == true;
 }
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show py-2 mb-3 small" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show py-2 mb-3 small" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <div class="d-flex justify-content-end align-items-center mb-3">
     <div class="d-flex flex-wrap align-items-stretch gap-2 pms-customer-details-actions">
         <div class="dropdown">
@@ -1003,14 +1018,38 @@
     .pms-customer-details-actions .dropdown-menu {
         min-width: 12.5rem;
         border-radius: 0;
-        border-color: #e2e8f0;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+        background: #ffffff !important;
+        border: 1px solid #1d3557 !important;
+        box-shadow: 0 8px 22px rgba(29, 53, 87, 0.22) !important;
     }
 
     .pms-customer-details-actions .dropdown-item {
         font-size: 0.875rem;
-        font-weight: 500;
+        font-weight: 600;
         padding: 0.5rem 0.9rem;
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    .pms-customer-details-actions .dropdown-item:hover,
+    .pms-customer-details-actions .dropdown-item:focus {
+        background: #1d3557 !important;
+        color: #ffffff !important;
+    }
+
+    .pms-customer-details-actions .dropdown-item.text-danger {
+        color: #dc3545 !important;
+    }
+
+    .pms-customer-details-actions .dropdown-item.text-danger:hover,
+    .pms-customer-details-actions .dropdown-item.text-danger:focus {
+        background: #dc3545 !important;
+        color: #ffffff !important;
+    }
+
+    .pms-customer-details-actions .dropdown-divider {
+        border-top-color: #c5d0e0;
+        opacity: 1;
     }
 
     /* Card / form — no background */

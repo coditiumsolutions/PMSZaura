@@ -1322,6 +1322,80 @@ namespace PMS.Controllers
             return View();
         }
 
+        [HttpGet]
+        public async Task<IActionResult> AddPlan()
+        {
+            var denied = await EnsurePermissionAsync("Edit");
+            if (denied != null) return denied;
+            return View(new AddPlanViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddPlan(AddPlanViewModel model)
+        {
+            var denied = await EnsurePermissionAsync("Edit");
+            if (denied != null) return denied;
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                if (model.SurchargePolicyStatus && model.SurchargeRate <= 0m)
+                {
+                    model.SurchargeRate = 0.05m;
+                }
+
+                var paymentPlan = new PaymentPlan
+                {
+                    PlanID = GenerateID(),
+                    PlanName = model.PlanName.Trim(),
+                    RegisteredSize = string.IsNullOrWhiteSpace(model.Size) ? null : model.Size.Trim(),
+                    TotalAmount = model.TotalAmount,
+                    Currency = "PKR",
+                    Frequency = null,
+                    Description = null,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.PaymentPlans.Add(paymentPlan);
+                await _context.SaveChangesAsync();
+
+                var schedule = new PaymentSchedule
+                {
+                    ScheduleID = GenerateID(),
+                    PlanID = paymentPlan.PlanID,
+                    PaymentDescription = model.PaymentTitle.Trim(),
+                    InstallmentNo = model.InstallmentNo,
+                    DueDate = model.DueDate.Date,
+                    Amount = model.Amount,
+                    SurchargeApplied = model.SurchargePolicyStatus,
+                    SurchargeRate = model.SurchargePolicyStatus ? model.SurchargeRate : 0m
+                };
+
+                _context.PaymentSchedules.Add(schedule);
+                await _context.SaveChangesAsync();
+
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await LogActivityAsync(userId, "Add Plan", "PaymentPlan", paymentPlan.PlanID);
+                }
+
+                TempData["Success"] = $"Plan \"{paymentPlan.PlanName}\" saved successfully.";
+                return RedirectToAction(nameof(PaymentPlans));
+            }
+            catch (Exception ex)
+            {
+                var detail = ex.InnerException?.Message ?? ex.Message;
+                ModelState.AddModelError(string.Empty, "Could not save plan: " + detail);
+                return View(model);
+            }
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreatePaymentPlan([FromBody] PaymentPlanCreateViewModel viewModel)

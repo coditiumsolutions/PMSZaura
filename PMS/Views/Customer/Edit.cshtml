@@ -20,8 +20,8 @@
 </div>
 
 <div class="card pms-listing-flat pms-customer-create pms-customer-edit">
-    <div class="card-header border-0 px-0">
-        <ul class="nav customer-tabs" id="customerTabs" role="tablist">
+    <div class="card-header p-0">
+        <ul class="nav nav-tabs customer-tabs" id="customerTabs" role="tablist">
                 <li class="nav-item" role="presentation">
                     <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">
                         <i class="bi bi-person-vcard" aria-hidden="true"></i>Personal Info
@@ -693,6 +693,73 @@
         </div>
     </div>
 </div>
+
+<style>
+    .pms-customer-edit > .card-header {
+        background-color: #6059A6 !important;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+    }
+
+    .pms-customer-edit .customer-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        white-space: nowrap;
+        border-bottom: none;
+        background-color: #6059A6;
+        padding: 0.35rem 0.5rem 0;
+        gap: 0;
+        scrollbar-width: thin;
+    }
+
+    .pms-customer-edit .customer-tabs .nav-item {
+        flex: 0 0 auto;
+    }
+
+    .pms-customer-edit .customer-tabs .nav-link {
+        color: rgba(255, 255, 255, 0.82);
+        font-weight: 600;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 0.45rem 0.55rem;
+        transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+        font-size: 0.78rem;
+        background: transparent;
+        white-space: nowrap;
+        line-height: 1.2;
+    }
+
+    .pms-customer-edit .customer-tabs .nav-link:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
+        border-bottom-color: rgba(255, 255, 255, 0.55);
+    }
+
+    .pms-customer-edit .customer-tabs .nav-link.active {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.12);
+        border-bottom-color: #fff;
+        font-weight: 700;
+    }
+
+    .pms-customer-edit .customer-tabs .nav-link i {
+        font-size: 0.72rem;
+        margin-right: 0.25rem !important;
+    }
+
+    @@media (max-width: 992px) {
+        .pms-customer-edit .customer-tabs .nav-link {
+            padding: 0.4rem 0.45rem;
+            font-size: 0.72rem;
+        }
+
+        .pms-customer-edit .customer-tabs .nav-link i {
+            display: none;
+        }
+    }
+</style>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

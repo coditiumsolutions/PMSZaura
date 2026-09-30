@@ -1,7 +1,7 @@
 @model IEnumerable<PMS.Models.Customer>
 
 @{
-    ViewData["Title"] = ViewBag.IsPendingCustomers == true ? "Pending Customers" : "Search Customers";
+    ViewData["Title"] = ViewBag.IsPendingCustomers == true ? "Pending" : "Search Customers";
     ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
     ViewData["ListingShowAdd"] = false;
     ViewData["ListingHideRefresh"] = true;
@@ -10,9 +10,10 @@
     var isPendingCustomers = ViewBag.IsPendingCustomers == true || (ViewBag.StatusFilter as string) == "Pending";
     var showBulkSelection = isPendingCustomers && ViewBag.CanEdit == true;
     ViewData["ShowBulkSelection"] = showBulkSelection;
+    ViewData["IsPendingCustomers"] = isPendingCustomers;
     var customerCount = Model?.Count() ?? 0;
     var listAction = isPendingCustomers ? "PendingCustomers" : "Index";
-    var pageHeading = isPendingCustomers ? "Pending Customers" : "Customers";
+    var pageHeading = isPendingCustomers ? "Pending" : "Customers";
 }
 
 @if (TempData["SuccessMessage"] != null)
@@ -38,26 +39,66 @@
 
 <form method="get" asp-action="@listAction" class="mb-2">
     <div class="pms-customer-search-wrap pms-listing-search-wrap pms-customer-search-panel">
-        <div class="row g-2 pms-customer-search-fields">
-            <div class="col-12 @(isPendingCustomers ? "col-md-6" : "col-md-4")">
-                <div class="pms-compact-field pms-select-dropdown pms-customer-equal-field">
-                    <label for="projectFilter" class="visually-hidden">Project</label>
-                    <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()" aria-label="Project">
-                        <option value="All" selected="@(ViewBag.ProjectFilter == "All")">All Projects</option>
-                        @if (ViewBag.Projects != null)
-                        {
-                            @foreach (var project in ViewBag.Projects)
+        @if (isPendingCustomers)
+        {
+            <input type="hidden" name="statusFilter" value="Pending" />
+            <div class="row g-2 pms-customer-search-fields align-items-center">
+                <div class="col-12 col-md-4">
+                    <div class="pms-compact-field pms-select-dropdown pms-customer-equal-field">
+                        <label for="projectFilter" class="visually-hidden">Project</label>
+                        <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()" aria-label="Project">
+                            <option value="All" selected="@(ViewBag.ProjectFilter == "All")">All Projects</option>
+                            @if (ViewBag.Projects != null)
                             {
-                                <option value="@project.ProjectID" selected="@(ViewBag.ProjectFilter == project.ProjectID)">
-                                    @project.ProjectName
-                                </option>
+                                @foreach (var project in ViewBag.Projects)
+                                {
+                                    <option value="@project.ProjectID" selected="@(ViewBag.ProjectFilter == project.ProjectID)">
+                                        @project.ProjectName
+                                    </option>
+                                }
                             }
-                        }
-                    </select>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-md-5">
+                    <div class="pms-compact-field pms-customer-equal-field">
+                        <label for="searchTerm" class="visually-hidden">Search Customer</label>
+                        <input type="text"
+                               name="searchTerm"
+                               id="searchTerm"
+                               class="form-control"
+                               placeholder="Search Customer"
+                               aria-label="Search Customer"
+                               value="@ViewBag.SearchTerm" />
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <button type="submit" class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--search pms-customer-action-btn--row">
+                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                    </button>
                 </div>
             </div>
-            @if (!isPendingCustomers)
-            {
+        }
+        else
+        {
+            <div class="row g-2 pms-customer-search-fields">
+                <div class="col-12 col-md-4">
+                    <div class="pms-compact-field pms-select-dropdown pms-customer-equal-field">
+                        <label for="projectFilter" class="visually-hidden">Project</label>
+                        <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()" aria-label="Project">
+                            <option value="All" selected="@(ViewBag.ProjectFilter == "All")">All Projects</option>
+                            @if (ViewBag.Projects != null)
+                            {
+                                @foreach (var project in ViewBag.Projects)
+                                {
+                                    <option value="@project.ProjectID" selected="@(ViewBag.ProjectFilter == project.ProjectID)">
+                                        @project.ProjectName
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
                 <div class="col-12 col-md-4">
                     <div class="pms-compact-field pms-select-dropdown pms-customer-equal-field">
                         <label for="statusFilter" class="visually-hidden">Status</label>
@@ -70,44 +111,40 @@
                         </select>
                     </div>
                 </div>
-            }
-            else
-            {
-                <input type="hidden" name="statusFilter" value="Pending" />
-            }
-            <div class="col-12 @(isPendingCustomers ? "col-md-6" : "col-md-4")">
-                <div class="pms-compact-field pms-customer-equal-field">
-                    <label for="searchTerm" class="visually-hidden">Search Customer</label>
-                    <input type="text"
-                           name="searchTerm"
-                           id="searchTerm"
-                           class="form-control"
-                           placeholder="Search Customer"
-                           aria-label="Search Customer"
-                           value="@ViewBag.SearchTerm" />
+                <div class="col-12 col-md-4">
+                    <div class="pms-compact-field pms-customer-equal-field">
+                        <label for="searchTerm" class="visually-hidden">Search Customer</label>
+                        <input type="text"
+                               name="searchTerm"
+                               id="searchTerm"
+                               class="form-control"
+                               placeholder="Search Customer"
+                               aria-label="Search Customer"
+                               value="@ViewBag.SearchTerm" />
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="row g-2 mt-2 pms-customer-search-actions-row">
-            <div class="col-12 col-md-4">
-                <button type="submit" class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--search pms-customer-action-btn--row">
-                    <i class="bi bi-search me-1" aria-hidden="true"></i>Search
-                </button>
+            <div class="row g-2 mt-2 pms-customer-search-actions-row">
+                <div class="col-12 col-md-4">
+                    <button type="button"
+                            id="btnAccountReport"
+                            class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--report pms-customer-action-btn--row"
+                            disabled
+                            title="Select a customer with the radio first">
+                        <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Account Report
+                    </button>
+                </div>
+                <div class="col-12 col-md-4">
+                    <partial name="_OperationsDropdown" />
+                </div>
+                <div class="col-12 col-md-4">
+                    <button type="submit" class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--search pms-customer-action-btn--row">
+                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                    </button>
+                </div>
             </div>
-            <div class="col-12 col-md-4">
-                <partial name="_OperationsDropdown" />
-            </div>
-            <div class="col-12 col-md-4">
-                <button type="button"
-                        id="btnAccountReport"
-                        class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--report pms-customer-action-btn--row"
-                        disabled
-                        title="Select a customer with the radio first">
-                    <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Account Report
-                </button>
-            </div>
-        </div>
-        <small class="text-muted d-block mt-2">Use the radio to select a customer, then open Account Report. Click a row to open details.</small>
+            <small class="text-muted d-block mt-2">Use the radio to select a customer, then open Account Report. Click a row to open details.</small>
+        }
     </div>
 </form>
 
@@ -118,29 +155,33 @@
         <input type="hidden" name="projectFilter" value="@ViewBag.ProjectFilter" />
         <input type="hidden" name="searchTerm" value="@ViewBag.SearchTerm" />
 
-        <div class="card pms-search-card mb-3">
-            <div class="card-body">
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                    <span class="fw-bold">Pending Customer Actions:</span>
-                    <select name="bulkAction" id="bulkAction" class="form-select form-select-sm" style="width: 240px;" required>
+        <div class="mb-3 pms-pending-update-status">
+            <div class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <span class="fw-bold">Update Status</span>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label for="bulkAction" class="visually-hidden">Select Action</label>
+                    <select name="bulkAction" id="bulkAction" class="form-select form-select-sm" required>
                         <option value="">Select Action</option>
                         <option value="Activate">Make Active</option>
                         <option value="MarkForDeletion">Mark for Deletion</option>
                     </select>
-                    <button type="submit" class="btn btn-warning btn-sm" id="applyBulkActionBtn" disabled>
-                        <i class="fas fa-check-double me-1"></i>Apply to Selected
-                    </button>
-                    <small class="text-muted">Select customers below, choose action, and enter comments.</small>
                 </div>
-                <div class="mt-2">
-                    <label for="bulkActionComments" class="form-label fw-bold mb-1">Comments <span class="text-danger">*</span></label>
+                <div class="col-12 col-md">
+                    <label for="bulkActionComments" class="visually-hidden">Comments</label>
                     <textarea id="bulkActionComments"
                               name="comments"
-                              class="form-control form-control-sm"
-                              rows="2"
+                              class="form-control form-control-sm pms-pending-comments"
+                              rows="1"
                               maxlength="1000"
-                              placeholder="Enter reason/comments for this status change"
+                              placeholder="Comments *"
                               required></textarea>
+                </div>
+                <div class="col-12 col-md-auto">
+                    <button type="submit" class="btn btn-warning btn-sm pms-pending-apply-btn" id="applyBulkActionBtn" disabled>
+                        <i class="fas fa-check-double me-1"></i>Apply to Selected
+                    </button>
                 </div>
             </div>
         </div>
@@ -350,6 +391,29 @@ else
         color: #fff !important;
     }
 
+    .pms-customer-listing .pms-customer-operations-dropdown .dropdown-menu {
+        background: #ffffff !important;
+        border: 1px solid #1d3557 !important;
+        box-shadow: 0 8px 22px rgba(29, 53, 87, 0.22) !important;
+    }
+
+    .pms-customer-listing .pms-customer-operations-dropdown .dropdown-item {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        font-weight: 600;
+    }
+
+    .pms-customer-listing .pms-customer-operations-dropdown .dropdown-item:hover,
+    .pms-customer-listing .pms-customer-operations-dropdown .dropdown-item:focus {
+        background: #1d3557 !important;
+        color: #ffffff !important;
+    }
+
+    .pms-customer-listing .pms-customer-operations-dropdown .dropdown-divider {
+        border-top-color: #c5d0e0;
+        opacity: 1;
+    }
+
     .pms-customer-listing .pms-customer-action-btn--report,
     .pms-customer-listing .pms-customer-action-btn--report:disabled {
         background-color: #1d3557 !important;
@@ -369,14 +433,33 @@ else
         opacity: 0.7;
         cursor: not-allowed;
     }
+
+    .pms-pending-update-status .pms-pending-comments {
+        min-height: 32px;
+        height: 32px;
+        resize: vertical;
+        padding-top: 0.35rem;
+        padding-bottom: 0.35rem;
+        line-height: 1.25;
+    }
+
+    .pms-pending-update-status .form-select-sm,
+    .pms-pending-update-status .pms-pending-apply-btn {
+        min-height: 32px;
+        height: 32px;
+    }
+
+    .pms-pending-update-status .pms-pending-apply-btn {
+        white-space: nowrap;
+    }
 </style>
 
 @section Scripts {
     <script>
         $(document).ready(function() {
             var showBulkSelection = @showBulkSelection.ToString().ToLowerInvariant();
-            // Col 0 = report radio; optional bulk checkbox; then Customer ID
-            var customerIdColumnIndex = showBulkSelection ? 2 : 1;
+            // Col 0 = report radio (listing) or bulk checkbox (pending); then Customer ID
+            var customerIdColumnIndex = 1;
             var accountReportUrl = '@Url.Action("AccountStatement", "Report")';
             var $accountReportBtn = $('#btnAccountReport');
             var selectedCustomerId = null;
@@ -402,7 +485,7 @@ else
                     searching: false,
                     order: [[ customerIdColumnIndex, "desc" ]],
                     columnDefs: [
-                        { orderable: false, targets: showBulkSelection ? [0, 1] : [0] }
+                        { orderable: false, targets: [0] }
                     ],
                     dom: 'rt<"pms-customer-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>'
                 });

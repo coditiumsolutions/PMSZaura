@@ -19,6 +19,12 @@
                         };
                         var modulesByKey = Model.NavigationShell!.Modules
                             .ToDictionary(m => m.Key, StringComparer.OrdinalIgnoreCase);
+                        var isWorkspaceActive = string.Equals(
+                                Model.NavigationShell.ActiveModuleKey,
+                                PMS.ViewModels.NavigationModuleKeys.OtherLinks,
+                                StringComparison.OrdinalIgnoreCase)
+                            || (string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), "Home", StringComparison.OrdinalIgnoreCase)
+                                && string.Equals(ViewContext.RouteData.Values["action"]?.ToString(), "Workspace", StringComparison.OrdinalIgnoreCase));
                     }
                     @foreach (var moduleKey in topNavOrder)
                     {
@@ -36,6 +42,12 @@
                             @module.Label
                         </a>
                     }
+                    <a class="pms-topbar-module-link@(isWorkspaceActive ? " active" : "")"
+                       asp-controller="Home"
+                       asp-action="Workspace"
+                       aria-current="@(isWorkspaceActive ? "page" : null)">
+                        Workspace
+                    </a>
                 </nav>
             }
             else

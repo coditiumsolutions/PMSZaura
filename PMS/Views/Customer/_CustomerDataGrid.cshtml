@@ -1,6 +1,7 @@
 @model IEnumerable<PMS.Models.Customer>
 @{
     var showBulkSelection = ViewData["ShowBulkSelection"] as bool? == true;
+    var isPendingCustomers = ViewData["IsPendingCustomers"] as bool? == true || showBulkSelection;
 }
 
 @if (Model != null && Model.Any())
@@ -9,19 +10,25 @@
         <table class="table pms-saas-table" id="customersTable">
             <thead>
                 <tr>
-                    <th class="pms-saas-th-check" style="width: 2.5rem;">
-                        <span class="visually-hidden">Select</span>
-                    </th>
                     @if (showBulkSelection)
                     {
                         <th class="pms-saas-th-check">
                             <input type="checkbox" id="selectAllPendingCustomers" class="pms-saas-checkbox" title="Select all" aria-label="Select all customers" />
                         </th>
                     }
+                    else
+                    {
+                        <th class="pms-saas-th-check" style="width: 2.5rem;">
+                            <span class="visually-hidden">Select</span>
+                        </th>
+                    }
                     <th>Customer ID</th>
                     <th>Full Name</th>
                     <th>Project</th>
-                    <th>Allotment Status</th>
+                    @if (!showBulkSelection)
+                    {
+                        <th>Allotment Status</th>
+                    }
                     <th>CNIC</th>
                     <th>Status</th>
                 </tr>
@@ -33,17 +40,10 @@
                         ?? customer.Project?.ProjectName;
                     var custStatus = customer.Status ?? "Active";
                     var customerId = customer.CustomerID ?? "";
+                    var customerIdDisplay = customerId.Trim();
                     <tr class="pms-listing-row pms-customer-selectable-row"
                         data-customer-id="@customerId"
                         data-href="@Url.Action("Details", new { id = customer.CustomerID })">
-                        <td class="pms-saas-td-check" data-label="Select">
-                            <input type="radio"
-                                   class="customer-report-radio pms-saas-checkbox"
-                                   name="selectedCustomerForReport"
-                                   value="@customerId"
-                                   aria-label="Select customer @customerId for Account Report"
-                                   @(string.IsNullOrWhiteSpace(customerId) ? "disabled" : "") />
-                        </td>
                         @if (showBulkSelection)
                         {
                             <td class="pms-saas-td-check" data-label="Bulk Select">
@@ -51,22 +51,33 @@
                                        class="pending-customer-checkbox pms-saas-checkbox"
                                        name="selectedCustomerIds"
                                        value="@customerId"
-                                       aria-label="Select customer @customerId"
+                                       aria-label="Select customer @customerIdDisplay"
+                                       @(string.IsNullOrWhiteSpace(customerId) ? "disabled" : "") />
+                            </td>
+                        }
+                        else
+                        {
+                            <td class="pms-saas-td-check" data-label="Select">
+                                <input type="radio"
+                                       class="customer-report-radio pms-saas-checkbox"
+                                       name="selectedCustomerForReport"
+                                       value="@customerId"
+                                       aria-label="Select customer @customerIdDisplay for Account Report"
                                        @(string.IsNullOrWhiteSpace(customerId) ? "disabled" : "") />
                             </td>
                         }
                         <td data-label="Customer ID">
                             <div class="d-inline-flex align-items-center gap-1 pms-customer-id-cell">
                                 <a asp-action="Details" asp-route-id="@customerId" class="text-decoration-none">
-                                    <span class="pms-cell-primary-title">@customerId</span>
+                                    <span class="pms-cell-primary-title">@customerIdDisplay</span>
                                 </a>
-                                @if (!string.IsNullOrWhiteSpace(customerId))
+                                @if (!string.IsNullOrWhiteSpace(customerIdDisplay))
                                 {
                                     <button type="button"
                                             class="btn btn-link btn-sm p-0 pms-copy-customer-id"
-                                            data-customer-id="@customerId"
+                                            data-customer-id="@customerIdDisplay"
                                             title="Copy Customer ID"
-                                            aria-label="Copy Customer ID @customerId">
+                                            aria-label="Copy Customer ID @customerIdDisplay">
                                         <i class="bi bi-clipboard" aria-hidden="true"></i>
                                     </button>
                                 }
@@ -85,16 +96,19 @@
                                 <span class="text-muted small">No project</span>
                             }
                         </td>
-                        <td data-label="Allotment Status">
-                            @if (customer.Allotments != null && customer.Allotments.Any())
-                            {
-                                <span class="pms-pill pms-pill--success">Allotted</span>
-                            }
-                            else
-                            {
-                                <span class="pms-pill pms-pill--neutral">Not allotted</span>
-                            }
-                        </td>
+                        @if (!showBulkSelection)
+                        {
+                            <td data-label="Allotment Status">
+                                @if (customer.Allotments != null && customer.Allotments.Any())
+                                {
+                                    <span class="pms-pill pms-pill--success">Allotted</span>
+                                }
+                                else
+                                {
+                                    <span class="pms-pill pms-pill--neutral">Not allotted</span>
+                                }
+                            </td>
+                        }
                         <td data-label="CNIC">
                             @(customer.CNIC ?? "")
                         </td>
@@ -119,12 +133,15 @@ else
     <div class="pms-saas-empty">
         <i class="bi bi-people pms-saas-empty-icon" aria-hidden="true"></i>
         <h5>No Records Found</h5>
-        <p>No customers match your current filters. Try adjusting search criteria or add a new customer.</p>
-        @if (ViewBag.CanCreate == true)
+        @if (!isPendingCustomers)
         {
-            <a asp-action="Create" class="btn btn-primary">
-                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add New Customer
-            </a>
+            <p>No customers match your current filters. Try adjusting search criteria or add a new customer.</p>
+            @if (ViewBag.CanCreate == true)
+            {
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add New Customer
+                </a>
+            }
         }
     </div>
 }

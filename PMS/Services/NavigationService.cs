@@ -17,6 +17,14 @@ public sealed class NavigationService : INavigationService
             {
                 new NavigationMenuItemViewModel
                 {
+                    Label = "Add Customer",
+                    Controller = "Customer",
+                    Action = "Create",
+                    IconClass = "fas fa-user-plus me-2",
+                    ActiveAction = "Create"
+                },
+                new NavigationMenuItemViewModel
+                {
                     Label = "Customers",
                     Controller = "Customer",
                     Action = "Index",
@@ -25,7 +33,7 @@ public sealed class NavigationService : INavigationService
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Pending Customers",
+                    Label = "Pending",
                     Controller = "Customer",
                     Action = "PendingCustomers",
                     IconClass = "fas fa-user-clock me-2",
@@ -120,14 +128,6 @@ public sealed class NavigationService : INavigationService
                     Action = "PendingPayments",
                     IconClass = "fas fa-clock me-2",
                     ActiveAction = "PendingPayments"
-                },
-                new NavigationMenuItemViewModel
-                {
-                    Label = "Schedules / Plans",
-                    Controller = "Payment",
-                    Action = "PaymentPlans",
-                    IconClass = "fas fa-file-invoice-dollar me-2",
-                    ActiveActions = new[] { "PaymentPlans", "CreatePaymentPlan" }
                 }
             }
         },

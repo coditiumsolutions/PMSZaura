@@ -1435,6 +1435,17 @@
     font-weight: 600 !important;
 }
 
+/* Create Payment Plan: label columns (1st & 3rd) black */
+.pms-create-payment-plan .pms-mp-header .pms-registration-4col-form .pms-registration-4col-row > .col-md-2 .form-label,
+.pms-create-payment-plan .pms-mp-header .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .form-label,
+.pms-create-payment-plan .pms-mp-header .pms-registration-4col-form .pms-registration-4col-row > .col-md-2 .pms-registration-4col-label,
+.pms-create-payment-plan .pms-mp-header .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label,
+.pms-create-payment-plan .pms-mp-header .form-label,
+.pms-create-payment-plan .pms-mp-header label.form-label,
+.pms-create-payment-plan .pms-mp-header .form-check-label {
+    color: #000 !important;
+}
+
 
 /* Project grids ? shared header strip (#6059A6) */
 .pms-project-listing .pms-saas-table thead th,

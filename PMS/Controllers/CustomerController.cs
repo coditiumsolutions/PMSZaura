@@ -526,81 +526,12 @@ namespace PMS.Controllers
                 return RedirectToAction(nameof(PendingCustomers), new { projectFilter, searchTerm });
             }
 
-            List<Customer> customersMissingRequiredAttachments = new();
-            if (targetStatus == "Active")
-            {
-                var pendingCustomerIds = customersToUpdate
-                    .Where(c => !string.IsNullOrWhiteSpace(c.CustomerID))
-                    .Select(c => c.CustomerID!.Trim())
-                    .Distinct()
-                    .ToList();
-
-                var requiredAttachmentTypes = new[] { "customerpicture", "idcard" };
-                var availableRequiredAttachments = await _context.Attachments
-                    .AsNoTracking()
-                    .Where(a => a.RefType == "Customer"
-                                && a.RefID != null
-                                && a.AttachmentType != null)
-                    .Select(a => new
-                    {
-                        RefID = a.RefID!.Trim(),
-                        AttachmentType = a.AttachmentType!.Trim()
-                    })
-                    .ToListAsync();
-
-                // Normalize IDs/types to handle DB values with spaces/casing differences.
-                var attachmentTypeLookup = availableRequiredAttachments
-                    .Where(a => pendingCustomerIds.Contains(a.RefID))
-                    .Select(a => new
-                    {
-                        a.RefID,
-                        AttachmentType = a.AttachmentType.Replace(" ", string.Empty).ToLowerInvariant()
-                    })
-                    .Where(a => requiredAttachmentTypes.Contains(a.AttachmentType))
-                    .GroupBy(a => a.RefID)
-                    .ToDictionary(
-                        g => g.Key,
-                        g => g.Select(x => x.AttachmentType).ToHashSet(StringComparer.OrdinalIgnoreCase));
-
-                customersMissingRequiredAttachments = customersToUpdate
-                    .Where(c =>
-                    {
-                        if (string.IsNullOrWhiteSpace(c.CustomerID))
-                        {
-                            return true;
-                        }
-
-                        var normalizedCustomerId = c.CustomerID.Trim();
-                        if (!attachmentTypeLookup.TryGetValue(normalizedCustomerId, out var attachedTypes))
-                        {
-                            return true;
-                        }
-
-                        return !(attachedTypes.Contains("customerpicture") && attachedTypes.Contains("idcard"));
-                    })
-                    .ToList();
-
-                if (customersMissingRequiredAttachments.Count == customersToUpdate.Count)
-                {
-                    var blockedIds = string.Join(", ", customersMissingRequiredAttachments
-                        .Select(c => c.CustomerID)
-                        .Where(id => !string.IsNullOrWhiteSpace(id)));
-
-                    TempData["ErrorMessage"] = $"Cannot activate pending customer(s) without both required attachments (Customer Picture and ID Card). Blocked: {blockedIds}";
-                    return RedirectToAction(nameof(PendingCustomers), new { projectFilter, searchTerm });
-                }
-            }
-
-            var customersEligibleForUpdate = targetStatus == "Active"
-                ? customersToUpdate.Except(customersMissingRequiredAttachments).ToList()
-                : customersToUpdate;
-
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var actorName = User.Identity?.Name ?? userId ?? "Unknown User";
             var changedAt = DateTime.Now;
             var activityLogs = new List<ActivityLog>();
 
-            foreach (var customer in customersEligibleForUpdate)
+            foreach (var customer in customersToUpdate)
             {
                 var previousStatus = customer.Status ?? "Unknown";
                 customer.Status = targetStatus;
@@ -629,18 +560,7 @@ namespace PMS.Controllers
             _context.ActivityLogs.AddRange(activityLogs);
             await _context.SaveChangesAsync();
 
-            if (targetStatus == "Active" && customersMissingRequiredAttachments.Any())
-            {
-                var blockedIds = string.Join(", ", customersMissingRequiredAttachments
-                    .Select(c => c.CustomerID)
-                    .Where(id => !string.IsNullOrWhiteSpace(id)));
-
-                TempData["SuccessMessage"] = $"{customersEligibleForUpdate.Count} customer(s) activated. {customersMissingRequiredAttachments.Count} skipped due to missing Customer Picture/ID Card: {blockedIds}";
-            }
-            else
-            {
-                TempData["SuccessMessage"] = $"{customersEligibleForUpdate.Count} customer(s) updated to '{targetStatus}' with comments logged.";
-            }
+            TempData["SuccessMessage"] = $"{customersToUpdate.Count} customer(s) updated to '{targetStatus}' with comments logged.";
             return RedirectToAction(nameof(PendingCustomers), new { projectFilter, searchTerm });
         }
 
@@ -1887,7 +1807,7 @@ namespace PMS.Controllers
                     }
 
                     TempData["SuccessMessage"] = $"Customer '{existingCustomer.FullName}' ({existingCustomer.CustomerID}) saved successfully.";
-                    return RedirectToAction(nameof(Edit), new { id = existingCustomer.CustomerID });
+                    return RedirectToAction(nameof(Details), new { id = existingCustomer.CustomerID });
                 }
                 catch (DbUpdateConcurrencyException)
                 {

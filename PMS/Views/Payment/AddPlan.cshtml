@@ -1,0 +1,263 @@
+@model PMS.Models.AddPlanViewModel
+
+@{
+    ViewData["Title"] = "Add Plan";
+}
+
+<div class="pms-create-payment-plan">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <h5 class="mb-0">Add Plan</h5>
+        <a asp-action="PaymentPlans" class="btn btn-outline-secondary btn-sm py-0 px-2">
+            <i class="fas fa-arrow-left me-1"></i>Back to Payment Plans
+        </a>
+    </div>
+
+    <form asp-action="AddPlan" method="post" novalidate>
+        @Html.AntiForgeryToken()
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" role="alert"></div>
+        }
+
+        <div class="card border-0 shadow-sm pms-mp-header mb-3">
+            <div class="card-header py-2 pms-mp-header-bar">
+                <h6 class="mb-0">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Plan Detail
+                </h6>
+            </div>
+            <div class="card-body py-2 px-3">
+                <div class="pms-registration-4col-form pms-cpp-form">
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="PlanName" class="form-label pms-registration-4col-label">Plan Name *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="PlanName" class="form-control form-control-sm" type="text" required placeholder="e.g. 2 Year Plan" />
+                            <span asp-validation-for="PlanName" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Size" class="form-label pms-registration-4col-label">Size</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="Size" id="Size" class="form-control form-control-sm" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 5, 10.5" />
+                            <span asp-validation-for="Size" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="PricePerUnit" class="form-label pms-registration-4col-label">Price per unit</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="PricePerUnit" id="PricePerUnit" type="text" inputmode="decimal" class="form-control form-control-sm" placeholder="e.g., 85000" />
+                            <span asp-validation-for="PricePerUnit" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="TotalAmount" class="form-label pms-registration-4col-label">Total Amount (PKR) *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="TotalAmount" id="TotalAmount" type="number" step="1" min="1" max="1000000000" class="form-control form-control-sm" placeholder="e.g., 5000000" required />
+                            <span asp-validation-for="TotalAmount" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm pms-mp-header mb-3">
+            <div class="card-header py-2 pms-mp-header-bar">
+                <h6 class="mb-0">
+                    <i class="fas fa-calendar-check me-2"></i>Payment Schedule Configuration
+                </h6>
+            </div>
+            <div class="card-body py-2 px-3">
+                <div class="pms-registration-4col-form pms-cpp-form">
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="PaymentTitle" class="form-label pms-registration-4col-label">Payment Title</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="PaymentTitle" class="form-control form-control-sm" type="text" required placeholder="e.g., Monthly Installment" />
+                            <span asp-validation-for="PaymentTitle" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Amount" class="form-label pms-registration-4col-label">Amount</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="Amount" id="Amount" type="number" step="0.01" min="0.01" class="form-control form-control-sm" required placeholder="e.g., 500000" />
+                            <span asp-validation-for="Amount" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="DueDate" class="form-label pms-registration-4col-label">Due Date</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="DueDate" class="form-control form-control-sm" type="date" required />
+                            <span asp-validation-for="DueDate" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="InstallmentNo" class="form-label pms-registration-4col-label">Installment No</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="InstallmentNo" type="number" min="0" class="form-control form-control-sm" required />
+                            <span asp-validation-for="InstallmentNo" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="SurchargePolicyStatus" class="form-label pms-registration-4col-label">Surcharge Policy Status</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="form-check mb-0 py-1">
+                                <input asp-for="SurchargePolicyStatus" class="form-check-input" />
+                                <label asp-for="SurchargePolicyStatus" class="form-check-label small">Apply Surcharge</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="SurchargeRate" class="form-label pms-registration-4col-label">Surcharge Rate</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="SurchargeRate" type="number" step="0.0001" min="0" max="1" class="form-control form-control-sm" />
+                            <span asp-validation-for="SurchargeRate" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <a asp-action="PaymentPlans" class="btn btn-outline-secondary btn-sm">Cancel</a>
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fas fa-save me-1"></i>Save Plan
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .pms-create-payment-plan > .d-flex > h5 {
+        color: #000 !important;
+        font-weight: 700;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-row {
+        margin-bottom: 0.35rem !important;
+        padding-bottom: 0.35rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0 !important;
+        padding-bottom: 0;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-label,
+    .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-label,
+    .pms-create-payment-plan .pms-cpp-form .form-check-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-lg-2 .form-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-md-2 .form-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-md-2 .pms-registration-4col-label,
+    .pms-create-payment-plan .pms-mp-header .form-label,
+    .pms-create-payment-plan .pms-mp-header label.form-label {
+        color: #000 !important;
+        font-weight: 600 !important;
+        font-size: 0.75rem;
+        margin-bottom: 0;
+        padding-top: 0.2rem;
+        line-height: 1.2;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-control,
+    .pms-create-payment-plan .pms-cpp-form .form-select,
+    .pms-create-payment-plan .pms-cpp-form .form-control-sm,
+    .pms-create-payment-plan .pms-cpp-form .form-select-sm {
+        color: #1d4ed8 !important;
+        background-color: #fff !important;
+        border: 1px solid #93c5fd !important;
+        border-radius: 0 !important;
+        font-size: 0.8125rem;
+        min-height: 28px;
+        height: 28px;
+        padding-top: 0.15rem;
+        padding-bottom: 0.15rem;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-control:focus,
+    .pms-create-payment-plan .pms-cpp-form .form-select:focus,
+    .pms-create-payment-plan .pms-cpp-form .form-control-sm:focus,
+    .pms-create-payment-plan .pms-cpp-form .form-select-sm:focus {
+        color: #1e3a8a !important;
+        background-color: #fff !important;
+        border-color: #3b82f6 !important;
+        box-shadow: none !important;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-control:disabled,
+    .pms-create-payment-plan .pms-cpp-form .form-control[readonly],
+    .pms-create-payment-plan .pms-cpp-form .form-select:disabled {
+        color: #1d4ed8 !important;
+        background-color: #fff !important;
+        opacity: 1;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-check-label {
+        font-size: 0.8125rem;
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            const maxAmountPkr = 1000000000;
+
+            function normalizeNumericText(raw) {
+                var text = String(raw || '').trim().replace(/,/g, '');
+                if (!text) return '';
+                var n = parseFloat(text);
+                if (!isFinite(n)) return '';
+                return String(n);
+            }
+
+            function parseDecimalText(selector) {
+                var n = parseFloat(normalizeNumericText($(selector).val()));
+                return isFinite(n) ? n : 0;
+            }
+
+            function autoFillTotalAmount() {
+                var size = parseDecimalText('#Size');
+                var pricePerUnit = parseDecimalText('#PricePerUnit');
+                if (size > 0 && pricePerUnit > 0) {
+                    var computed = Math.round(size * pricePerUnit);
+                    if (computed > maxAmountPkr) computed = maxAmountPkr;
+                    if (computed < 1) computed = 1;
+                    $('#TotalAmount').val(computed);
+                }
+            }
+
+            $('#Size, #PricePerUnit').on('input blur change', function () {
+                $(this).val(normalizeNumericText($(this).val()));
+                autoFillTotalAmount();
+            });
+
+            $('#TotalAmount').on('blur', function () {
+                var raw = String($(this).val() || '').trim();
+                if (raw === '') return;
+                var amount = Math.round(parseFloat(raw));
+                if (!isFinite(amount) || amount < 1) amount = 1;
+                if (amount > maxAmountPkr) amount = maxAmountPkr;
+                $(this).val(amount);
+            });
+
+            $('#SurchargePolicyStatus').on('change', function () {
+                $('#SurchargeRate').prop('disabled', !$(this).is(':checked'));
+            }).trigger('change');
+        });
+    </script>
+}

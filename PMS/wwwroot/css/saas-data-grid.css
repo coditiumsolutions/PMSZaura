@@ -612,3 +612,127 @@
         text-align: left;
     }
 }
+
+/* Customer Operations menu — white panel so it stands out from the gray page surface */
+.pms-customer-listing .pms-customer-operations-dropdown .dropdown-menu {
+    background: #ffffff !important;
+    border: 1px solid #1d3557 !important;
+    box-shadow: 0 8px 22px rgba(29, 53, 87, 0.22) !important;
+}
+
+.pms-customer-listing .pms-customer-operations-dropdown .dropdown-item {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-weight: 600;
+}
+
+.pms-customer-listing .pms-customer-operations-dropdown .dropdown-item:hover,
+.pms-customer-listing .pms-customer-operations-dropdown .dropdown-item:focus {
+    background: #1d3557 !important;
+    color: #ffffff !important;
+}
+
+.pms-customer-listing .pms-customer-operations-dropdown .dropdown-divider {
+    border-top-color: #c5d0e0;
+    opacity: 1;
+}
+
+/* Customer Details action dropdowns — same white panel as listing Operations */
+.pms-customer-details-actions .dropdown-menu {
+    background: #ffffff !important;
+    border: 1px solid #1d3557 !important;
+    box-shadow: 0 8px 22px rgba(29, 53, 87, 0.22) !important;
+}
+
+.pms-customer-details-actions .dropdown-item {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-weight: 600;
+}
+
+.pms-customer-details-actions .dropdown-item:hover,
+.pms-customer-details-actions .dropdown-item:focus {
+    background: #1d3557 !important;
+    color: #ffffff !important;
+}
+
+.pms-customer-details-actions .dropdown-item.text-danger {
+    color: #dc3545 !important;
+}
+
+.pms-customer-details-actions .dropdown-item.text-danger:hover,
+.pms-customer-details-actions .dropdown-item.text-danger:focus {
+    background: #dc3545 !important;
+    color: #ffffff !important;
+}
+
+.pms-customer-details-actions .dropdown-divider {
+    border-top-color: #c5d0e0;
+    opacity: 1;
+}
+
+/* Customer Edit tabs — match Details purple tab bar (#6059A6) */
+.pms-customer-edit > .card-header {
+    background-color: #6059A6 !important;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+}
+
+.pms-customer-edit .customer-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    border-bottom: none;
+    background-color: #6059A6 !important;
+    padding: 0.35rem 0.5rem 0;
+    gap: 0;
+    scrollbar-width: thin;
+}
+
+.pms-customer-edit .customer-tabs .nav-item {
+    flex: 0 0 auto;
+}
+
+.pms-customer-edit .customer-tabs .nav-link {
+    color: rgba(255, 255, 255, 0.82) !important;
+    font-weight: 600;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    padding: 0.45rem 0.55rem;
+    transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    font-size: 0.78rem;
+    background: transparent !important;
+    white-space: nowrap;
+    line-height: 1.2;
+}
+
+.pms-customer-edit .customer-tabs .nav-link:hover {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-bottom-color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.pms-customer-edit .customer-tabs .nav-link.active {
+    color: #fff !important;
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-bottom-color: #fff !important;
+    font-weight: 700;
+}
+
+.pms-customer-edit .customer-tabs .nav-link i {
+    font-size: 0.72rem;
+    margin-right: 0.25rem !important;
+}
+
+@media (max-width: 992px) {
+    .pms-customer-edit .customer-tabs .nav-link {
+        padding: 0.4rem 0.45rem;
+        font-size: 0.72rem;
+    }
+
+    .pms-customer-edit .customer-tabs .nav-link i {
+        display: none;
+    }
+}
