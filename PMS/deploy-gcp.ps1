@@ -67,9 +67,17 @@ $IdentityFile = Resolve-SshIdentityFile -Preferred $IdentityFile
 $DbConnection = Resolve-DbConnection -Preferred $DbConnection
 # SQL Server runs on the target VM itself and 1433 is not open to the internet,
 # so the app must reach it over loopback rather than the public IP.
+# Also normalize local tunnel ports (14330/50001) to SQL's real port 1433.
 if ($DbConnection -match [regex]::Escape($SshHost)) {
     $DbConnection = $DbConnection -replace [regex]::Escape($SshHost), "127.0.0.1"
     Write-Host "DB host $SshHost rewritten to 127.0.0.1 (database is local to the VM)" -ForegroundColor Yellow
+}
+if ($DbConnection -match '(?i)Server=([^;]+)') {
+    $server = $Matches[1]
+    if ($server -match '(?i)^(localhost|127\.0\.0\.1)(,(14330|50001))?$') {
+        $DbConnection = $DbConnection -replace "(?i)Server=[^;]+", "Server=127.0.0.1,1433"
+        Write-Host "DB server normalized to 127.0.0.1,1433 for GCP SQL" -ForegroundColor Yellow
+    }
 }
 Write-Host "Target: ${SshUser}@${SshHost}" -ForegroundColor Yellow
 Write-Host "Key: $IdentityFile" -ForegroundColor Yellow
