@@ -78,7 +78,7 @@ jobs:
             --self-contained false \
             --output ./publish-out/linux-x64
           test -f ./publish-out/linux-x64/PMS.dll
-          ls -lah ./publish-out/linux-x64 | head -n 30
+          ls -lah ./publish-out/linux-x64 | head -n 30 || true
 
       - name: Package deployment archive
         working-directory: PMS
