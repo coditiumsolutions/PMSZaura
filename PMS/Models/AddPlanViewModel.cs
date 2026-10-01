@@ -4,6 +4,8 @@ namespace PMS.Models
 {
     public class AddPlanViewModel
     {
+        public string? PlanID { get; set; }
+
         [Required(ErrorMessage = "Plan Name is required.")]
         [StringLength(150)]
         [Display(Name = "Plan Name")]
@@ -21,30 +23,43 @@ namespace PMS.Models
         [Display(Name = "Total Amount (PKR)")]
         public decimal TotalAmount { get; set; }
 
-        [Required(ErrorMessage = "Payment Title is required.")]
+        [StringLength(50)]
+        [Display(Name = "Frequency")]
+        public string? Frequency { get; set; }
+
+        [DataType(DataType.Date)]
+        [Display(Name = "First Due Date")]
+        public DateTime? FirstDueDate { get; set; } = DateTime.Today;
+
         [StringLength(250)]
         [Display(Name = "Payment Title")]
-        public string PaymentTitle { get; set; } = string.Empty;
+        public string? PaymentTitle { get; set; }
 
-        [Required(ErrorMessage = "Amount is required.")]
-        [Range(0.01, 1000000000, ErrorMessage = "Amount must be greater than zero.")]
-        [Display(Name = "Amount")]
-        public decimal Amount { get; set; }
-
-        [Required(ErrorMessage = "Due Date is required.")]
         [DataType(DataType.Date)]
         [Display(Name = "Due Date")]
-        public DateTime DueDate { get; set; } = DateTime.Today;
+        public DateTime? DueDate { get; set; } = DateTime.Today;
 
-        [Required(ErrorMessage = "Installment No is required.")]
+        [Display(Name = "Start Range")]
+        public int? StartRange { get; set; }
+
+        [Display(Name = "End Range")]
+        public int? EndRange { get; set; }
+
+        [Display(Name = "Due Amount")]
+        public decimal? Amount { get; set; }
+
         [Display(Name = "Installment No")]
-        public int InstallmentNo { get; set; } = 1;
+        public int? InstallmentNo { get; set; } = 1;
 
-        [Display(Name = "Surcharge Policy Status")]
+        [Display(Name = "Is Applied")]
         public bool SurchargePolicyStatus { get; set; } = true;
 
         [Range(0, 1, ErrorMessage = "Surcharge Rate must be between 0 and 1.")]
         [Display(Name = "Surcharge Rate")]
         public decimal SurchargeRate { get; set; } = 0.05m;
+
+        public bool PlanSaved => !string.IsNullOrWhiteSpace(PlanID);
+
+        public List<PaymentSchedule> Schedules { get; set; } = new();
     }
 }

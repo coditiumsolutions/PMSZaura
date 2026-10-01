@@ -62,9 +62,6 @@ namespace PMS.Controllers
 
             ViewBag.AuditFilter = auditFilter;
             ViewBag.CustomerFilter = customerFilter;
-            ViewBag.PendingCount = await _context.Payments.CountAsync(p => p.AuditStatus == "Pending" || p.AuditStatus == null);
-            ViewBag.ApprovedCount = await _context.Payments.CountAsync(p => p.AuditStatus == "Approved");
-            ViewBag.DeclinedCount = await _context.Payments.CountAsync(p => p.AuditStatus == "Declined");
 
             return View(payments);
         }

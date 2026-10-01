@@ -263,11 +263,43 @@
               </Style>
             </Paragraph>
           </Paragraphs>
-          <Top>0.48in</Top>
+          <Top>0.40in</Top>
           <Left>2.15in</Left>
-          <Height>0.35in</Height>
+          <Height>0.30in</Height>
           <Width>3.8in</Width>
           <ZIndex>3</ZIndex>
+          <Style>
+            <Border>
+              <Style>None</Style>
+            </Border>
+          </Style>
+        </Textbox>
+        <Textbox Name="ProjectLocationBox">
+          <CanGrow>true</CanGrow>
+          <KeepTogether>true</KeepTogether>
+          <Paragraphs>
+            <Paragraph>
+              <TextRuns>
+                <TextRun>
+                  <Value>=First(Fields!CompanyName.Value, "AccountStatementHeader")</Value>
+                  <Style>
+                    <FontFamily>Segoe UI</FontFamily>
+                    <FontSize>10pt</FontSize>
+                    <FontWeight>Bold</FontWeight>
+                    <Color>#000000</Color>
+                  </Style>
+                </TextRun>
+              </TextRuns>
+              <Style>
+                <TextAlign>Center</TextAlign>
+              </Style>
+            </Paragraph>
+          </Paragraphs>
+          <Top>0.72in</Top>
+          <Left>2.15in</Left>
+          <Height>0.28in</Height>
+          <Width>3.8in</Width>
+          <ZIndex>5</ZIndex>
           <Style>
             <Border>
               <Style>None</Style>

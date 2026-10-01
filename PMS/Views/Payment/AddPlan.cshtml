@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Add Plan";
+    var planSaved = Model.PlanSaved;
+    // Expand schedule config when validation failed after AddPlanSchedule post; otherwise start collapsed.
+    var expandScheduleConfig = !ViewData.ModelState.IsValid && planSaved;
 }
 
 <div class="pms-create-payment-plan">
@@ -12,19 +15,39 @@
         </a>
     </div>
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show py-2 px-3 mb-3 small" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-3 small" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" role="alert"></div>
+    }
+
     <form asp-action="AddPlan" method="post" novalidate>
         @Html.AntiForgeryToken()
 
-        @if (!ViewData.ModelState.IsValid)
-        {
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" role="alert"></div>
-        }
-
         <div class="card border-0 shadow-sm pms-mp-header mb-3">
-            <div class="card-header py-2 pms-mp-header-bar">
+            <div class="card-header py-2 pms-mp-header-bar d-flex justify-content-between align-items-center">
                 <h6 class="mb-0">
                     <i class="fas fa-file-invoice-dollar me-2"></i>Plan Detail
+                    <span class="text-muted fw-normal small ms-1">(saves to PaymentPlan)</span>
                 </h6>
+                @if (planSaved)
+                {
+                    <span class="badge text-bg-success">Saved · @Model.PlanID</span>
+                }
             </div>
             <div class="card-body py-2 px-3">
                 <div class="pms-registration-4col-form pms-cpp-form">
@@ -33,14 +56,14 @@
                             <label asp-for="PlanName" class="form-label pms-registration-4col-label">Plan Name *</label>
                         </div>
                         <div class="col-12 col-lg-4">
-                            <input asp-for="PlanName" class="form-control form-control-sm" type="text" required placeholder="e.g. 2 Year Plan" />
+                            <input asp-for="PlanName" class="form-control form-control-sm" type="text" required placeholder="e.g. 2 Year Plan" disabled="@planSaved" />
                             <span asp-validation-for="PlanName" class="text-danger"></span>
                         </div>
                         <div class="col-12 col-lg-2">
                             <label asp-for="Size" class="form-label pms-registration-4col-label">Size</label>
                         </div>
                         <div class="col-12 col-lg-4">
-                            <input asp-for="Size" id="Size" class="form-control form-control-sm" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 5, 10.5" />
+                            <input asp-for="Size" id="Size" class="form-control form-control-sm" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 5, 10.5" disabled="@planSaved" />
                             <span asp-validation-for="Size" class="text-danger"></span>
                         </div>
                     </div>
@@ -50,98 +73,348 @@
                             <label asp-for="PricePerUnit" class="form-label pms-registration-4col-label">Price per unit</label>
                         </div>
                         <div class="col-12 col-lg-4">
-                            <input asp-for="PricePerUnit" id="PricePerUnit" type="text" inputmode="decimal" class="form-control form-control-sm" placeholder="e.g., 85000" />
+                            <input asp-for="PricePerUnit" id="PricePerUnit" type="text" inputmode="decimal" class="form-control form-control-sm" placeholder="e.g., 85000" disabled="@planSaved" />
                             <span asp-validation-for="PricePerUnit" class="text-danger"></span>
                         </div>
                         <div class="col-12 col-lg-2">
                             <label asp-for="TotalAmount" class="form-label pms-registration-4col-label">Total Amount (PKR) *</label>
                         </div>
                         <div class="col-12 col-lg-4">
-                            <input asp-for="TotalAmount" id="TotalAmount" type="number" step="1" min="1" max="1000000000" class="form-control form-control-sm" placeholder="e.g., 5000000" required />
+                            <input asp-for="TotalAmount" id="TotalAmount" type="number" step="1" min="1" max="1000000000" class="form-control form-control-sm" placeholder="e.g., 5000000" required disabled="@planSaved" />
                             <span asp-validation-for="TotalAmount" class="text-danger"></span>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="card border-0 shadow-sm pms-mp-header mb-3">
-            <div class="card-header py-2 pms-mp-header-bar">
-                <h6 class="mb-0">
-                    <i class="fas fa-calendar-check me-2"></i>Payment Schedule Configuration
-                </h6>
-            </div>
-            <div class="card-body py-2 px-3">
-                <div class="pms-registration-4col-form pms-cpp-form">
-                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
-                        <div class="col-12 col-lg-2">
-                            <label asp-for="PaymentTitle" class="form-label pms-registration-4col-label">Payment Title</label>
-                        </div>
-                        <div class="col-12 col-lg-4">
-                            <input asp-for="PaymentTitle" class="form-control form-control-sm" type="text" required placeholder="e.g., Monthly Installment" />
-                            <span asp-validation-for="PaymentTitle" class="text-danger"></span>
-                        </div>
-                        <div class="col-12 col-lg-2">
-                            <label asp-for="Amount" class="form-label pms-registration-4col-label">Amount</label>
-                        </div>
-                        <div class="col-12 col-lg-4">
-                            <input asp-for="Amount" id="Amount" type="number" step="0.01" min="0.01" class="form-control form-control-sm" required placeholder="e.g., 500000" />
-                            <span asp-validation-for="Amount" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
-                        <div class="col-12 col-lg-2">
-                            <label asp-for="DueDate" class="form-label pms-registration-4col-label">Due Date</label>
-                        </div>
-                        <div class="col-12 col-lg-4">
-                            <input asp-for="DueDate" class="form-control form-control-sm" type="date" required />
-                            <span asp-validation-for="DueDate" class="text-danger"></span>
-                        </div>
-                        <div class="col-12 col-lg-2">
-                            <label asp-for="InstallmentNo" class="form-label pms-registration-4col-label">Installment No</label>
-                        </div>
-                        <div class="col-12 col-lg-4">
-                            <input asp-for="InstallmentNo" type="number" min="0" class="form-control form-control-sm" required />
-                            <span asp-validation-for="InstallmentNo" class="text-danger"></span>
-                        </div>
-                    </div>
-
-                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
-                        <div class="col-12 col-lg-2">
-                            <label asp-for="SurchargePolicyStatus" class="form-label pms-registration-4col-label">Surcharge Policy Status</label>
-                        </div>
-                        <div class="col-12 col-lg-4">
-                            <div class="form-check mb-0 py-1">
-                                <input asp-for="SurchargePolicyStatus" class="form-check-input" />
-                                <label asp-for="SurchargePolicyStatus" class="form-check-label small">Apply Surcharge</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-lg-2">
-                            <label asp-for="SurchargeRate" class="form-label pms-registration-4col-label">Surcharge Rate</label>
-                        </div>
-                        <div class="col-12 col-lg-4">
-                            <input asp-for="SurchargeRate" type="number" step="0.0001" min="0" max="1" class="form-control form-control-sm" />
-                            <span asp-validation-for="SurchargeRate" class="text-danger"></span>
-                        </div>
-                    </div>
+            @if (!planSaved)
+            {
+                <div class="card-footer bg-white border-0 py-2 px-3 d-flex justify-content-end gap-2">
+                    <a asp-action="PaymentPlans" class="btn btn-outline-secondary btn-sm">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-save me-1"></i>Save to PaymentPlan
+                    </button>
                 </div>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-end gap-2">
-            <a asp-action="PaymentPlans" class="btn btn-outline-secondary btn-sm">Cancel</a>
-            <button type="submit" class="btn btn-primary btn-sm">
-                <i class="fas fa-save me-1"></i>Save Plan
-            </button>
+            }
         </div>
     </form>
+
+    <form asp-action="AddPlanSchedule" method="post" novalidate>
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="PlanID" />
+
+        <div class="card border-0 shadow-sm pms-mp-header pms-addplan-schedule-section mb-3 @(planSaved ? "" : "opacity-75")">
+            <div class="card-header py-2 pms-mp-header-bar pms-addplan-schedule-toggle"
+                 role="button"
+                 tabindex="0"
+                 data-bs-toggle="collapse"
+                 data-bs-target="#addPlanScheduleConfigCollapse"
+                 aria-expanded="@(expandScheduleConfig ? "true" : "false")"
+                 aria-controls="addPlanScheduleConfigCollapse">
+                <div class="d-flex justify-content-between align-items-center gap-2">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chevron-right pms-addplan-twistee me-2" aria-hidden="true"></i>
+                        <i class="fas fa-calendar-check me-2"></i>Payment Schedule Configuration
+                        <span class="text-muted fw-normal small ms-1">(add sub-payments · expand when needed)</span>
+                    </h6>
+                    <span class="badge text-bg-light border text-dark fw-normal pms-addplan-schedule-toggle-hint">Click to expand</span>
+                </div>
+            </div>
+            <div id="addPlanScheduleConfigCollapse" class="collapse @(expandScheduleConfig ? "show" : "")">
+                <div class="card-body py-1 px-3">
+                    @if (!planSaved)
+                    {
+                        <div class="alert alert-info py-2 px-3 mb-0 small">
+                            Save Plan Detail first. This section unlocks after the plan is stored in <strong>PaymentPlan</strong>.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="pms-registration-4col-form pms-cpp-form pms-addplan-schedule-config">
+                            <div class="row g-0 g-lg-1 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2">
+                                    <label asp-for="Frequency" class="form-label pms-registration-4col-label">Frequency *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <select asp-for="Frequency" class="form-select form-select-sm" required>
+                                        <option value="">Select Frequency</option>
+                                        <option value="Monthly">Monthly</option>
+                                        <option value="Quarterly">Quarterly</option>
+                                        <option value="Half Yearly">Half Yearly</option>
+                                        <option value="Yearly">Yearly</option>
+                                    </select>
+                                    <span asp-validation-for="Frequency" class="text-danger"></span>
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label asp-for="FirstDueDate" class="form-label pms-registration-4col-label">First Due Date *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input asp-for="FirstDueDate" class="form-control form-control-sm" type="date" required />
+                                    <span asp-validation-for="FirstDueDate" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row g-0 g-lg-1 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2">
+                                    <label asp-for="PaymentTitle" class="form-label pms-registration-4col-label">Payment Title *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input asp-for="PaymentTitle" class="form-control form-control-sm" type="text" required placeholder="e.g., Monthly Installment" />
+                                    <span asp-validation-for="PaymentTitle" class="text-danger"></span>
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label asp-for="DueDate" class="form-label pms-registration-4col-label">Due Date *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input asp-for="DueDate" class="form-control form-control-sm" type="date" required />
+                                    <span asp-validation-for="DueDate" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row g-0 g-lg-1 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2">
+                                    <label asp-for="StartRange" class="form-label pms-registration-4col-label">Start Range *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input asp-for="StartRange" type="number" min="0" class="form-control form-control-sm" required placeholder="e.g., 6" />
+                                    <span asp-validation-for="StartRange" class="text-danger"></span>
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label asp-for="EndRange" class="form-label pms-registration-4col-label">End Range *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input asp-for="EndRange" type="number" min="0" class="form-control form-control-sm" required placeholder="e.g., 10" />
+                                    <span asp-validation-for="EndRange" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="row g-0 g-lg-1 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2">
+                                    <label asp-for="Amount" class="form-label pms-registration-4col-label">Amount *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input asp-for="Amount" type="number" step="0.01" min="0.01" class="form-control form-control-sm" required placeholder="e.g., 500000" />
+                                    <span asp-validation-for="Amount" class="text-danger"></span>
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label asp-for="SurchargePolicyStatus" class="form-label pms-registration-4col-label">Is Applied</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <div class="form-check mb-0 py-0">
+                                        <input asp-for="SurchargePolicyStatus" class="form-check-input" />
+                                        <label asp-for="SurchargePolicyStatus" class="form-check-label small">Apply Surcharge</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-0 g-lg-1 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2">
+                                    <label asp-for="SurchargeRate" class="form-label pms-registration-4col-label">Surcharge Rate</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input asp-for="SurchargeRate" type="number" step="0.0001" min="0" max="1" class="form-control form-control-sm" />
+                                    <span asp-validation-for="SurchargeRate" class="text-danger"></span>
+                                </div>
+                                <div class="col-12 col-lg-2"></div>
+                                <div class="col-12 col-lg-4"></div>
+                            </div>
+
+                            <div class="alert alert-light border py-1 px-2 mb-0 mt-1 small">
+                                Creates installments from <strong>Start Range</strong> to <strong>End Range</strong>
+                                (e.g. 6→10 = InstallmentNo 6,7,8,9,10) with the same Payment Title and Amount.
+                                Due dates start at <strong>Due Date</strong>, then add 1 month (Monthly) or 3 months (Quarterly) per installment.
+                            </div>
+                        </div>
+                    }
+                </div>
+                @if (planSaved)
+                {
+                    <div class="card-footer bg-white border-0 py-2 px-3 d-flex justify-content-end gap-2">
+                        <a asp-action="PaymentPlans" class="btn btn-outline-secondary btn-sm">Skip for now</a>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-save me-1"></i>Save to PaymentSchedule
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </form>
+
+    @if (planSaved)
+    {
+        <div class="card border-0 shadow-sm pms-mp-header mb-3" id="planSchedulesSection">
+            <div class="card-header py-2 pms-mp-header-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h6 class="mb-0">
+                    <i class="fas fa-list-ol me-2"></i>Payment Schedules
+                    <span class="text-muted fw-normal small ms-1">(PaymentSchedule for PlanID @Model.PlanID)</span>
+                </h6>
+                <span class="badge text-bg-secondary">@(Model.Schedules?.Count ?? 0) record(s)</span>
+            </div>
+            <div class="card-body py-2 px-3">
+                @if (Model.Schedules == null || Model.Schedules.Count == 0)
+                {
+                    <div class="alert alert-info py-2 px-3 mb-0 small">
+                        No payment schedule rows yet for this plan. Use section 2 above to generate installments.
+                    </div>
+                }
+                else
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0 pms-addplan-schedule-grid">
+                            <thead>
+                                <tr>
+                                    <th>Due Date</th>
+                                    <th>Payment Description</th>
+                                    <th>Inst No</th>
+                                    <th class="text-end">Amount</th>
+                                    <th>Sur Applied</th>
+                                    <th class="text-end">Sur Rate</th>
+                                    <th>Schedule ID</th>
+                                    <th class="text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var s in Model.Schedules)
+                                {
+                                    var addPlanReturnUrl = Url.Action("AddPlan", "Payment", new { planId = Model.PlanID });
+                                    <tr>
+                                        <td>@s.DueDate.ToString("dd-MMM-yyyy")</td>
+                                        <td>@(string.IsNullOrWhiteSpace(s.PaymentDescription) ? "—" : s.PaymentDescription)</td>
+                                        <td>@(s.InstallmentNo?.ToString() ?? "—")</td>
+                                        <td class="text-end">@s.Amount.ToString("N2")</td>
+                                        <td>@(s.SurchargeApplied ? "Yes" : "No")</td>
+                                        <td class="text-end">@s.SurchargeRate.ToString("0.####")</td>
+                                        <td><code class="small">@s.ScheduleID</code></td>
+                                        <td class="text-center text-nowrap">
+                                            <a asp-action="EditPaymentSchedule"
+                                               asp-route-scheduleId="@s.ScheduleID"
+                                               asp-route-returnUrl="@addPlanReturnUrl"
+                                               class="btn btn-sm btn-outline-primary py-0 px-2"
+                                               title="Edit this installment">
+                                                <i class="bi bi-pencil-square" aria-hidden="true"></i> Edit
+                                            </a>
+                                            <form asp-action="DeletePaymentSchedule"
+                                                  method="post"
+                                                  class="d-inline"
+                                                  onsubmit="return confirm('Delete this installment (@(s.PaymentDescription) #@(s.InstallmentNo))?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="scheduleId" value="@s.ScheduleID" />
+                                                <input type="hidden" name="planId" value="@Model.PlanID" />
+                                                <input type="hidden" name="returnUrl" value="@addPlanReturnUrl" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2" title="Delete this installment">
+                                                    <i class="bi bi-trash" aria-hidden="true"></i> Delete
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 </div>
 
 <style>
     .pms-create-payment-plan > .d-flex > h5 {
         color: #000 !important;
         font-weight: 700;
+    }
+
+    .pms-create-payment-plan .pms-mp-header-bar h6 {
+        color: #000 !important;
+        font-weight: 600;
+    }
+
+    .pms-create-payment-plan .pms-addplan-schedule-toggle {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .pms-create-payment-plan .pms-addplan-schedule-toggle:hover {
+        filter: brightness(0.98);
+    }
+
+    .pms-create-payment-plan .pms-addplan-twistee {
+        display: inline-block;
+        width: 0.85rem;
+        transition: transform 0.15s ease;
+        color: #000;
+    }
+
+    .pms-create-payment-plan .pms-addplan-schedule-toggle[aria-expanded="true"] .pms-addplan-twistee {
+        transform: rotate(90deg);
+    }
+
+    .pms-create-payment-plan .pms-addplan-schedule-section > .collapse > .card-body {
+        padding-top: 0.35rem !important;
+        padding-bottom: 0.35rem !important;
+    }
+
+    .pms-create-payment-plan .pms-addplan-schedule-config .pms-registration-4col-row {
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        border-bottom: none !important;
+    }
+
+    .pms-create-payment-plan .pms-addplan-schedule-config .form-label,
+    .pms-create-payment-plan .pms-addplan-schedule-config .pms-registration-4col-label {
+        padding-top: 0 !important;
+        margin-bottom: 0 !important;
+    }
+
+    .pms-create-payment-plan .pms-addplan-schedule-config .text-danger {
+        display: block;
+        line-height: 1.1;
+        margin-top: 0;
+    }
+
+    .pms-addplan-schedule-grid {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .pms-addplan-schedule-grid thead th {
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        font-size: 0.68rem;
+        font-weight: 700;
+        white-space: nowrap;
+        padding: 0.25rem 0.3rem !important;
+    }
+
+    .pms-addplan-schedule-grid td {
+        font-size: 0.72rem;
+        color: #000;
+        vertical-align: middle;
+        padding: 0.15rem 0.3rem !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .pms-addplan-schedule-grid th:nth-child(1),
+    .pms-addplan-schedule-grid td:nth-child(1) { width: 10%; } /* Due Date */
+    .pms-addplan-schedule-grid th:nth-child(2),
+    .pms-addplan-schedule-grid td:nth-child(2) { width: 22%; } /* Payment Description */
+    .pms-addplan-schedule-grid th:nth-child(3),
+    .pms-addplan-schedule-grid td:nth-child(3) { width: 7%; }  /* Inst No */
+    .pms-addplan-schedule-grid th:nth-child(4),
+    .pms-addplan-schedule-grid td:nth-child(4) { width: 10%; } /* Amount */
+    .pms-addplan-schedule-grid th:nth-child(5),
+    .pms-addplan-schedule-grid td:nth-child(5) { width: 8%; }  /* Sur Applied */
+    .pms-addplan-schedule-grid th:nth-child(6),
+    .pms-addplan-schedule-grid td:nth-child(6) { width: 8%; }  /* Sur Rate */
+    .pms-addplan-schedule-grid th:nth-child(7),
+    .pms-addplan-schedule-grid td:nth-child(7) { width: 12%; } /* Schedule ID */
+    .pms-addplan-schedule-grid th:nth-child(8),
+    .pms-addplan-schedule-grid td:nth-child(8) { width: 23%; } /* Actions */
+
+    .pms-addplan-schedule-grid .btn {
+        font-size: 0.68rem;
+        padding: 0.05rem 0.3rem !important;
     }
 
     .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-row {
@@ -202,7 +475,7 @@
     .pms-create-payment-plan .pms-cpp-form .form-control[readonly],
     .pms-create-payment-plan .pms-cpp-form .form-select:disabled {
         color: #1d4ed8 !important;
-        background-color: #fff !important;
+        background-color: #f8fafc !important;
         opacity: 1;
     }
 
@@ -216,6 +489,31 @@
     <script>
         $(document).ready(function () {
             const maxAmountPkr = 1000000000;
+            const planSaved = @(planSaved ? "true" : "false");
+
+            var $scheduleToggle = $('.pms-addplan-schedule-toggle');
+            var $scheduleHint = $scheduleToggle.find('.pms-addplan-schedule-toggle-hint');
+            var scheduleCollapseEl = document.getElementById('addPlanScheduleConfigCollapse');
+
+            function syncScheduleToggleHint(expanded) {
+                if ($scheduleHint.length) {
+                    $scheduleHint.text(expanded ? 'Click to collapse' : 'Click to expand');
+                }
+                $scheduleToggle.attr('aria-expanded', expanded ? 'true' : 'false');
+            }
+
+            if (scheduleCollapseEl) {
+                syncScheduleToggleHint(scheduleCollapseEl.classList.contains('show'));
+                scheduleCollapseEl.addEventListener('shown.bs.collapse', function () { syncScheduleToggleHint(true); });
+                scheduleCollapseEl.addEventListener('hidden.bs.collapse', function () { syncScheduleToggleHint(false); });
+            }
+
+            $scheduleToggle.on('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    $(this).trigger('click');
+                }
+            });
 
             function normalizeNumericText(raw) {
                 var text = String(raw || '').trim().replace(/,/g, '');
@@ -241,19 +539,21 @@
                 }
             }
 
-            $('#Size, #PricePerUnit').on('input blur change', function () {
-                $(this).val(normalizeNumericText($(this).val()));
-                autoFillTotalAmount();
-            });
+            if (!planSaved) {
+                $('#Size, #PricePerUnit').on('input blur change', function () {
+                    $(this).val(normalizeNumericText($(this).val()));
+                    autoFillTotalAmount();
+                });
 
-            $('#TotalAmount').on('blur', function () {
-                var raw = String($(this).val() || '').trim();
-                if (raw === '') return;
-                var amount = Math.round(parseFloat(raw));
-                if (!isFinite(amount) || amount < 1) amount = 1;
-                if (amount > maxAmountPkr) amount = maxAmountPkr;
-                $(this).val(amount);
-            });
+                $('#TotalAmount').on('blur', function () {
+                    var raw = String($(this).val() || '').trim();
+                    if (raw === '') return;
+                    var amount = Math.round(parseFloat(raw));
+                    if (!isFinite(amount) || amount < 1) amount = 1;
+                    if (amount > maxAmountPkr) amount = maxAmountPkr;
+                    $(this).val(amount);
+                });
+            }
 
             $('#SurchargePolicyStatus').on('change', function () {
                 $('#SurchargeRate').prop('disabled', !$(this).is(':checked'));

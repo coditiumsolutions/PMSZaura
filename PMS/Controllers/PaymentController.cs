@@ -854,9 +854,19 @@ namespace PMS.Controllers
                 }
             }
 
-            TempData["Success"] = extraAmount > 0m
-                ? $"Payment of PKR {amount:N0} recorded and extra payment of PKR {extraAmount:N0} added. Outstanding for this {(isSurchargePayment ? "surcharge" : "installment")}: PKR {totalDue - amount:N0}."
-                : $"Payment of PKR {amount:N0} recorded. Outstanding for this {(isSurchargePayment ? "surcharge" : "installment")}: PKR {totalDue - amount:N0}. You can record another payment if needed.";
+            var remainingDue = Math.Max(0m, totalDue - amount);
+            if (extraAmount > 0m)
+            {
+                TempData["Success"] = remainingDue > 0m
+                    ? $"Payment of PKR {amount:N0} saved successfully, and extra payment of PKR {extraAmount:N0} added. Outstanding for this {(isSurchargePayment ? "surcharge" : "installment")}: PKR {remainingDue:N0}."
+                    : $"Payment of PKR {amount:N0} saved successfully, and extra payment of PKR {extraAmount:N0} added. This {(isSurchargePayment ? "surcharge" : "installment")} is fully paid.";
+            }
+            else
+            {
+                TempData["Success"] = remainingDue > 0m
+                    ? $"Payment of PKR {amount:N0} saved successfully. Outstanding for this {(isSurchargePayment ? "surcharge" : "installment")}: PKR {remainingDue:N0}. You can record another partial payment if needed."
+                    : $"Payment of PKR {amount:N0} saved successfully. This {(isSurchargePayment ? "surcharge" : "installment")} is fully paid.";
+            }
             return RedirectToAction(nameof(RecordPayment), new { customerId = customerId.Trim(), scheduleId });
         }
 
@@ -1148,7 +1158,7 @@ namespace PMS.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeletePayment(string paymentId)
         {
-            var denied = await EnsurePermissionAsync("Admin");
+            var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
             if (string.IsNullOrWhiteSpace(paymentId))
             {
@@ -1160,6 +1170,12 @@ namespace PMS.Controllers
             if (payment == null)
             {
                 TempData["Error"] = "Payment not found.";
+                return RedirectToAction(nameof(CustomerPayments));
+            }
+
+            if (string.Equals(payment.AuditStatus?.Trim(), "Approved", StringComparison.OrdinalIgnoreCase))
+            {
+                TempData["Error"] = "This payment is auditor-approved and cannot be deleted.";
                 return RedirectToAction(nameof(CustomerPayments));
             }
 
@@ -1323,11 +1339,43 @@ namespace PMS.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> AddPlan()
+        public async Task<IActionResult> AddPlan(string? planId = null)
         {
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
-            return View(new AddPlanViewModel());
+
+            if (string.IsNullOrWhiteSpace(planId))
+            {
+                return View(new AddPlanViewModel());
+            }
+
+            var plan = await _context.PaymentPlans.AsNoTracking()
+                .FirstOrDefaultAsync(p => p.PlanID == planId);
+            if (plan == null)
+            {
+                TempData["Error"] = "Payment plan was not found.";
+                return RedirectToAction(nameof(AddPlan));
+            }
+
+            var schedules = await _context.PaymentSchedules.AsNoTracking()
+                .Where(s => s.PlanID == planId)
+                .OrderBy(s => s.DueDate)
+                .ThenBy(s => s.InstallmentNo)
+                .ToListAsync();
+
+            return View(new AddPlanViewModel
+            {
+                PlanID = plan.PlanID,
+                PlanName = plan.PlanName ?? string.Empty,
+                Size = plan.RegisteredSize,
+                TotalAmount = plan.TotalAmount,
+                Frequency = plan.Frequency,
+                StartRange = schedules.Count > 0 ? schedules.Min(s => s.InstallmentNo) : null,
+                EndRange = schedules.Count > 0 ? schedules.Max(s => s.InstallmentNo) : null,
+                FirstDueDate = schedules.FirstOrDefault()?.DueDate.Date ?? DateTime.Today,
+                DueDate = schedules.FirstOrDefault()?.DueDate.Date ?? DateTime.Today,
+                Schedules = schedules
+            });
         }
 
         [HttpPost]
@@ -1337,9 +1385,128 @@ namespace PMS.Controllers
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
 
+            // Step 1: Plan Detail → dbo.PaymentPlan only.
+            foreach (var key in new[]
+                     {
+                         nameof(AddPlanViewModel.PaymentTitle),
+                         nameof(AddPlanViewModel.Amount),
+                         nameof(AddPlanViewModel.DueDate),
+                         nameof(AddPlanViewModel.InstallmentNo),
+                         nameof(AddPlanViewModel.SurchargeRate),
+                         nameof(AddPlanViewModel.PlanID)
+                     })
+            {
+                ModelState.Remove(key);
+            }
+
             if (!ModelState.IsValid)
             {
                 return View(model);
+            }
+
+            try
+            {
+                var paymentPlan = new PaymentPlan
+                {
+                    PlanID = GenerateID(),
+                    PlanName = model.PlanName.Trim(),
+                    RegisteredSize = string.IsNullOrWhiteSpace(model.Size) ? null : model.Size.Trim(),
+                    TotalAmount = model.TotalAmount,
+                    Currency = null,
+                    Frequency = null,
+                    Description = null,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.PaymentPlans.Add(paymentPlan);
+                await _context.SaveChangesAsync();
+
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    await LogActivityAsync(userId, "Add Plan Detail", "PaymentPlan", paymentPlan.PlanID);
+                }
+
+                TempData["Success"] = $"Plan \"{paymentPlan.PlanName}\" saved to PaymentPlan. You can add a payment schedule below.";
+                return RedirectToAction(nameof(AddPlan), new { planId = paymentPlan.PlanID });
+            }
+            catch (Exception ex)
+            {
+                var detail = ex.InnerException?.Message ?? ex.Message;
+                ModelState.AddModelError(string.Empty, "Could not save plan: " + detail);
+                return View(model);
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddPlanSchedule(AddPlanViewModel model)
+        {
+            var denied = await EnsurePermissionAsync("Edit");
+            if (denied != null) return denied;
+
+            if (string.IsNullOrWhiteSpace(model.PlanID))
+            {
+                TempData["Error"] = "Save Plan Detail first, then add a payment schedule.";
+                return RedirectToAction(nameof(AddPlan));
+            }
+
+            var planExists = await _context.PaymentPlans.AnyAsync(p => p.PlanID == model.PlanID);
+            if (!planExists)
+            {
+                TempData["Error"] = "Payment plan was not found. Save Plan Detail again.";
+                return RedirectToAction(nameof(AddPlan));
+            }
+
+            if (string.IsNullOrWhiteSpace(model.PaymentTitle))
+            {
+                ModelState.AddModelError(nameof(model.PaymentTitle), "Payment Title is required.");
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Frequency))
+            {
+                ModelState.AddModelError(nameof(model.Frequency), "Frequency is required.");
+            }
+
+            if (!model.FirstDueDate.HasValue)
+            {
+                ModelState.AddModelError(nameof(model.FirstDueDate), "First Due Date is required.");
+            }
+
+            if (!model.DueDate.HasValue)
+            {
+                ModelState.AddModelError(nameof(model.DueDate), "Due Date is required.");
+            }
+
+            if (!model.StartRange.HasValue)
+            {
+                ModelState.AddModelError(nameof(model.StartRange), "Start Range is required.");
+            }
+
+            if (!model.EndRange.HasValue)
+            {
+                ModelState.AddModelError(nameof(model.EndRange), "End Range is required.");
+            }
+            else if (model.StartRange.HasValue && model.EndRange.Value < model.StartRange.Value)
+            {
+                ModelState.AddModelError(nameof(model.EndRange), "End Range must be greater than or equal to Start Range.");
+            }
+
+            if (!model.Amount.HasValue || model.Amount.Value <= 0m)
+            {
+                ModelState.AddModelError(nameof(model.Amount), "Amount must be greater than zero.");
+            }
+
+            ModelState.Remove(nameof(AddPlanViewModel.InstallmentNo));
+            ModelState.Remove(nameof(AddPlanViewModel.PlanName));
+            ModelState.Remove(nameof(AddPlanViewModel.TotalAmount));
+            ModelState.Remove(nameof(AddPlanViewModel.Size));
+            ModelState.Remove(nameof(AddPlanViewModel.PricePerUnit));
+
+            if (!ModelState.IsValid)
+            {
+                await PopulateAddPlanParentAndSchedulesAsync(model);
+                return View(nameof(AddPlan), model);
             }
 
             try
@@ -1349,51 +1516,142 @@ namespace PMS.Controllers
                     model.SurchargeRate = 0.05m;
                 }
 
-                var paymentPlan = new PaymentPlan
+                var monthsPer = model.Frequency switch
                 {
-                    PlanID = GenerateID(),
-                    PlanName = model.PlanName.Trim(),
-                    RegisteredSize = string.IsNullOrWhiteSpace(model.Size) ? null : model.Size.Trim(),
-                    TotalAmount = model.TotalAmount,
-                    Currency = "PKR",
-                    Frequency = null,
-                    Description = null,
-                    CreatedAt = DateTime.Now
+                    "Monthly" => 1,
+                    "Quarterly" => 3,
+                    "Half Yearly" => 6,
+                    "Yearly" => 12,
+                    _ => 1
                 };
 
-                _context.PaymentPlans.Add(paymentPlan);
-                await _context.SaveChangesAsync();
-
-                var schedule = new PaymentSchedule
+                var startRange = model.StartRange!.Value;
+                var endRange = model.EndRange!.Value;
+                var totalInstallments = endRange - startRange + 1;
+                if (totalInstallments < 1 || totalInstallments > 600)
                 {
-                    ScheduleID = GenerateID(),
-                    PlanID = paymentPlan.PlanID,
-                    PaymentDescription = model.PaymentTitle.Trim(),
-                    InstallmentNo = model.InstallmentNo,
-                    DueDate = model.DueDate.Date,
-                    Amount = model.Amount,
-                    SurchargeApplied = model.SurchargePolicyStatus,
-                    SurchargeRate = model.SurchargePolicyStatus ? model.SurchargeRate : 0m
-                };
+                    ModelState.AddModelError(nameof(model.EndRange), "Installment range must produce between 1 and 600 rows.");
+                    await PopulateAddPlanParentAndSchedulesAsync(model);
+                    return View(nameof(AddPlan), model);
+                }
 
-                _context.PaymentSchedules.Add(schedule);
+                // Base date for Start Range installment; each next installment adds Frequency months.
+                var baseDueDate = model.DueDate!.Value.Date;
+                var paymentDescription = model.PaymentTitle!.Trim();
+                var dueAmount = model.Amount!.Value;
+                var surchargeApplied = model.SurchargePolicyStatus;
+                var surchargeRate = surchargeApplied ? model.SurchargeRate : 0m;
+
+                // Duplicate = same PlanID + PaymentDescription (title) + InstallmentNo only.
+                var candidates = await _context.PaymentSchedules
+                    .AsNoTracking()
+                    .Where(s => s.PlanID == model.PlanID
+                                && s.InstallmentNo.HasValue
+                                && s.InstallmentNo.Value >= startRange
+                                && s.InstallmentNo.Value <= endRange)
+                    .Select(s => new { InstallmentNo = s.InstallmentNo!.Value, s.PaymentDescription })
+                    .ToListAsync();
+
+                var existingNos = candidates
+                    .Where(s => string.Equals(
+                        (s.PaymentDescription ?? string.Empty).Trim(),
+                        paymentDescription,
+                        StringComparison.OrdinalIgnoreCase))
+                    .Select(s => s.InstallmentNo)
+                    .Distinct()
+                    .OrderBy(n => n)
+                    .ToList();
+
+                if (existingNos.Count > 0)
+                {
+                    ModelState.AddModelError(string.Empty,
+                        $"\"{paymentDescription}\" already has installment(s) {string.Join(", ", existingNos)} in range {startRange}-{endRange}. " +
+                        "A different Payment Title can reuse the same installment numbers.");
+                    await PopulateAddPlanParentAndSchedulesAsync(model);
+                    return View(nameof(AddPlan), model);
+                }
+
+                var plan = await _context.PaymentPlans.FirstOrDefaultAsync(p => p.PlanID == model.PlanID);
+                if (plan == null)
+                {
+                    TempData["Error"] = "Payment plan was not found. Save Plan Detail again.";
+                    return RedirectToAction(nameof(AddPlan));
+                }
+
+                plan.Frequency = model.Frequency!.Trim();
+                var maxInstallment = Math.Max(endRange,
+                    await _context.PaymentSchedules
+                        .Where(s => s.PlanID == model.PlanID && s.InstallmentNo.HasValue)
+                        .MaxAsync(s => (int?)s.InstallmentNo) ?? endRange);
+                plan.DurationMonths = maxInstallment * monthsPer;
+
+                var usedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                var schedules = new List<PaymentSchedule>(totalInstallments);
+                for (var installmentNo = startRange; installmentNo <= endRange; installmentNo++)
+                {
+                    string scheduleId;
+                    do
+                    {
+                        scheduleId = GenerateID();
+                    } while (!usedIds.Add(scheduleId));
+
+                    var offset = installmentNo - startRange;
+                    schedules.Add(new PaymentSchedule
+                    {
+                        ScheduleID = scheduleId,
+                        PlanID = model.PlanID,
+                        PaymentDescription = paymentDescription,
+                        InstallmentNo = installmentNo,
+                        DueDate = baseDueDate.AddMonths(offset * monthsPer),
+                        Amount = dueAmount,
+                        SurchargeApplied = surchargeApplied,
+                        SurchargeRate = surchargeRate
+                    });
+                }
+
+                _context.PaymentSchedules.AddRange(schedules);
                 await _context.SaveChangesAsync();
 
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    await LogActivityAsync(userId, "Add Plan", "PaymentPlan", paymentPlan.PlanID);
+                    await LogActivityAsync(userId, $"Add Plan Schedule {startRange}-{endRange}", "PaymentPlan", model.PlanID);
                 }
 
-                TempData["Success"] = $"Plan \"{paymentPlan.PlanName}\" saved successfully.";
-                return RedirectToAction(nameof(PaymentPlans));
+                TempData["Success"] = $"Created installments {startRange} to {endRange} ({totalInstallments} row(s)) in PaymentSchedule.";
+                return RedirectToAction(nameof(AddPlan), new { planId = model.PlanID });
             }
             catch (Exception ex)
             {
                 var detail = ex.InnerException?.Message ?? ex.Message;
-                ModelState.AddModelError(string.Empty, "Could not save plan: " + detail);
-                return View(model);
+                ModelState.AddModelError(string.Empty, "Could not save schedule: " + detail);
+                await PopulateAddPlanParentAndSchedulesAsync(model);
+                return View(nameof(AddPlan), model);
             }
+        }
+
+        private async Task PopulateAddPlanParentAndSchedulesAsync(AddPlanViewModel model)
+        {
+            if (string.IsNullOrWhiteSpace(model.PlanID))
+            {
+                return;
+            }
+
+            var plan = await _context.PaymentPlans.AsNoTracking()
+                .FirstOrDefaultAsync(p => p.PlanID == model.PlanID);
+            if (plan != null)
+            {
+                model.PlanName = plan.PlanName ?? string.Empty;
+                model.Size = plan.RegisteredSize;
+                model.TotalAmount = plan.TotalAmount;
+                model.Frequency ??= plan.Frequency;
+            }
+
+            model.Schedules = await _context.PaymentSchedules.AsNoTracking()
+                .Where(s => s.PlanID == model.PlanID)
+                .OrderBy(s => s.DueDate)
+                .ThenBy(s => s.InstallmentNo)
+                .ToListAsync();
         }
 
         [HttpPost]
@@ -1895,7 +2153,6 @@ namespace PMS.Controllers
                 schedule.SurchargeRate = 0.05m;
             }
 
-            // Server-side guard: total of installments must not exceed plan total
             var plan = await _context.PaymentPlans
                 .Include(p => p.PaymentSchedules)
                 .FirstOrDefaultAsync(p => p.PlanID == schedule.PlanID);
@@ -1905,13 +2162,14 @@ namespace PMS.Controllers
                 return NotFound();
             }
 
-            var existingTotal = plan.PaymentSchedules.Sum(ps => ps.Amount);
-            var projectedTotal = existingTotal + schedule.Amount;
-            if (projectedTotal > plan.TotalAmount)
-            {
-                var remaining = plan.TotalAmount - existingTotal;
-                ModelState.AddModelError("Amount", $"Installments total would exceed plan total. Remaining allowed: {remaining:N0} PKR.");
-            }
+            // TEMPORARY: installment sum vs plan total balance check disabled.
+            // var existingTotal = plan.PaymentSchedules.Sum(ps => ps.Amount);
+            // var projectedTotal = existingTotal + schedule.Amount;
+            // if (projectedTotal > plan.TotalAmount)
+            // {
+            //     var remaining = plan.TotalAmount - existingTotal;
+            //     ModelState.AddModelError("Amount", $"Installments total would exceed plan total. Remaining allowed: {remaining:N0} PKR.");
+            // }
 
             var exchangeRate = plan.ExchangeRate.GetValueOrDefault();
             schedule.AmountUSD = exchangeRate > 0
@@ -1939,7 +2197,7 @@ namespace PMS.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> EditPaymentSchedule(string scheduleId)
+        public async Task<IActionResult> EditPaymentSchedule(string scheduleId, string? returnUrl = null)
         {
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
@@ -1972,6 +2230,7 @@ namespace PMS.Controllers
                 .Where(ps => ps.ScheduleID != schedule.ScheduleID)
                 .Sum(ps => ps.Amount);
             ViewBag.PaymentHeads = await GetPaymentHeadOptionsAsync(schedule.PaymentDescription);
+            ViewBag.ReturnUrl = SanitizeLocalReturnUrl(returnUrl, schedule.PlanID);
 
             return View(schedule);
         }
@@ -1982,10 +2241,13 @@ namespace PMS.Controllers
             PaymentSchedule schedule,
             bool adjustPlanTotal = false,
             decimal? newPlanTotalPkr = null,
-            string? changeReason = null)
+            string? changeReason = null,
+            string? returnUrl = null)
         {
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
+
+            var safeReturnUrl = SanitizeLocalReturnUrl(returnUrl, schedule.PlanID);
 
             if (schedule.SurchargeApplied && schedule.SurchargeRate < 0m)
             {
@@ -1995,7 +2257,7 @@ namespace PMS.Controllers
             if (schedule.SurchargeApplied && (schedule.SurchargeRate < 0m || schedule.SurchargeRate > 100m))
             {
                 TempData["Error"] = "Surcharge rate must be between 0 and 100.";
-                return RedirectToAction(nameof(EditPaymentSchedule), new { scheduleId = schedule.ScheduleID });
+                return RedirectToAction(nameof(EditPaymentSchedule), new { scheduleId = schedule.ScheduleID, returnUrl = safeReturnUrl });
             }
 
             var plan = await _context.PaymentPlans
@@ -2018,19 +2280,20 @@ namespace PMS.Controllers
 
             var totalWithoutThis = plan.PaymentSchedules.Where(ps => ps.ScheduleID != schedule.ScheduleID).Sum(ps => ps.Amount);
             var projectedSchedulesTotal = Math.Round(totalWithoutThis + schedule.Amount, 2, MidpointRounding.AwayFromZero);
-            var planTotalExceeded = projectedSchedulesTotal > Math.Round(plan.TotalAmount, 2, MidpointRounding.AwayFromZero);
+            // TEMPORARY: installment sum vs plan total balance check disabled (no force-increase / reason).
+            var planTotalExceeded = false; // was: projectedSchedulesTotal > Math.Round(plan.TotalAmount, 2, MidpointRounding.AwayFromZero);
             var isAmountIncrease = schedule.Amount > existingSchedule.Amount + 0.000001m;
             var requiresPlanTotalAdjustment = planTotalExceeded && isAmountIncrease;
 
-            if (requiresPlanTotalAdjustment && !adjustPlanTotal)
-            {
-                var remaining = plan.TotalAmount - totalWithoutThis;
-                TempData["Error"] =
-                    $"Installments total would exceed the plan total (remaining for this installment: PKR {remaining:N0}). " +
-                    $"{customersAssignedCount} customer(s) are assigned to this plan. " +
-                    "Open the installment again, enable \"Increase payment plan total\", enter a reason, and save — or reduce the amount.";
-                return RedirectToAction(nameof(PaymentSchedule), new { planId = schedule.PlanID });
-            }
+            // if (requiresPlanTotalAdjustment && !adjustPlanTotal)
+            // {
+            //     var remaining = plan.TotalAmount - totalWithoutThis;
+            //     TempData["Error"] =
+            //         $"Installments total would exceed the plan total (remaining for this installment: PKR {remaining:N0}). " +
+            //         $"{customersAssignedCount} customer(s) are assigned to this plan. " +
+            //         "Open the installment again, enable \"Increase payment plan total\", enter a reason, and save — or reduce the amount.";
+            //     return RedirectAfterScheduleEdit(safeReturnUrl, schedule.PlanID);
+            // }
 
             decimal? newPlanTotalApplied = null;
             if (requiresPlanTotalAdjustment && adjustPlanTotal)
@@ -2038,7 +2301,7 @@ namespace PMS.Controllers
                 if (string.IsNullOrWhiteSpace(changeReason))
                 {
                     TempData["Error"] = "When increasing the payment plan total, a written reason is required (audit trail).";
-                    return RedirectToAction(nameof(PaymentSchedule), new { planId = schedule.PlanID });
+                    return RedirectAfterScheduleEdit(safeReturnUrl, schedule.PlanID);
                 }
 
                 var targetTotal = newPlanTotalPkr.HasValue && newPlanTotalPkr.Value > 0
@@ -2049,7 +2312,7 @@ namespace PMS.Controllers
                 if (targetTotal < projectedSchedulesTotal)
                 {
                     TempData["Error"] = $"New plan total must be at least PKR {projectedSchedulesTotal:N0} (sum of all installments after this change).";
-                    return RedirectToAction(nameof(PaymentSchedule), new { planId = schedule.PlanID });
+                    return RedirectAfterScheduleEdit(safeReturnUrl, schedule.PlanID);
                 }
 
                 newPlanTotalApplied = targetTotal;
@@ -2126,15 +2389,36 @@ namespace PMS.Controllers
                 TempData["Error"] = $"An error occurred while updating the installment: {ex.Message}";
             }
 
-            return RedirectToAction(nameof(PaymentSchedule), new { planId = schedule.PlanID });
+            return RedirectAfterScheduleEdit(safeReturnUrl, schedule.PlanID);
+        }
+
+        private IActionResult RedirectAfterScheduleEdit(string? returnUrl, string? planId)
+        {
+            if (!string.IsNullOrWhiteSpace(returnUrl))
+                return LocalRedirect(returnUrl);
+
+            return RedirectToAction(nameof(PaymentSchedule), new { planId });
+        }
+
+        private string? SanitizeLocalReturnUrl(string? returnUrl, string? planId)
+        {
+            if (string.IsNullOrWhiteSpace(returnUrl))
+                return null;
+
+            if (!Url.IsLocalUrl(returnUrl))
+                return Url.Action(nameof(AddPlan), new { planId });
+
+            return returnUrl;
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeletePaymentSchedule(string scheduleId, string planId)
+        public async Task<IActionResult> DeletePaymentSchedule(string scheduleId, string planId, string? returnUrl = null)
         {
-            var denied = await EnsurePermissionAsync("Admin");
+            var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
+
+            var safeReturnUrl = SanitizeLocalReturnUrl(returnUrl, planId);
             var schedule = await _context.PaymentSchedules.FindAsync(scheduleId);
             if (schedule != null)
             {
@@ -2150,7 +2434,7 @@ namespace PMS.Controllers
                 TempData["Success"] = "Installment deleted successfully.";
             }
 
-            return RedirectToAction(nameof(PaymentSchedule), new { planId });
+            return RedirectAfterScheduleEdit(safeReturnUrl, planId);
         }
 
         [HttpGet]

@@ -795,24 +795,10 @@
                     return Math.round(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
                 }
 
+                // TEMPORARY: installment sum vs plan total balance check disabled.
                 function syncPlanAdjustPanel() {
-                    if (!amountInput || !panel || !msg) return;
-                    var planTotal = parseFloat(form.getAttribute('data-plan-total')) || 0;
-                    var others = parseFloat(form.getAttribute('data-others-sum')) || 0;
-                    var amt = parseFloat(amountInput.value) || 0;
-                    var projected = others + amt;
-                    var customers = parseInt(form.getAttribute('data-customers-on-plan') || '0', 10) || 0;
-                    if (projected > planTotal + 0.000001) {
-                        panel.classList.remove('d-none');
-                        msg.textContent = 'Sum of all installments would be PKR ' + fmt(projected) + ', above the current plan total PKR ' + fmt(planTotal) +
-                            '. ' + customers + ' customer(s) are on this plan. Check the box below and enter a reason to raise the plan total, or reduce this amount.';
-                        var cur = parseFloat(newTotalInput && newTotalInput.value);
-                        if (!newTotalInput || !newTotalInput.value || isNaN(cur) || cur < projected - 0.000001)
-                            if (newTotalInput) newTotalInput.value = Math.round(projected).toString();
-                    } else {
-                        panel.classList.add('d-none');
-                        if (chk) chk.checked = false;
-                    }
+                    if (panel) panel.classList.add('d-none');
+                    if (chk) chk.checked = false;
                 }
 
                 if (amountInput) {
@@ -821,26 +807,6 @@
                 }
                 var modalEl = form.closest('.modal');
                 if (modalEl) modalEl.addEventListener('shown.bs.modal', syncPlanAdjustPanel);
-
-                form.addEventListener('submit', function (e) {
-                    var planTotal = parseFloat(form.getAttribute('data-plan-total')) || 0;
-                    var others = parseFloat(form.getAttribute('data-others-sum')) || 0;
-                    var amt = parseFloat(amountInput && amountInput.value) || 0;
-                    var projected = others + amt;
-                    if (projected > planTotal + 0.000001) {
-                        if (!chk || !chk.checked) {
-                            e.preventDefault();
-                            alert('This change would exceed the plan total. Enable "Increase payment plan total" and enter a reason, or reduce the amount.');
-                            return;
-                        }
-                        var reason = reasonInput ? reasonInput.value.trim() : '';
-                        if (!reason) {
-                            e.preventDefault();
-                            alert('Enter a reason for the plan total change (required for the audit log).');
-                            return;
-                        }
-                    }
-                });
             });
         });
     </script>

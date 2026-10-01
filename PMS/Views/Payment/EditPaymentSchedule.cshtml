@@ -8,6 +8,11 @@
     var customersOnPlan = (int)(ViewBag.CustomersOnPlanCount ?? 0);
     var othersAmountSum = (decimal)(ViewBag.OthersAmountSum ?? 0m);
     var paymentHeads = ViewBag.PaymentHeads as IEnumerable<string> ?? Enumerable.Empty<string>();
+    var returnUrl = ViewBag.ReturnUrl as string;
+    var backUrl = !string.IsNullOrWhiteSpace(returnUrl)
+        ? returnUrl
+        : Url.Action("PaymentSchedule", "Payment", new { planId = Model.PlanID });
+    var backLabel = !string.IsNullOrWhiteSpace(returnUrl) ? "Back to Plan" : "Back to Schedule";
 }
 
 <div class="pms-edit-payment-schedule">
@@ -15,8 +20,8 @@
         <h5 class="mb-0 pms-eps-page-title">
             <i class="fas fa-edit me-1"></i>Edit Installment
         </h5>
-        <a asp-action="PaymentSchedule" asp-route-planId="@Model.PlanID" class="btn btn-sm btn-outline-secondary py-0 px-2">
-            <i class="fas fa-arrow-left me-1"></i>Back to Schedule
+        <a href="@backUrl" class="btn btn-sm btn-outline-secondary py-0 px-2">
+            <i class="fas fa-arrow-left me-1"></i>@backLabel
         </a>
     </div>
 
@@ -82,6 +87,10 @@
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="ScheduleID" />
                 <input type="hidden" asp-for="PlanID" />
+                @if (!string.IsNullOrWhiteSpace(returnUrl))
+                {
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                }
 
                 <div class="pms-registration-4col-form pms-eps-4col">
                     <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
@@ -177,7 +186,7 @@
                     <button type="submit" class="btn btn-sm btn-primary py-0 px-2">
                         <i class="fas fa-save me-1"></i>Save Changes
                     </button>
-                    <a asp-action="PaymentSchedule" asp-route-planId="@Model.PlanID" class="btn btn-sm btn-outline-secondary py-0 px-2">Cancel</a>
+                    <a href="@backUrl" class="btn btn-sm btn-outline-secondary py-0 px-2">Cancel</a>
                 </div>
             </form>
         </div>
@@ -258,51 +267,16 @@
                 return (Math.round(Number(n) || 0)).toLocaleString();
             }
 
+            // TEMPORARY: installment sum vs plan total balance check disabled.
             function syncPlanAdjustPanel() {
-                var planTotal = parseFloat(form.getAttribute('data-plan-total')) || 0;
-                var others = parseFloat(form.getAttribute('data-others-sum')) || 0;
-                var amt = parseFloat(amountInput && amountInput.value) || 0;
-                var projected = others + amt;
-                var customers = parseInt(form.getAttribute('data-customers-on-plan') || '0', 10) || 0;
-
-                if (projected > planTotal + 0.000001) {
-                    panel.classList.remove('d-none');
-                    msg.textContent = 'Sum of installments would be PKR ' + fmt(projected) + ', above current plan total PKR ' + fmt(planTotal) +
-                        '. ' + customers + ' customer(s) are on this plan. Enable increase and provide reason, or reduce amount.';
-                    var cur = parseFloat(newTotalInput && newTotalInput.value);
-                    if (!newTotalInput || !newTotalInput.value || isNaN(cur) || cur < projected - 0.000001) {
-                        if (newTotalInput) newTotalInput.value = Math.round(projected).toString();
-                    }
-                } else {
-                    panel.classList.add('d-none');
-                    if (chk) chk.checked = false;
-                }
+                if (panel) panel.classList.add('d-none');
+                if (chk) chk.checked = false;
             }
 
             if (amountInput) {
                 amountInput.addEventListener('input', syncPlanAdjustPanel);
                 amountInput.addEventListener('change', syncPlanAdjustPanel);
             }
-
-            form.addEventListener('submit', function (e) {
-                var planTotal = parseFloat(form.getAttribute('data-plan-total')) || 0;
-                var others = parseFloat(form.getAttribute('data-others-sum')) || 0;
-                var amt = parseFloat(amountInput && amountInput.value) || 0;
-                var projected = others + amt;
-                if (projected > planTotal + 0.000001) {
-                    if (!chk || !chk.checked) {
-                        e.preventDefault();
-                        alert('This change exceeds plan total. Enable increase with reason, or reduce amount.');
-                        return;
-                    }
-                    var reason = reasonInput ? reasonInput.value.trim() : '';
-                    if (!reason) {
-                        e.preventDefault();
-                        alert('Reason is required for plan total increase.');
-                        return;
-                    }
-                }
-            });
 
             syncPlanAdjustPanel();
         })();

@@ -17,19 +17,19 @@ public sealed class NavigationService : INavigationService
             {
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Add Customer",
-                    Controller = "Customer",
-                    Action = "Create",
-                    IconClass = "fas fa-user-plus me-2",
-                    ActiveAction = "Create"
-                },
-                new NavigationMenuItemViewModel
-                {
                     Label = "Customers",
                     Controller = "Customer",
                     Action = "Index",
                     IconClass = "fas fa-user-friends me-2",
                     ActiveAction = "Index"
+                },
+                new NavigationMenuItemViewModel
+                {
+                    Label = "Add Customer",
+                    Controller = "Customer",
+                    Action = "Create",
+                    IconClass = "fas fa-user-plus me-2",
+                    ActiveAction = "Create"
                 },
                 new NavigationMenuItemViewModel
                 {
@@ -107,19 +107,19 @@ public sealed class NavigationService : INavigationService
             {
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Add Payment",
-                    Controller = "Payment",
-                    Action = "AddPayment",
-                    IconClass = "fas fa-plus-circle me-2",
-                    ActiveActions = new[] { "AddPayment", "RecordPayment", "RecordPaymentv", "RecordPayments", "MultiplePayments" }
-                },
-                new NavigationMenuItemViewModel
-                {
                     Label = "All Payments",
                     Controller = "Payment",
                     Action = "CustomerPayments",
                     IconClass = "fas fa-money-bill-wave me-2",
                     ActiveAction = "CustomerPayments"
+                },
+                new NavigationMenuItemViewModel
+                {
+                    Label = "Add Payment",
+                    Controller = "Payment",
+                    Action = "AddPayment",
+                    IconClass = "fas fa-plus-circle me-2",
+                    ActiveActions = new[] { "AddPayment", "RecordPayment", "RecordPaymentv", "RecordPayments", "MultiplePayments" }
                 },
                 new NavigationMenuItemViewModel
                 {

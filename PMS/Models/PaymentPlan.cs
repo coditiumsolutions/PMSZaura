@@ -32,7 +32,7 @@ namespace PMS.Models
         public decimal? ExchangeRate { get; set; }
 
         [StringLength(10)]
-        public string? Currency { get; set; } = "PKR";
+        public string? Currency { get; set; }
 
         public int? DurationMonths { get; set; }
 

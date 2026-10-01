@@ -2,198 +2,316 @@
 @{
     ViewData["Title"] = "Edit Payment";
     var maxAmount = ViewBag.MaxAmount != null ? (decimal)ViewBag.MaxAmount : Model.Amount;
+    var isAuditorApproved = string.Equals(Model.AuditStatus?.Trim(), "Approved", StringComparison.OrdinalIgnoreCase);
+    var statusVal = Model.Status ?? "Paid";
+    var statusList = ViewBag.PaymentStatuses as IEnumerable<string> ?? new[] { "Pending", "Paid", "Partially Paid" };
 }
 
-<div class="custom-banner mb-4" style="margin-top: 20px;">
-    <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); padding: 25px 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h2 class="text-white mb-1" style="font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-                    <i class="fas fa-edit me-2"></i>Edit Payment
-                </h2>
-                <p class="text-white mb-0" style="opacity: 0.95; font-size: 0.95rem;">
-                    Update payment @Model.PaymentID
-                </p>
-            </div>
-            <div>
-                <a asp-action="CustomerPayments" class="btn btn-light">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Payments
-                </a>
-            </div>
-        </div>
+<div class="pms-edit-payment">
+    <div class="d-flex justify-content-end align-items-center mb-3 flex-wrap gap-2">
+        <a asp-action="CustomerPayments" class="btn btn-outline-secondary btn-sm py-1 px-3">
+            <i class="fas fa-arrow-left me-1"></i>Back to Payments
+        </a>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-10 mx-auto">
-        <div class="card mb-4 border-0 shadow-sm">
-            <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-                <h6 class="mb-0 text-white">
-                    <i class="fas fa-info-circle me-2"></i>Customer & Installment (read-only)
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <small class="text-muted">Customer</small>
-                        <p class="fw-bold mb-0">@(Model.Customer?.FullName ?? "—")</p>
-                        <small class="text-muted">@Model.CustomerID</small>
-                    </div>
-                    <div class="col-md-4">
-                        <small class="text-muted">Plan / Installment</small>
-                        <p class="fw-bold mb-0">@(Model.PaymentSchedule?.PaymentPlan?.PlanName ?? "—")</p>
-                        <small class="text-muted">Installment #@(Model.PaymentSchedule?.InstallmentNo?.ToString() ?? "N/A")</small>
-                    </div>
-                    <div class="col-md-4">
-                        <small class="text-muted">Max amount for this installment</small>
-                        <p class="fw-bold mb-0" style="color: #9C6ADE;">PKR @maxAmount.ToString("N0")</p>
+    <div class="row">
+        <div class="col-lg-11 mx-auto">
+            <div class="card border shadow-sm mb-3 pms-ep-card">
+                <div class="card-header pms-ep-card-header">
+                    <h6 class="mb-0">Customer &amp; Installment <span class="fw-normal">(read-only)</span></h6>
+                </div>
+                <div class="card-body py-2 px-3">
+                    <div class="pms-registration-4col-form pms-ep-4col">
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <div class="form-label pms-registration-4col-label mb-0">Customer</div>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="pms-ep-field">@(Model.Customer?.FullName ?? "—") <code class="ms-1">@Model.CustomerID</code></div>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <div class="form-label pms-registration-4col-label mb-0">Plan / Installment</div>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="pms-ep-field">@(Model.PaymentSchedule?.PaymentPlan?.PlanName ?? "—") · #@(Model.PaymentSchedule?.InstallmentNo?.ToString() ?? "N/A")</div>
+                            </div>
+                        </div>
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <div class="form-label pms-registration-4col-label mb-0">Max Amount</div>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="pms-ep-field">PKR @maxAmount.ToString("N0")</div>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <div class="form-label pms-registration-4col-label mb-0">Payment ID</div>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="pms-ep-field"><code>@Model.PaymentID</code></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card border-0 shadow-sm">
-            <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
-                <h5 class="mb-0 text-white">
-                    <i class="fas fa-receipt me-2"></i>Payment Details
-                </h5>
-            </div>
-            <div class="card-body p-4">
-                @if (TempData["Error"] != null)
-                {
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                }
+            <div class="card border shadow-sm pms-ep-card">
+                <div class="card-header pms-ep-card-header">
+                    <h6 class="mb-0">Payment Details</h6>
+                </div>
+                <div class="card-body py-2 px-3">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show py-2 px-3 small" role="alert">
+                            <i class="fas fa-exclamation-circle me-1"></i>@TempData["Error"]
+                            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
 
-                <form asp-action="EditPayment" method="post" id="editPaymentForm" enctype="multipart/form-data">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="paymentId" value="@Model.PaymentID" />
+                    <form asp-action="EditPayment" method="post" id="editPaymentForm" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="paymentId" value="@Model.PaymentID" />
 
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">
-                                <i class="fas fa-calendar-check me-1" style="color: #9C6ADE;"></i>Entry Date
-                            </label>
-                            <input type="text" class="form-control" value="@Model.PaymentDate.ToString("dd-MM-yyyy hh:mm tt")" readonly />
+                        <div class="pms-registration-4col-form pms-ep-4col">
+                            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2">
+                                    <label class="form-label pms-registration-4col-label mb-0">Entry Date</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" class="form-control form-control-sm" value="@Model.PaymentDate.ToString("dd-MM-yyyy hh:mm tt")" readonly />
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label for="amount" class="form-label pms-registration-4col-label mb-0">Amount (PKR) *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="number" name="amount" id="amount" step="1" min="1" class="form-control form-control-sm"
+                                           value="@Math.Round(Model.Amount, 0, MidpointRounding.AwayFromZero).ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                           max="@Math.Round(maxAmount, 0, MidpointRounding.AwayFromZero).ToString(System.Globalization.CultureInfo.InvariantCulture)" required />
+                                    <small class="text-muted">Max PKR @maxAmount.ToString("N0")</small>
+                                    <div id="amountValidationError" class="invalid-feedback d-block" style="display: none !important;"></div>
+                                </div>
+                            </div>
+
+                            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2">
+                                    <label for="method" class="form-label pms-registration-4col-label mb-0">Payment Method *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <select name="method" id="method" class="form-select form-select-sm" required>
+                                        <option value="">Select Payment Method</option>
+                                        @if (Model.Method == "Cash") { <option value="Cash" selected>Cash</option> } else { <option value="Cash">Cash</option> }
+                                        @if (Model.Method == "Bank Transfer") { <option value="Bank Transfer" selected>Bank Transfer</option> } else { <option value="Bank Transfer">Bank Transfer</option> }
+                                        @if (Model.Method == "Cheque") { <option value="Cheque" selected>Cheque</option> } else { <option value="Cheque">Cheque</option> }
+                                        @if (Model.Method == "Online") { <option value="Online" selected>Online Payment</option> } else { <option value="Online">Online Payment</option> }
+                                        @if (Model.Method == "Mobile Money") { <option value="Mobile Money" selected>Mobile Money</option> } else { <option value="Mobile Money">Mobile Money</option> }
+                                    </select>
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label for="referenceNo" class="form-label pms-registration-4col-label mb-0">Reference No *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" name="referenceNo" id="referenceNo" class="form-control form-control-sm"
+                                           value="@Model.ReferenceNo" placeholder="Transaction/Receipt/Cheque Number" required />
+                                </div>
+                            </div>
+
+                            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2">
+                                    <label for="bankName" class="form-label pms-registration-4col-label mb-0">Bank Name *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <select name="bankName" id="bankName" class="form-select form-select-sm" required>
+                                        <option value="">Select Bank</option>
+                                        @foreach (var bank in (ViewBag.BankNames as IEnumerable<string> ?? Array.Empty<string>()))
+                                        {
+                                            if (string.Equals(bank, Model.BankName, StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <option value="@bank" selected>@bank</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@bank">@bank</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label for="depositDate" class="form-label pms-registration-4col-label mb-0">Deposit Date *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="date" name="depositDate" id="depositDate" class="form-control form-control-sm"
+                                           value="@((Model.DepositDate ?? DateTime.Today).ToString("yyyy-MM-dd"))" required />
+                                </div>
+                            </div>
+
+                            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2">
+                                    <label for="status" class="form-label pms-registration-4col-label mb-0">Status *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <select name="status" id="status" class="form-select form-select-sm" required>
+                                        @foreach (var s in statusList)
+                                        {
+                                            var isSelected = string.Equals(s, statusVal, StringComparison.OrdinalIgnoreCase);
+                                            if (isSelected)
+                                            { <option value="@s" selected>@s</option> }
+                                            else
+                                            { <option value="@s">@s</option> }
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label for="remarks" class="form-label pms-registration-4col-label mb-0">Remarks</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <textarea name="remarks" id="remarks" class="form-control form-control-sm" rows="2">@Model.Remarks</textarea>
+                                </div>
+                            </div>
+
+                            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2">
+                                    <label for="proofAttachment" class="form-label pms-registration-4col-label mb-0">Payment Proof</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="file" name="proofAttachment" id="proofAttachment" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
+                                    <small class="text-muted">JPG, PNG, PDF (max 8MB)</small>
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label for="proofDescription" class="form-label pms-registration-4col-label mb-0">Proof Notes</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" name="proofDescription" id="proofDescription" class="form-control form-control-sm" maxlength="500" placeholder="Optional title / notes" />
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label for="amount" class="form-label fw-semibold">
-                                <i class="fas fa-coins me-1" style="color: #9C6ADE;"></i>Amount (PKR) *
-                            </label>
-                            <input type="number" name="amount" id="amount" step="1" min="1" class="form-control"
-                                   value="@Math.Round(Model.Amount, 0, MidpointRounding.AwayFromZero).ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                   max="@Math.Round(maxAmount, 0, MidpointRounding.AwayFromZero).ToString(System.Globalization.CultureInfo.InvariantCulture)" required />
-                            <small class="text-muted">Must not exceed PKR @maxAmount.ToString("N0") for this installment.</small>
-                            <div id="amountValidationError" class="invalid-feedback d-block" style="display: none !important;"></div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="method" class="form-label fw-semibold">
-                                <i class="fas fa-credit-card me-1" style="color: #9C6ADE;"></i>Payment Method *
-                            </label>
-                            <select name="method" id="method" class="form-select" required>
-                                <option value="">Select Payment Method</option>
-                                @if (Model.Method == "Cash") { <option value="Cash" selected>Cash</option> } else { <option value="Cash">Cash</option> }
-                                @if (Model.Method == "Bank Transfer") { <option value="Bank Transfer" selected>Bank Transfer</option> } else { <option value="Bank Transfer">Bank Transfer</option> }
-                                @if (Model.Method == "Cheque") { <option value="Cheque" selected>Cheque</option> } else { <option value="Cheque">Cheque</option> }
-                                @if (Model.Method == "Online") { <option value="Online" selected>Online Payment</option> } else { <option value="Online">Online Payment</option> }
-                                @if (Model.Method == "Mobile Money") { <option value="Mobile Money" selected>Mobile Money</option> } else { <option value="Mobile Money">Mobile Money</option> }
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="referenceNo" class="form-label fw-semibold">
-                                <i class="fas fa-hashtag me-1" style="color: #9C6ADE;"></i>Reference Number *
-                            </label>
-                            <input type="text" name="referenceNo" id="referenceNo" class="form-control"
-                                   value="@Model.ReferenceNo" placeholder="Transaction/Receipt/Cheque Number" required />
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="bankName" class="form-label fw-semibold">
-                                <i class="fas fa-university me-1" style="color: #9C6ADE;"></i>Bank Name *
-                            </label>
-                            <select name="bankName" id="bankName" class="form-select" required>
-                                <option value="">Select Bank</option>
-                                @foreach (var bank in (ViewBag.BankNames as IEnumerable<string> ?? Array.Empty<string>()))
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-3">
+                            <div>
+                                @if (!isAuditorApproved)
                                 {
-                                    if (string.Equals(bank, Model.BankName, StringComparison.OrdinalIgnoreCase))
-                                    {
-                                        <option value="@bank" selected>@bank</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@bank">@bank</option>
-                                    }
+                                    <button type="button" id="btnDeletePayment" class="btn btn-sm btn-outline-danger px-3">
+                                        <i class="fas fa-trash me-1"></i>Delete Payment
+                                    </button>
                                 }
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="depositDate" class="form-label fw-semibold">
-                                <i class="fas fa-calendar-day me-1" style="color: #9C6ADE;"></i>Deposit Date *
-                            </label>
-                            <input type="date" name="depositDate" id="depositDate" class="form-control"
-                                   value="@((Model.DepositDate ?? DateTime.Today).ToString("yyyy-MM-dd"))" required />
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="status" class="form-label fw-semibold">
-                                <i class="fas fa-check-circle me-1" style="color: #9C6ADE;"></i>Status *
-                            </label>
-                            <select name="status" id="status" class="form-select" required>
-                                @{ var statusVal = Model.Status ?? "Paid"; var statusList = ViewBag.PaymentStatuses as IEnumerable<string> ?? new[] { "Pending", "Paid", "Partially Paid" }; }
-                                @foreach (var s in statusList)
+                                else
                                 {
-                                    var isSelected = string.Equals(s, statusVal, StringComparison.OrdinalIgnoreCase);
-                                    if (isSelected)
-                                    { <option value="@s" selected>@s</option> }
-                                    else
-                                    { <option value="@s">@s</option> }
+                                    <span class="text-muted small">
+                                        <i class="fas fa-lock me-1"></i>Auditor-approved — delete disabled
+                                    </span>
                                 }
-                            </select>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-sm btn-primary px-3">
+                                    <i class="fas fa-save me-1"></i>Save Changes
+                                </button>
+                                <a asp-action="CustomerPayments" class="btn btn-sm btn-outline-secondary px-3">
+                                    <i class="fas fa-times me-1"></i>Cancel
+                                </a>
+                            </div>
                         </div>
+                    </form>
 
-                        <div class="col-12">
-                            <label for="remarks" class="form-label fw-semibold">
-                                <i class="fas fa-comment me-1" style="color: #9C6ADE;"></i>Remarks
-                            </label>
-                            <textarea name="remarks" id="remarks" class="form-control" rows="3">@Model.Remarks</textarea>
-                        </div>
-
-                        <div class="col-12">
-                            <label for="proofAttachment" class="form-label fw-semibold">
-                                <i class="fas fa-paperclip me-1" style="color: #9C6ADE;"></i>Add Payment Proof (Optional)
-                            </label>
-                            <input type="file" name="proofAttachment" id="proofAttachment" class="form-control" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
-                            <small class="text-muted d-block mt-1">Allowed: JPG, PNG, GIF, BMP, PDF (max 8MB)</small>
-                        </div>
-                        <div class="col-12">
-                            <label for="proofDescription" class="form-label fw-semibold">
-                                <i class="fas fa-file-alt me-1" style="color: #9C6ADE;"></i>Proof Title / Notes (Optional)
-                            </label>
-                            <input type="text" name="proofDescription" id="proofDescription" class="form-control" maxlength="500" placeholder="e.g. Corrected receipt after edit" />
-                        </div>
-                    </div>
-
-                    <hr class="my-4">
-
-                    <div class="d-flex justify-content-end gap-2">
-                        <button type="submit" class="btn btn-lg" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); color: white; border: none;">
-                            <i class="fas fa-save me-2"></i>Save Changes
-                        </button>
-                        <a asp-action="CustomerPayments" class="btn btn-lg btn-outline-secondary">
-                            <i class="fas fa-times me-2"></i>Cancel
-                        </a>
-                    </div>
-                </form>
+                    @if (!isAuditorApproved)
+                    {
+                        <form id="deletePaymentForm" asp-action="DeletePayment" method="post" class="d-none">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="paymentId" value="@Model.PaymentID" />
+                        </form>
+                    }
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .pms-edit-payment .pms-ep-title {
+        color: #000;
+        font-weight: 700;
+        font-size: 1.15rem;
+    }
+
+    .pms-edit-payment .pms-ep-card {
+        background: #fff;
+        border-color: #e2e8f0 !important;
+        border-radius: 0.35rem;
+    }
+
+    .pms-edit-payment .pms-ep-card-header {
+        background: #6059A6 !important;
+        border-bottom: 1px solid #524c96;
+        padding: 0.55rem 1rem;
+    }
+
+    .pms-edit-payment .pms-ep-card-header h6 {
+        color: #fff !important;
+        font-weight: 650;
+        font-size: 0.9rem;
+    }
+
+    .pms-edit-payment .pms-ep-card-header h6 .fw-normal {
+        color: rgba(255, 255, 255, 0.85) !important;
+    }
+
+    .pms-edit-payment .pms-ep-4col .pms-registration-4col-row {
+        margin-bottom: 0 !important;
+        padding-top: 0.4rem;
+        padding-bottom: 0.4rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-edit-payment .pms-ep-4col .pms-registration-4col-row:last-child {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-edit-payment .pms-ep-4col .pms-registration-4col-label,
+    .pms-edit-payment .pms-ep-4col .form-label {
+        color: #000 !important;
+        font-weight: 700 !important;
+        font-size: 0.8rem;
+        margin-bottom: 0;
+        line-height: 1.25;
+    }
+
+    .pms-edit-payment .pms-ep-field {
+        color: #1d4ed8 !important;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .pms-edit-payment .pms-ep-field code {
+        color: #1d4ed8 !important;
+        font-size: 0.8125rem;
+    }
+
+    .pms-edit-payment .pms-ep-4col .form-control,
+    .pms-edit-payment .pms-ep-4col .form-select,
+    .pms-edit-payment .pms-ep-4col .form-control-sm,
+    .pms-edit-payment .pms-ep-4col .form-select-sm {
+        color: #1d4ed8 !important;
+        background-color: #fff !important;
+        border: 1px solid #93c5fd !important;
+        border-radius: 0 !important;
+        font-size: 0.875rem;
+        font-weight: 600;
+        min-height: 30px;
+    }
+
+    .pms-edit-payment .pms-ep-4col .form-control:focus,
+    .pms-edit-payment .pms-ep-4col .form-select:focus {
+        color: #1e3a8a !important;
+        border-color: #3b82f6 !important;
+        box-shadow: none !important;
+    }
+
+    .pms-edit-payment .pms-ep-4col .form-control[readonly] {
+        color: #1d4ed8 !important;
+        background-color: #f8fafc !important;
+    }
+
+    .pms-edit-payment .pms-ep-4col textarea.form-control {
+        min-height: 52px;
+    }
+</style>
 
 @section Scripts {
     <script>
@@ -228,6 +346,16 @@
                     return false;
                 }
             });
+
+            var deleteBtn = document.getElementById('btnDeletePayment');
+            var deleteForm = document.getElementById('deletePaymentForm');
+            if (deleteBtn && deleteForm) {
+                deleteBtn.addEventListener('click', function () {
+                    if (confirm('Delete this payment? This cannot be undone.')) {
+                        deleteForm.submit();
+                    }
+                });
+            }
         })();
     </script>
 }

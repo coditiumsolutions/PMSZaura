@@ -54,15 +54,17 @@
                             <th>Duration</th>
                             <th>Freq.</th>
                             <th>Sched.</th>
-                            <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var plan in plansOrdered)
                         {
-                            <tr>
+                            <tr class="pms-plan-row"
+                                data-plan-id="@plan.PlanID"
+                                data-open-url="@Url.Action("AddPlan", "Payment", new { planId = plan.PlanID })"
+                                title="Double-click to open plan and schedules">
                                 <td data-label="Plan Name">
-                                    <a asp-action="PaymentSchedule"
+                                    <a asp-action="AddPlan"
                                        asp-route-planId="@plan.PlanID"
                                        class="text-decoration-none fw-semibold">
                                         @plan.PlanName
@@ -72,7 +74,7 @@
                                     @plan.TotalAmount.ToString("N0", EnUs)
                                 </td>
                                 <td data-label="Curr.">
-                                    <span class="pms-pill pms-pill--neutral text-uppercase">@plan.Currency</span>
+                                    <span class="pms-pill pms-pill--neutral text-uppercase">@(string.IsNullOrWhiteSpace(plan.Currency) ? "—" : plan.Currency)</span>
                                 </td>
                                 <td data-label="Duration">
                                     @(plan.DurationMonths.HasValue
@@ -80,18 +82,10 @@
                                         : "—")
                                 </td>
                                 <td data-label="Freq.">
-                                    <span class="pms-pill pms-pill--neutral">@plan.Frequency</span>
+                                    <span class="pms-pill pms-pill--neutral">@(string.IsNullOrWhiteSpace(plan.Frequency) ? "—" : plan.Frequency)</span>
                                 </td>
                                 <td data-label="Sched.">
                                     @(plan.PaymentSchedules?.Count ?? 0)
-                                </td>
-                                <td class="text-center" data-label="Actions">
-                                    <a asp-action="PaymentSchedule"
-                                       asp-route-planId="@plan.PlanID"
-                                       class="btn btn-sm btn-outline-primary py-0 px-2"
-                                       title="Edit plan and view installments">
-                                        <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Edit
-                                    </a>
                                 </td>
                             </tr>
                         }
@@ -140,10 +134,12 @@
         background-color: #6059A6 !important;
         color: #fff !important;
         border-color: #524c96 !important;
-        font-size: 0.72rem !important;
+        font-size: 0.82rem !important;
         font-weight: 700;
-        padding: 0.25rem 0.35rem !important;
-        line-height: 1.15;
+        padding: 0.45rem 0.4rem !important;
+        line-height: 1.25;
+        min-height: 2.25rem;
+        height: 2.25rem;
         cursor: default !important;
     }
 
@@ -153,7 +149,7 @@
     .pms-payment-listing #plansTable thead th.sorting_asc_disabled,
     .pms-payment-listing #plansTable thead th.sorting_desc_disabled {
         background-image: none !important;
-        padding-right: 0.35rem !important;
+        padding-right: 0.4rem !important;
     }
 
     .pms-payment-listing #plansTable tbody td,
@@ -169,28 +165,27 @@
         overflow: hidden;
         text-overflow: ellipsis;
         vertical-align: middle;
-        font-size: 0.78rem;
-        padding: 0.15rem 0.35rem !important;
-        line-height: 1.15;
+        font-size: 0.85rem;
+        padding: 0.2rem 0.4rem !important;
+        line-height: 1.25;
     }
 
     .pms-payment-listing #plansTable tbody tr {
-        height: auto;
+        height: 1.85rem;
+        cursor: pointer;
+    }
+
+    .pms-payment-listing #plansTable tbody tr:hover {
+        background-color: #f1f5f9;
     }
 
     .pms-payment-listing #plansTable .pms-pill {
-        font-size: 0.68rem;
+        font-size: 0.78rem;
         padding: 0.05rem 0.3rem;
         background: transparent !important;
         border: 1px solid #cbd5e1;
-        line-height: 1.15;
+        line-height: 1.2;
         border-radius: 0;
-    }
-
-    .pms-payment-listing #plansTable .btn {
-        padding: 0.05rem 0.35rem !important;
-        font-size: 0.72rem;
-        line-height: 1.15;
     }
 
     .pms-payment-listing .dataTables_wrapper .dataTables_scroll,
@@ -213,13 +208,12 @@
                 searching: true,
                 dom: 'rt<"d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>',
                 columnDefs: [
-                    { width: '28%', searchable: true, targets: 0 },   // Plan Name
-                    { width: '14%', searchable: false, targets: 1 },  // Total
+                    { width: '36%', searchable: true, targets: 0 },   // Plan Name
+                    { width: '16%', searchable: false, targets: 1 },  // Total
                     { width: '10%', searchable: false, targets: 2 },  // Curr.
-                    { width: '14%', searchable: false, targets: 3 },  // Duration
-                    { width: '12%', searchable: true, targets: 4 },   // Freq.
-                    { width: '8%', searchable: false, targets: 5 },   // Sched.
-                    { width: '14%', searchable: false, targets: 6 }   // Actions
+                    { width: '16%', searchable: false, targets: 3 },  // Duration
+                    { width: '14%', searchable: true, targets: 4 },   // Freq.
+                    { width: '8%', searchable: false, targets: 5 }    // Sched.
                 ],
                 language: {
                     search: 'Search:',
@@ -238,6 +232,16 @@
 
             $('#planSearchTerm').on('keyup input', function () {
                 table.search(this.value || '').draw();
+            });
+
+            $('#plansTable tbody').on('dblclick', 'tr.pms-plan-row', function (e) {
+                if ($(e.target).closest('a,button').length) {
+                    return;
+                }
+                var url = $(this).data('open-url');
+                if (url) {
+                    window.location.href = url;
+                }
             });
         });
     </script>

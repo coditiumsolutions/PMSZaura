@@ -2,9 +2,6 @@
 
 @{
     ViewData["Title"] = "Payment Audit";
-    int pendingCount  = ViewBag.PendingCount  ?? 0;
-    int approvedCount = ViewBag.ApprovedCount ?? 0;
-    int declinedCount = ViewBag.DeclinedCount ?? 0;
 }
 
 <div class="pms-payment-audit">
@@ -26,40 +23,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
-
-    <!-- Summary Cards -->
-    <div class="row g-2 mb-3">
-        <div class="col-6 col-md-4">
-            <a href="@Url.Action("Index", new { auditFilter = "Pending" })" class="text-decoration-none">
-                <div class="card border-0 pms-payment-audit-stat-card" style="background:#fff3cd;">
-                    <div class="card-body text-center py-2 px-2">
-                        <div class="pms-payment-audit-stat-label text-muted text-uppercase fw-semibold">Pending</div>
-                        <div class="pms-payment-audit-stat-value fw-bold text-warning">@pendingCount</div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4">
-            <a href="@Url.Action("Index", new { auditFilter = "Approved" })" class="text-decoration-none">
-                <div class="card border-0 pms-payment-audit-stat-card" style="background:#d4edda;">
-                    <div class="card-body text-center py-2 px-2">
-                        <div class="pms-payment-audit-stat-label text-muted text-uppercase fw-semibold">Approved</div>
-                        <div class="pms-payment-audit-stat-value fw-bold text-success">@approvedCount</div>
-                    </div>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4">
-            <a href="@Url.Action("Index", new { auditFilter = "Declined" })" class="text-decoration-none">
-                <div class="card border-0 pms-payment-audit-stat-card" style="background:#f8d7da;">
-                    <div class="card-body text-center py-2 px-2">
-                        <div class="pms-payment-audit-stat-label text-muted text-uppercase fw-semibold">Declined</div>
-                        <div class="pms-payment-audit-stat-value fw-bold text-danger">@declinedCount</div>
-                    </div>
-                </div>
-            </a>
-        </div>
-    </div>
 
     <!-- Filters -->
     <form method="get" asp-action="Index" class="mb-3">

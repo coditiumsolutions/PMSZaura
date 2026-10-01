@@ -11,7 +11,7 @@
     var customerNameWithJointOwners = jointOwnerNames.Any()
         ? string.Join(" / ", (new[] { Model.FullName }).Concat(jointOwnerNames.Where(n => !string.Equals(n, Model.FullName, StringComparison.OrdinalIgnoreCase))))
         : (Model.FullName ?? "-");
-    var schedules = plan?.PaymentSchedules?.OrderBy(ps => ps.InstallmentNo ?? int.MaxValue).ToList() ?? new List<PMS.Models.PaymentSchedule>();
+    var schedules = plan?.PaymentSchedules?.OrderBy(ps => ps.DueDate).ThenBy(ps => ps.InstallmentNo ?? int.MaxValue).ToList() ?? new List<PMS.Models.PaymentSchedule>();
     var surchargeBySchedule = ViewBag.SurchargeBySchedule as IReadOnlyDictionary<string, PMS.Services.SurchargeComputationRow>
         ?? new Dictionary<string, PMS.Services.SurchargeComputationRow>(StringComparer.OrdinalIgnoreCase);
     var otherAccountHeadPayments = ViewBag.OtherAccountHeadPayments as List<PMS.Models.Payment> ?? new List<PMS.Models.Payment>();
@@ -47,6 +47,7 @@
         <div class="a4-header">
             <div class="a4-header-center text-center">
                 <div class="a4-title">Account Statement</div>
+                <div class="a4-subtitle">DHA City M-9, Gateway Prime</div>
                 <div class="a4-subtitle">ZKB - Property Management System</div>
             </div>
             <div class="a4-header-right text-end">

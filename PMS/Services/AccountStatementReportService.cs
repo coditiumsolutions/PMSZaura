@@ -109,7 +109,8 @@ namespace PMS.Services
             var accountNo = customer.CustomerID?.Trim() ?? string.Empty;
 
             var schedules = customer.PaymentPlan?.PaymentSchedules?
-                .OrderBy(ps => ps.InstallmentNo ?? int.MaxValue)
+                .OrderBy(ps => ps.DueDate)
+                .ThenBy(ps => ps.InstallmentNo ?? int.MaxValue)
                 .ToList() ?? new List<PaymentSchedule>();
 
             var lines = new List<AccountStatementLineReportModel>();
@@ -170,7 +171,7 @@ namespace PMS.Services
 
             var header = new AccountStatementReportModel
             {
-                CompanyName = string.Empty,
+                CompanyName = "DHA City M-9, Gateway Prime",
                 ReportTitle = "Account Statement",
                 CustomerName = customerName,
                 PlotNumber = plotNumber,
