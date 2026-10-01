@@ -78,10 +78,6 @@
                 </div>
                 <div class="col-12 col-md-4 col-lg-5">
                     <div class="d-flex flex-wrap gap-2 pms-listing-search-actions align-items-end pb-1 justify-content-md-end">
-                        @if (!string.IsNullOrEmpty(auditFilter))
-                        {
-                            <a asp-action="@listAction" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">Clear</a>
-                        }
                         <partial name="_OperationsDropdown" />
                         @if (ViewBag.CanEdit == true)
                         {
@@ -258,6 +254,12 @@
 }
 
 <style>
+    .pms-payment-listing.pms-listing-page,
+    .pms-payment-listing.pms-saas-grid,
+    .pms-payment-listing {
+        --saas-row-h: 40px;
+    }
+
     .pms-payment-listing .pms-grid-title {
         font-size: 1.25rem;
         color: #000;
@@ -301,24 +303,45 @@
     .pms-payment-listing .pms-payment-grid-table th,
     .pms-payment-listing .pms-payment-grid-table td,
     .pms-payment-listing .pms-payment-grid-table td code {
-        white-space: normal;
+        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         vertical-align: middle;
-        font-size: 0.95rem !important;
+        font-size: 0.875rem !important;
         color: #000 !important;
-        padding: 0.15rem 0.3rem !important;
-        line-height: 1.2;
+        padding: 0.4rem 0.35rem !important;
+        line-height: 1.25 !important;
+    }
+
+    .pms-payment-listing .pms-saas-grid .pms-saas-table tbody td,
+    .pms-payment-listing .pms-payment-grid-table tbody td {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+        padding-left: 0.35rem !important;
+        padding-right: 0.35rem !important;
+        line-height: 1.25 !important;
+        border-bottom: 1px solid #e2e8f0;
     }
 
     .pms-payment-listing .pms-payment-grid-table tbody tr {
-        height: auto;
+        height: auto !important;
     }
 
     .pms-payment-listing .pms-cp-select-radio {
-        width: 1rem;
-        height: 1rem;
+        width: 0.85rem;
+        height: 0.85rem;
+        margin: 0 !important;
+        vertical-align: middle;
         cursor: pointer;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table tbody td code {
+        padding: 0 !important;
+        line-height: inherit !important;
+        background: transparent;
     }
 
     .pms-payment-listing .pms-cp-action-btn {
@@ -479,6 +502,7 @@
                 });
 
                 var editUrlTemplate = '@Url.Action("EditPayment", "Payment", new { paymentId = "__ID__" })';
+                var receiptUrlTemplate = '@Url.Action("Receipt", "Payment", new { id = "__ID__" })';
                 var $editBtn = $('#btnEditSelectedPayment');
 
                 function syncPaymentActionButtons() {
@@ -494,6 +518,18 @@
                     var id = $('input[name="selectedPaymentId"]:checked').val();
                     if (!id) return;
                     window.location.href = editUrlTemplate.replace('__ID__', encodeURIComponent(id));
+                });
+
+                $('#btnPaymentReceiptOps').on('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var id = $('input[name="selectedPaymentId"]:checked').val();
+                    if (!id) {
+                        alert('Select a payment row first, then choose Payment Receipt.');
+                        return;
+                    }
+                    var url = receiptUrlTemplate.replace('__ID__', encodeURIComponent(id));
+                    window.open(url, '_blank', 'noopener');
                 });
 
                 syncPaymentActionButtons();

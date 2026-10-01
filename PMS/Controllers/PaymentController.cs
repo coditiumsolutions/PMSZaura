@@ -22,17 +22,23 @@ namespace PMS.Controllers
         private readonly IModulePermissionService _modulePermission;
         private readonly ISurchargeService _surchargeService;
         private readonly IAmsPmsIntegrationService _amsPmsIntegration;
+        private readonly ISiteConfigService _siteConfigService;
+        private readonly IWebHostEnvironment _env;
 
         public PaymentController(
             PMSDbContext context,
             IModulePermissionService modulePermission,
             ISurchargeService surchargeService,
-            IAmsPmsIntegrationService amsPmsIntegration)
+            IAmsPmsIntegrationService amsPmsIntegration,
+            ISiteConfigService siteConfigService,
+            IWebHostEnvironment env)
         {
             _context = context;
             _modulePermission = modulePermission;
             _surchargeService = surchargeService;
             _amsPmsIntegration = amsPmsIntegration;
+            _siteConfigService = siteConfigService;
+            _env = env;
         }
 
         private async Task<IActionResult?> EnsurePermissionAsync(string requiredLevel)
@@ -55,11 +61,7 @@ namespace PMS.Controllers
         {
             var denied = await EnsurePermissionAsync("Read");
             if (denied != null) return denied;
-            var payments = await _context.Payments
-                .Include(p => p.PaymentSchedule)
-                    .ThenInclude(ps => ps.PaymentPlan)
-                .ToListAsync();
-            return View(payments);
+            return RedirectToAction(nameof(CustomerPayments));
         }
 
         // Payment Plans (Batches) Management
@@ -352,6 +354,57 @@ namespace PMS.Controllers
             return View("CustomerPayments", payments);
         }
 
+        /// <summary>Create AMS Payment Receiving (AR receipt) voucher for a selected customer payment.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GenerateVoucher(string paymentId)
+        {
+            var denied = await EnsurePermissionAsync("Edit");
+            if (denied != null) return denied;
+
+            if (string.IsNullOrWhiteSpace(paymentId))
+            {
+                TempData["Error"] = "Select a payment first, then choose Generate Voucher.";
+                return RedirectToAction(nameof(CustomerPayments));
+            }
+
+            var payment = await _context.Payments
+                .FirstOrDefaultAsync(p => p.PaymentID == paymentId.Trim());
+            if (payment == null)
+            {
+                TempData["Error"] = "Payment not found.";
+                return RedirectToAction(nameof(CustomerPayments));
+            }
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var result = await _amsPmsIntegration.TryCreatePaymentReceivingVoucherAsync(payment, userId);
+
+            switch (result.Kind)
+            {
+                case AmsIntegrationKind.CreatedArReceipt:
+                    await _context.SaveChangesAsync();
+                    TempData["Success"] = $"Payment Receiving voucher created for customer {payment.CustomerID}: {result.Detail}.";
+                    break;
+                case AmsIntegrationKind.SkippedDuplicate:
+                    TempData["Error"] = "A Payment Receiving voucher already exists for this payment.";
+                    break;
+                case AmsIntegrationKind.SkippedDisabled:
+                    TempData["Error"] = "AMS integration is disabled. Enable AmsIntegration in settings to generate vouchers.";
+                    break;
+                case AmsIntegrationKind.SkippedNoCustomer:
+                    TempData["Error"] = "This payment has no Customer ID.";
+                    break;
+                case AmsIntegrationKind.SkippedNegativeAmount:
+                    TempData["Error"] = "Payment amount must be greater than zero.";
+                    break;
+                default:
+                    TempData["Error"] = $"Could not generate Payment Receiving voucher{(string.IsNullOrEmpty(result.Detail) ? "." : $": {result.Detail}")}";
+                    break;
+            }
+
+            return RedirectToAction(nameof(CustomerPayments));
+        }
+
         /// <summary>Print-friendly payment receipt. Opens in new tab for printing.</summary>
         [HttpGet]
         public async Task<IActionResult> Receipt(string id)
@@ -372,7 +425,35 @@ namespace PMS.Controllers
             if (payment == null)
                 return NotFound();
 
+            var siteConfig = await _siteConfigService.GetAsync();
+            ViewBag.ProjectDisplayName = !string.IsNullOrWhiteSpace(siteConfig?.ProjectName)
+                ? siteConfig.ProjectName
+                : "Property Management System";
+            // Same logo source as Account Statement report (logo-main.jpeg)
+            ViewBag.LogoDataUrl = await ResolveAccountStatementLogoDataUrlAsync();
+            ViewBag.LogoPath = "~/images/logo-main.jpeg";
+
             return View(payment);
+        }
+
+        /// <summary>Same logo resolution order as <c>AccountStatementReportService.LoadAccountStatementLogoAsync</c>.</summary>
+        private async Task<string?> ResolveAccountStatementLogoDataUrlAsync()
+        {
+            var candidates = new[]
+            {
+                Path.Combine(_env.ContentRootPath, "images", "logo-main.jpeg"),
+                Path.Combine(_env.WebRootPath ?? string.Empty, "images", "logo-main.jpeg"),
+                Path.Combine(_env.ContentRootPath, "wwwroot", "images", "logo-main.jpeg")
+            };
+
+            foreach (var path in candidates.Where(p => !string.IsNullOrWhiteSpace(p) && System.IO.File.Exists(p)))
+            {
+                var bytes = await System.IO.File.ReadAllBytesAsync(path);
+                if (bytes.Length == 0) continue;
+                return "data:image/jpeg;base64," + Convert.ToBase64String(bytes);
+            }
+
+            return null;
         }
 
         public async Task<IActionResult> PaymentSchedule(string planId)

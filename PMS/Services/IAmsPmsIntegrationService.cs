@@ -31,6 +31,16 @@ public interface IAmsPmsIntegrationService
         string? actingUserId,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Manual Payment Receiving voucher from Customer Payments.
+    /// Creates <see cref="AccARReceipt"/> (and allocation when an open AR invoice matches), ignoring payment status gates.
+    /// Idempotent on <see cref="AccARReceipt.PMSPaymentID"/>.
+    /// </summary>
+    Task<AmsIntegrationResult> TryCreatePaymentReceivingVoucherAsync(
+        Payment payment,
+        string? actingUserId,
+        CancellationToken cancellationToken = default);
+
     /// <summary>Idempotent on <see cref="AccRefundVoucher.PMSRefundID"/> = <see cref="Refund.RefundID"/>.</summary>
     Task<AmsIntegrationResult> TryCreateRefundVoucherOnApprovalAsync(
         Refund refund,

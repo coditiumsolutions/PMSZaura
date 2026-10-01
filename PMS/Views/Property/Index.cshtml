@@ -207,6 +207,10 @@
 </div>
 
 <style>
+    .pms-property-listing {
+        --saas-row-h: 64px;
+    }
+
     .pms-property-listing .pms-property-select-col {
         width: 4.5rem;
         min-width: 4.5rem;
@@ -222,7 +226,7 @@
     }
 
     .pms-property-listing .pms-grid-title {
-        font-size: 1rem !important;
+        font-size: 1.2rem !important;
         font-weight: 700;
         color: #0f172a;
     }
@@ -273,7 +277,41 @@
         background-color: #6059A6 !important;
         color: #fff !important;
         border-color: #524c96 !important;
+        font-size: 0.8125rem !important;
         font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 0.65rem 1rem !important;
+        line-height: 1.2;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+
+    .pms-property-listing .pms-saas-table tbody td {
+        height: var(--saas-row-h) !important;
+        padding: 0 1rem !important;
+        font-size: 0.875rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #e2e8f0 !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: none;
+    }
+
+    .pms-property-listing .pms-saas-table tbody tr:nth-child(even) {
+        background-color: #f8fafc;
+    }
+
+    .pms-property-listing .pms-saas-table tbody tr:hover {
+        background-color: #f1f5f9 !important;
+        box-shadow: inset 3px 0 0 #2563eb;
+    }
+
+    .pms-property-listing .pms-saas-table .pms-pill {
+        font-size: 0.78rem;
+        padding: 0.15rem 0.45rem;
+        line-height: 1.2;
     }
 </style>
 

@@ -128,6 +128,100 @@ public class AmsPmsIntegrationService : IAmsPmsIntegrationService
         return new AmsIntegrationResult(AmsIntegrationKind.CreatedArReceipt, receiptNo);
     }
 
+    public async Task<AmsIntegrationResult> TryCreatePaymentReceivingVoucherAsync(
+        Payment payment,
+        string? actingUserId,
+        CancellationToken cancellationToken = default)
+    {
+        if (!_options.Enabled)
+            return new AmsIntegrationResult(AmsIntegrationKind.SkippedDisabled);
+
+        if (string.IsNullOrWhiteSpace(payment.CustomerID))
+            return new AmsIntegrationResult(AmsIntegrationKind.SkippedNoCustomer);
+
+        if (payment.Amount <= 0m)
+            return new AmsIntegrationResult(AmsIntegrationKind.SkippedNegativeAmount);
+
+        if (await _context.AccARReceipts.AnyAsync(r => r.PMSPaymentID == payment.PaymentID, cancellationToken))
+            return new AmsIntegrationResult(AmsIntegrationKind.SkippedDuplicate);
+
+        var cust = payment.CustomerID.Trim();
+        var sched = payment.ScheduleID?.Trim();
+
+        AccARInvoice? invoice = null;
+        decimal allocAmt = Math.Round(payment.Amount, 2, MidpointRounding.AwayFromZero);
+        decimal priorAlloc = 0m;
+
+        if (!string.IsNullOrWhiteSpace(sched))
+        {
+            invoice = await _context.AccARInvoices
+                .FirstOrDefaultAsync(
+                    i => i.CustomerID == cust
+                         && i.PMSPaymentScheduleID == sched
+                         && i.Status != "Paid",
+                    cancellationToken);
+
+            if (invoice != null)
+            {
+                var priorAllocDb = await _context.AccARReceiptAllocations
+                    .Where(a => a.ARInvoiceID == invoice.ARInvoiceID)
+                    .SumAsync(a => (decimal?)a.AllocatedAmount, cancellationToken) ?? 0m;
+                priorAlloc = priorAllocDb + PendingAllocationSumForInvoice(_context, invoice.ARInvoiceID);
+                var balance = invoice.TotalAmount - priorAlloc;
+                allocAmt = Math.Round(Math.Min(payment.Amount, Math.Max(0m, balance)), 2, MidpointRounding.AwayFromZero);
+                if (allocAmt <= 0m)
+                    allocAmt = Math.Round(payment.Amount, 2, MidpointRounding.AwayFromZero);
+            }
+        }
+
+        var receiptNo = $"RC-PMS-{payment.PaymentID}";
+        if (receiptNo.Length > 30)
+            receiptNo = receiptNo[..30];
+
+        var rec = new AccARReceipt
+        {
+            ReceiptNo = receiptNo,
+            ReceiptDate = (payment.DepositDate ?? payment.PaymentDate).Date,
+            CustomerID = cust,
+            ProjectID = invoice?.ProjectID,
+            AllotmentID = invoice?.AllotmentID,
+            ReceivedAmount = Math.Round(payment.Amount, 2, MidpointRounding.AwayFromZero),
+            PaymentMode = Truncate(payment.Method ?? "Bank", 30),
+            BankName = string.IsNullOrWhiteSpace(payment.BankName) ? null : Truncate(payment.BankName, 150),
+            PMSPaymentID = payment.PaymentID,
+            Remarks = Truncate($"Payment Receiving — PMS {payment.PaymentID} Ref:{payment.ReferenceNo}", 500),
+            Status = "Active",
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = DbUserId10(actingUserId)
+        };
+
+        _context.AccARReceipts.Add(rec);
+
+        if (invoice != null && allocAmt > 0m)
+        {
+            var allocate = Math.Round(Math.Min(allocAmt, payment.Amount), 2, MidpointRounding.AwayFromZero);
+            _context.AccARReceiptAllocations.Add(new AccARReceiptAllocation
+            {
+                ARReceiptID = rec.ARReceiptID,
+                ARInvoiceID = invoice.ARInvoiceID,
+                AllocatedAmount = allocate,
+                AllocatedAt = DateTime.UtcNow,
+                AllocatedBy = DbUserId10(actingUserId)
+            });
+
+            var newPaid = priorAlloc + allocate;
+            invoice.PaidAmount = Math.Round(newPaid, 2, MidpointRounding.AwayFromZero);
+            if (invoice.PaidAmount >= invoice.TotalAmount - 0.01m)
+                invoice.Status = "Paid";
+            else if (invoice.PaidAmount > 0.01m)
+                invoice.Status = "PartiallyPaid";
+            else
+                invoice.Status = "Unpaid";
+        }
+
+        return new AmsIntegrationResult(AmsIntegrationKind.CreatedArReceipt, receiptNo);
+    }
+
     public async Task<AmsIntegrationResult> TryCreateRefundVoucherOnApprovalAsync(
         Refund refund,
         string? actingUserId,

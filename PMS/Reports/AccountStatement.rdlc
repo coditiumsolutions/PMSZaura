@@ -75,7 +75,7 @@
                           "Unit: " &amp; First(Fields!Unit.Value, "AccountStatementHeader") &amp; vbCrLf &amp;
                           "Registered Size: " &amp; First(Fields!RegisteredSize.Value, "AccountStatementHeader") &amp; vbCrLf &amp;
                           "Property Type: " &amp; First(Fields!PropertyType.Value, "AccountStatementHeader") &amp; vbCrLf &amp;
-                          "Payment Plan ID: " &amp; First(Fields!PaymentPlanId.Value, "AccountStatementHeader")</Value>
+                          "Plan Name: " &amp; First(Fields!PaymentPlanId.Value, "AccountStatementHeader")</Value>
                 <Style>
                   <FontFamily>Segoe UI</FontFamily>
                   <FontSize>9pt</FontSize>

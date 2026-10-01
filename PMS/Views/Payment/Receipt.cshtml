@@ -6,6 +6,10 @@
     var plan = schedule?.PaymentPlan;
     var project = plan?.Project;
     var customer = Model.Customer;
+    var logoPath = ViewBag.LogoPath as string ?? "~/images/logo-main.jpeg";
+    var logoDataUrl = ViewBag.LogoDataUrl as string;
+    var projectDisplayName = ViewBag.ProjectDisplayName as string ?? "Property Management System";
+    var logoSrc = !string.IsNullOrWhiteSpace(logoDataUrl) ? logoDataUrl : Url.Content(logoPath);
 }
 
 <!DOCTYPE html>
@@ -24,14 +28,16 @@
     <h3 class="mb-0"><i class="fas fa-receipt me-2"></i>Payment Receipt</h3>
     <div class="d-flex gap-2">
         <button class="btn btn-outline-primary btn-sm" onclick="window.print()"><i class="fas fa-print me-1"></i>Print</button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.close()">Close</button>
     </div>
 </div>
 
 <div class="a4-container">
     <div class="a4-header text-center">
-        <img src="~/images/logo.jpeg" alt="Logo" class="a4-logo" />
+        <img src="@logoSrc" alt="@projectDisplayName" class="a4-logo" />
         <div class="a4-title">Payment Receipt</div>
-        <div class="a4-subtitle">Property Management System</div>
+        <div class="a4-subtitle">Payment Receive for Customer</div>
+        <div class="a4-subtitle">@projectDisplayName</div>
         <div class="a4-subtitle">Generated on: @DateTime.Now.ToString("dd-MM-yyyy HH:mm")</div>
     </div>
 
@@ -59,16 +65,18 @@
 
     <!-- Payment Details -->
     <div class="a4-section">
-        <div class="a4-section-title">Payment Details</div>
+        <div class="a4-section-title">Payment Receive Details</div>
         <div class="a4-info-grid">
             <div class="a4-info-block">
                 <div class="a4-info-row"><span class="a4-info-label">Payment ID:</span><span class="a4-info-value"><strong>@Model.PaymentID</strong></span></div>
                 <div class="a4-info-row"><span class="a4-info-label">Payment Date:</span><span class="a4-info-value">@Model.PaymentDate.ToString("dd-MM-yyyy")</span></div>
-                <div class="a4-info-row"><span class="a4-info-label">Amount:</span><span class="a4-info-value"><strong>@Model.Amount.ToString("N0") @(plan?.Currency ?? "PKR")</strong></span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Deposit Date:</span><span class="a4-info-value">@(Model.DepositDate?.ToString("dd-MM-yyyy") ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Amount Received:</span><span class="a4-info-value"><strong>@Model.Amount.ToString("N0") @(plan?.Currency ?? "PKR")</strong></span></div>
             </div>
             <div class="a4-info-block">
                 <div class="a4-info-row"><span class="a4-info-label">Method:</span><span class="a4-info-value">@(string.IsNullOrWhiteSpace(Model.Method) ? "—" : Model.Method)</span></div>
                 <div class="a4-info-row"><span class="a4-info-label">Reference No:</span><span class="a4-info-value">@(string.IsNullOrWhiteSpace(Model.ReferenceNo) ? "—" : Model.ReferenceNo)</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Bank:</span><span class="a4-info-value">@(string.IsNullOrWhiteSpace(Model.BankName) ? "—" : Model.BankName)</span></div>
                 <div class="a4-info-row"><span class="a4-info-label">Status:</span><span class="a4-info-value">@(string.IsNullOrWhiteSpace(Model.Status) ? "—" : Model.Status)</span></div>
             </div>
         </div>
@@ -91,7 +99,7 @@
     }
 
     <div class="a4-footer">
-        This is a system-generated payment receipt.<br />
+        This is a system-generated payment receipt for customer payment receive.<br />
         Payment ID: @Model.PaymentID | Customer: @(customer?.CustomerID ?? "—") | Generated @DateTime.Now.ToString("dd-MM-yyyy HH:mm")
     </div>
 </div>
@@ -112,18 +120,27 @@
     .a4-section { margin-bottom: 12px; }
     .a4-section-title { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 8px; padding-bottom: 3px; border-bottom: 1px solid #ddd; }
     .a4-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; }
-    .a4-info-block { background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 4px solid #007bff; }
+    .a4-info-block { background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 4px solid #6059A6; }
     .a4-info-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; }
     .a4-info-label { font-weight: 600; color: #555; }
     .a4-info-value { color: #333; }
     .a4-statement { font-size: 11px; line-height: 1.5; color: #333; margin-bottom: 0; }
     .a4-footer { margin-top: 15px; padding-top: 8px; border-top: 1px solid #ddd; font-size: 9px; color: #666; text-align: center; }
-    .a4-logo { max-width: 120px; height: auto; margin-bottom: 10px; }
+    .a4-logo {
+        max-width: 140px;
+        max-height: 80px;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        margin-bottom: 10px;
+        display: inline-block;
+    }
     @@media print {
         @@page { size: A4; margin: 0; }
         body { margin: 0; padding: 0; background: white; }
         .a4-container { width: 210mm; min-height: 297mm; margin: 0; padding: 12mm; box-shadow: none; }
         .no-print { display: none !important; }
+        .a4-logo { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     }
     @@media screen {
         body { background: #f5f5f5; padding: 20px; }

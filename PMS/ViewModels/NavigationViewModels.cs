@@ -23,6 +23,8 @@ public sealed class NavigationMenuItemViewModel
     public string? SectionKey { get; init; }
     public string? RouteId { get; init; }
     public string? RouteTitle { get; init; }
+    /// <summary>Optional auditFilter query value for PaymentAudit links.</summary>
+    public string? RouteAuditFilter { get; init; }
     /// <summary>When set, item is active only when current action equals this value.</summary>
     public string? ActiveAction { get; init; }
     /// <summary>When set, item is active only when current action does not equal this value.</summary>
@@ -31,6 +33,12 @@ public sealed class NavigationMenuItemViewModel
     public string[]? ActiveActions { get; init; }
     /// <summary>When set with RequestedReport, item is active when query id matches.</summary>
     public string? ActiveRouteId { get; init; }
+    /// <summary>Query key used with ActiveQueryValue / ExcludeActiveQueryValue for active-state matching.</summary>
+    public string? ActiveQueryKey { get; init; }
+    /// <summary>When set with ActiveQueryKey, item is active only when that query equals this value.</summary>
+    public string? ActiveQueryValue { get; init; }
+    /// <summary>When set with ActiveQueryKey, item is not active when that query equals this value.</summary>
+    public string? ExcludeActiveQueryValue { get; init; }
     /// <summary>When true, item is shown only to users in the Admin role.</summary>
     public bool RequiresAdminRole { get; init; }
     /// <summary>When set, item is active when controller matches or starts with this prefix (e.g. Ams).</summary>

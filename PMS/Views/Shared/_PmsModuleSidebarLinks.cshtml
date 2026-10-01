@@ -76,7 +76,8 @@
                                            asp-controller="@child.Controller"
                                            asp-action="@child.Action"
                                            asp-route-id="@child.RouteId"
-                                           asp-route-title="@child.RouteTitle">
+                                           asp-route-title="@child.RouteTitle"
+                                           asp-route-auditFilter="@child.RouteAuditFilter">
                                             <i class="@child.IconClass"></i>@child.Label
                                         </a>
                                     </li>
@@ -109,7 +110,8 @@
                        asp-controller="@item.Controller"
                        asp-action="@item.Action"
                        asp-route-id="@item.RouteId"
-                       asp-route-title="@item.RouteTitle">
+                       asp-route-title="@item.RouteTitle"
+                       asp-route-auditFilter="@item.RouteAuditFilter">
                         <i class="@item.IconClass"></i>@item.Label
                     </a>
                 </li>

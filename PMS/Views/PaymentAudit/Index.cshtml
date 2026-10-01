@@ -2,65 +2,72 @@
 
 @{
     ViewData["Title"] = "Payment Audit";
+    var paymentList = Model?.ToList() ?? new List<PMS.Models.Payment>();
+    var auditFilter = ViewBag.AuditFilter as string ?? "";
+    var customerFilter = ViewBag.CustomerFilter as string ?? "";
 }
 
-<div class="pms-payment-audit">
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h2 class="pms-payment-audit-title mb-0"><i class="fas fa-search-dollar me-2"></i>Payment Audit</h2>
+<div class="pms-payment-audit pms-listing-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h5 class="pms-grid-title mb-0"><i class="fas fa-search-dollar me-2"></i>Payment Audit</h5>
+        <span class="badge rounded-pill pms-record-badge">@paymentList.Count record@(paymentList.Count == 1 ? "" : "s")</span>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <div class="alert alert-success alert-dismissible fade show py-2 px-3 mb-2 small" role="alert">
             <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
         </div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-2 small" role="alert">
             <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
         </div>
     }
 
-    <!-- Filters -->
-    <form method="get" asp-action="Index" class="mb-3">
-        <div class="card">
-            <div class="card-body py-2">
-                <div class="row g-2 align-items-end">
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold mb-1 small">Audit Status</label>
-                        <select name="auditFilter" class="form-select form-select-sm" onchange="this.form.submit()">
-                            <option value="" selected="@(string.IsNullOrEmpty(ViewBag.AuditFilter as string))">All</option>
-                            <option value="Pending"  selected="@(ViewBag.AuditFilter == "Pending")">Pending</option>
-                            <option value="Approved" selected="@(ViewBag.AuditFilter == "Approved")">Approved</option>
-                            <option value="Declined" selected="@(ViewBag.AuditFilter == "Declined")">Declined</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-semibold mb-1 small">Customer ID</label>
-                        <div class="input-group input-group-sm">
-                            <input type="text" name="customerFilter" class="form-control" placeholder="Filter by customer ID" value="@ViewBag.CustomerFilter" />
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <a asp-action="Index" class="btn btn-secondary btn-sm"><i class="fas fa-times me-1"></i>Clear</a>
+    <form method="get" asp-action="Index" class="mb-2 pms-payment-audit-filters" id="auditFilterForm">
+        <div class="row g-2 align-items-end">
+            <div class="col-12 col-md-3">
+                <div class="pms-compact-field pms-select-dropdown">
+                    <label for="auditFilter" class="form-label">Audit Status</label>
+                    <select name="auditFilter" id="auditFilter" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="" selected="@(string.IsNullOrEmpty(auditFilter))">All</option>
+                        <option value="Pending" selected="@(auditFilter == "Pending")">Pending</option>
+                        <option value="Approved" selected="@(auditFilter == "Approved")">Approved</option>
+                        <option value="Declined" selected="@(auditFilter == "Declined")">Declined</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="pms-compact-field">
+                    <label for="customerFilter" class="form-label">Customer ID</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text"
+                               name="customerFilter"
+                               id="customerFilter"
+                               class="form-control"
+                               placeholder="Filter by customer ID"
+                               value="@customerFilter"
+                               autocomplete="off" />
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
                     </div>
                 </div>
             </div>
         </div>
     </form>
 
-    <!-- Payments Table -->
-    <div class="card pms-payment-audit-grid-card">
-        <div class="card-body">
-            <div class="table-responsive pms-payment-audit-grid-wrap">
-                <table class="table table-hover align-middle pms-enterprise-table mb-0" id="auditTable">
+    <div class="pms-saas-grid pms-listing-flat mb-2">
+        @if (paymentList.Any())
+        {
+            <div class="pms-saas-table-wrap pms-payment-audit-grid-wrap">
+                <table id="auditTable" class="table pms-saas-table pms-payment-audit-grid-table">
                     <thead>
                         <tr>
-                            <th>Customer</th>
+                            <th>Customer No</th>
+                            <th>Cust Name</th>
                             <th>Installment</th>
                             <th class="text-end">Amount (PKR)</th>
                             <th>Payment Date</th>
@@ -69,36 +76,34 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var p in Model)
+                        @foreach (var p in paymentList)
                         {
                             var auditStatus = p.AuditStatus ?? "Pending";
-                            var badgeClass  = auditStatus == "Approved" ? "bg-success"
-                                            : auditStatus == "Declined" ? "bg-danger"
-                                            : "bg-warning text-dark";
+                            var badgeClass = auditStatus == "Approved" ? "bg-success"
+                                           : auditStatus == "Declined" ? "bg-danger"
+                                           : "bg-warning text-dark";
                             <tr class="pms-payment-audit-row" data-href="@Url.Action("Audit", new { id = p.PaymentID })" style="cursor:pointer;">
-                                <td>
-                                    <div><code>@p.CustomerID</code></div>
-                                    <div class="small text-muted">@(p.Customer?.FullName ?? "—")</div>
-                                </td>
-                                <td>
-                                    <div class="small">@(p.PaymentSchedule?.PaymentDescription ?? "—")</div>
+                                <td data-label="Customer No"><code>@p.CustomerID</code></td>
+                                <td data-label="Cust Name">@(p.Customer?.FullName ?? "—")</td>
+                                <td data-label="Installment">
+                                    @(p.PaymentSchedule?.PaymentDescription ?? "—")
                                     @if (p.PaymentSchedule?.InstallmentNo != null)
                                     {
                                         <span class="badge bg-light text-dark border">#@p.PaymentSchedule.InstallmentNo</span>
                                     }
                                 </td>
-                                <td class="text-end fw-semibold">@p.Amount.ToString("N0")</td>
-                                <td>@p.PaymentDate.ToString("MMM dd, yyyy")</td>
-                                <td><span class="badge @badgeClass">@auditStatus</span></td>
-                                <td>
+                                <td class="text-end fw-semibold" data-label="Amount (PKR)">@p.Amount.ToString("N0")</td>
+                                <td data-label="Payment Date">@p.PaymentDate.ToString("MMM dd, yyyy")</td>
+                                <td data-label="Audit Status"><span class="badge @badgeClass">@auditStatus</span></td>
+                                <td data-label="Audited By">
                                     @if (!string.IsNullOrEmpty(p.AuditedBy))
                                     {
-                                        <div class="small">@(p.AuditedByUser?.UserID ?? p.AuditedBy)</div>
-                                        <div class="small text-muted">@p.AuditedAt?.ToString("MMM dd, yyyy")</div>
+                                        <span>@(p.AuditedByUser?.UserID ?? p.AuditedBy)</span>
+                                        <span class="text-muted small d-block">@p.AuditedAt?.ToString("MMM dd, yyyy")</span>
                                     }
                                     else
                                     {
-                                        <span class="text-muted small">—</span>
+                                        <span class="text-muted">—</span>
                                     }
                                 </td>
                             </tr>
@@ -106,79 +111,139 @@
                     </tbody>
                 </table>
             </div>
-        </div>
+        }
+        else
+        {
+            <div class="text-center py-4">
+                <i class="fas fa-search-dollar fa-2x mb-2 text-muted"></i>
+                <h6 class="text-muted mb-1">No Payments Found</h6>
+                <p class="text-muted small mb-0">Try adjusting the audit status or customer ID filter.</p>
+            </div>
+        }
     </div>
 </div>
 
 <style>
-    .pms-payment-audit-title {
-        font-size: 1.2rem;
+    .pms-payment-audit.pms-listing-page {
+        --saas-row-h: 40px;
+    }
+
+    .pms-payment-audit .pms-grid-title {
+        font-size: 1.25rem;
+        color: #000;
         font-weight: 700;
-        color: #0f172a;
     }
 
-    .pms-payment-audit-stat-card .card-body {
+    .pms-payment-audit-filters {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0;
+    }
+
+    .pms-payment-audit .pms-listing-flat,
+    .pms-payment-audit .pms-saas-grid {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    .pms-payment-audit .pms-payment-audit-grid-wrap {
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        max-height: none !important;
         min-height: 0;
-        padding-top: 0.4rem !important;
-        padding-bottom: 0.4rem !important;
     }
 
-    .pms-payment-audit-stat-label {
-        font-size: 0.68rem;
-        letter-spacing: 0.04em;
-        line-height: 1.2;
-        margin-bottom: 0.1rem;
+    .pms-payment-audit .pms-saas-table-wrap {
+        overflow-x: hidden !important;
+        overflow-y: visible !important;
+        max-height: none !important;
     }
 
-    .pms-payment-audit-stat-value {
-        font-size: 1.15rem;
-        line-height: 1.2;
+    .pms-payment-audit .pms-payment-audit-grid-table {
+        table-layout: fixed;
+        width: 100% !important;
+        margin-bottom: 0;
     }
 
-    .pms-payment-audit-grid-card,
-    .pms-payment-audit-grid-card > .card-body {
-        background: #ffffff !important;
+    .pms-payment-audit .pms-payment-audit-grid-table th,
+    .pms-payment-audit .pms-payment-audit-grid-table td,
+    .pms-payment-audit .pms-payment-audit-grid-table td code {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        font-size: 0.875rem !important;
+        color: #000 !important;
+        padding: 0.4rem 0.35rem !important;
+        line-height: 1.25 !important;
     }
 
-    .pms-payment-audit-grid-wrap {
-        max-height: calc(100vh - 280px);
-        min-height: 520px;
-        overflow-y: auto;
-        overflow-x: hidden;
-        background: #ffffff;
+    .pms-payment-audit .pms-payment-audit-grid-table tbody td {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        border-bottom: 1px solid #e2e8f0;
     }
 
-    .pms-payment-audit-grid-wrap.table-responsive {
-        overflow-x: hidden;
+    .pms-payment-audit .pms-payment-audit-grid-table tbody tr {
+        height: auto !important;
     }
 
-    .pms-payment-audit-grid-wrap .table {
-        background: #ffffff;
+    .pms-payment-audit .pms-payment-audit-grid-table tbody td code {
+        padding: 0 !important;
+        line-height: inherit !important;
+        background: transparent;
     }
 
-    .pms-payment-audit-grid-wrap thead th {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        background: #6059A6 !important;
+    .pms-payment-audit .pms-payment-audit-grid-table thead th,
+    .pms-payment-audit #auditTable thead th {
+        font-size: 0.78rem !important;
+        line-height: 1.35;
+        padding-top: 0.45rem !important;
+        padding-bottom: 0.45rem !important;
+        min-height: 2.1rem;
+        background-color: #6059A6 !important;
         color: #fff !important;
         border-color: #524c96 !important;
+        cursor: default !important;
+        pointer-events: none;
+        background-image: none !important;
+    }
+
+    .pms-payment-audit .pms-payment-audit-grid-table thead th.sorting,
+    .pms-payment-audit .pms-payment-audit-grid-table thead th.sorting_asc,
+    .pms-payment-audit .pms-payment-audit-grid-table thead th.sorting_desc,
+    .pms-payment-audit .pms-payment-audit-grid-table thead th.sorting_disabled {
+        background-image: none !important;
+        padding-right: 0.35rem !important;
     }
 
     .pms-payment-audit-row:hover {
         background-color: #f1f5f9 !important;
     }
 
-    .pms-payment-audit .pms-payment-audit-dt-footer {
-        width: 100%;
-        padding: 0.5rem 0.25rem 0.25rem;
+    .pms-payment-audit .dataTables_wrapper .dataTables_scroll,
+    .pms-payment-audit .dataTables_wrapper .dataTables_scrollBody {
+        overflow: visible !important;
+        max-height: none !important;
     }
 
-    .pms-payment-audit .pms-payment-audit-dt-footer .dataTables_length,
+    .pms-payment-audit .dataTables_wrapper .dataTables_length,
+    .pms-payment-audit .dataTables_wrapper .dataTables_filter {
+        display: none !important;
+    }
+
+    .pms-payment-audit .pms-payment-audit-dt-footer {
+        margin-top: 0.5rem;
+        width: 100%;
+    }
+
     .pms-payment-audit .pms-payment-audit-dt-footer .dataTables_info,
     .pms-payment-audit .pms-payment-audit-dt-footer .dataTables_paginate {
         float: none !important;
-        text-align: left;
         padding-top: 0;
     }
 
@@ -188,21 +253,47 @@
 </style>
 
 @section Scripts {
-<script>
-    $(document).ready(function () {
-        var table = $('#auditTable').DataTable({
-            pageLength: 25,
-            order: [[3, 'desc']],
-            searching: false,
-            dom: 'rt<"pms-payment-audit-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>'
-        });
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
 
-        $('#auditTable tbody').on('click', 'tr.pms-payment-audit-row', function () {
-            var href = $(this).data('href');
-            if (href) {
-                window.location.href = href;
+    <script>
+        $(document).ready(function () {
+            @if (paymentList.Any())
+            {
+                <text>
+                $('#auditTable').DataTable({
+                    order: [],
+                    ordering: false,
+                    pageLength: 20,
+                    lengthChange: false,
+                    paging: true,
+                    searching: false,
+                    scrollX: false,
+                    scrollY: false,
+                    scrollCollapse: false,
+                    autoWidth: false,
+                    dom: 'rt<"pms-payment-audit-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2"ip>',
+                    language: {
+                        info: "Showing _START_ to _END_ of _TOTAL_ payments",
+                        infoEmpty: "No payments",
+                        paginate: {
+                            first: "First",
+                            last: "Last",
+                            next: "Next",
+                            previous: "Previous"
+                        }
+                    }
+                });
+
+                $('#auditTable tbody').on('click', 'tr.pms-payment-audit-row', function () {
+                    var href = $(this).data('href');
+                    if (href) {
+                        window.location.href = href;
+                    }
+                });
+                </text>
             }
         });
-    });
-</script>
+    </script>
 }

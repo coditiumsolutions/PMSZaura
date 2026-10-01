@@ -98,7 +98,7 @@
 
 <style>
     .pms-payment-listing .pms-payment-plans-heading {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         font-weight: 700;
         color: #0f172a;
     }
@@ -111,10 +111,14 @@
     }
 
     .pms-payment-listing .pms-payment-plans-search .form-control {
-        min-height: 34px;
-        height: 34px;
+        min-height: var(--pms-listing-control-h, 36px);
+        height: var(--pms-listing-control-h, 36px);
         border-radius: 0 !important;
         border: 1px solid #94a3b8;
+    }
+
+    .pms-payment-listing {
+        --saas-row-h: 64px;
     }
 
     .pms-payment-listing .pms-payment-plans-grid-wrap {
@@ -127,19 +131,29 @@
     .pms-payment-listing #plansTable {
         table-layout: fixed;
         width: 100% !important;
-        border-collapse: collapse;
+        margin-bottom: 0;
+        color: #000 !important;
+    }
+
+    .pms-payment-listing #plansTable,
+    .pms-payment-listing #plansTable tbody td,
+    .pms-payment-listing #plansTable tbody td a,
+    .pms-payment-listing #plansTable tbody td .fw-semibold {
+        color: #000 !important;
     }
 
     .pms-payment-listing #plansTable thead th {
         background-color: #6059A6 !important;
         color: #fff !important;
         border-color: #524c96 !important;
-        font-size: 0.82rem !important;
+        font-size: 0.8125rem !important;
         font-weight: 700;
-        padding: 0.45rem 0.4rem !important;
-        line-height: 1.25;
-        min-height: 2.25rem;
-        height: 2.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 0.65rem 1rem !important;
+        line-height: 1.2;
+        vertical-align: middle;
+        white-space: nowrap;
         cursor: default !important;
     }
 
@@ -149,43 +163,73 @@
     .pms-payment-listing #plansTable thead th.sorting_asc_disabled,
     .pms-payment-listing #plansTable thead th.sorting_desc_disabled {
         background-image: none !important;
-        padding-right: 0.4rem !important;
     }
 
-    .pms-payment-listing #plansTable tbody td,
-    .pms-payment-listing #plansTable tbody td a,
-    .pms-payment-listing #plansTable tbody td .pms-pill,
-    .pms-payment-listing #plansTable tbody td .fw-semibold {
-        color: #000 !important;
-    }
-
-    .pms-payment-listing #plansTable th,
-    .pms-payment-listing #plansTable td {
+    .pms-payment-listing #plansTable tbody td {
+        height: var(--saas-row-h) !important;
+        padding: 0 1rem !important;
+        vertical-align: middle;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        vertical-align: middle;
-        font-size: 0.85rem;
-        padding: 0.2rem 0.4rem !important;
-        line-height: 1.25;
+        font-size: 0.875rem;
+        border-bottom: 1px solid #e2e8f0 !important;
+        max-width: none;
+    }
+
+    .pms-payment-listing #plansTable tbody tr:nth-child(even) {
+        background-color: #f8fafc;
     }
 
     .pms-payment-listing #plansTable tbody tr {
-        height: 1.85rem;
         cursor: pointer;
+        transition: background-color 0.15s ease;
     }
 
     .pms-payment-listing #plansTable tbody tr:hover {
-        background-color: #f1f5f9;
+        background-color: #f1f5f9 !important;
+        box-shadow: inset 3px 0 0 #2563eb;
     }
 
     .pms-payment-listing #plansTable .pms-pill {
         font-size: 0.78rem;
-        padding: 0.05rem 0.3rem;
-        background: transparent !important;
-        border: 1px solid #cbd5e1;
+        padding: 0.15rem 0.45rem;
         line-height: 1.2;
-        border-radius: 0;
+        border-radius: 999px;
+        color: #000 !important;
+    }
+
+    .pms-payment-listing .pms-plans-dt-footer {
+        width: 100%;
+        padding: 0.5rem 0.25rem 0.25rem;
+    }
+
+    .pms-payment-listing .pms-plans-dt-footer .dataTables_length,
+    .pms-payment-listing .pms-plans-dt-footer .dataTables_info,
+    .pms-payment-listing .pms-plans-dt-footer .dataTables_paginate {
+        float: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 0.8125rem;
+        color: #64748b;
+    }
+
+    .pms-payment-listing .pms-plans-dt-footer .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid #94a3b8;
+        padding: 0.2rem 1.75rem 0.2rem 0.5rem;
+        min-height: 32px;
+        height: 32px;
+        font-size: 0.8125rem;
+        margin: 0 0.35rem;
+        background-color: #fff;
+    }
+
+    .pms-payment-listing .pms-plans-dt-footer .dataTables_paginate {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.15rem;
     }
 
     .pms-payment-listing .dataTables_wrapper .dataTables_scroll,
@@ -206,7 +250,7 @@
                 scrollX: false,
                 autoWidth: false,
                 searching: true,
-                dom: 'rt<"d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>',
+                dom: 'rt<"pms-plans-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>',
                 columnDefs: [
                     { width: '36%', searchable: true, targets: 0 },   // Plan Name
                     { width: '16%', searchable: false, targets: 1 },  // Total

@@ -7,35 +7,23 @@
         Operations
     </button>
     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="paymentOperationsDropdown">
-        <li>
-            <a class="dropdown-item" asp-controller="PaymentAudit" asp-action="Index">
-                <i class="bi bi-clipboard-check me-2" aria-hidden="true"></i>Audit Payments
-            </a>
-        </li>
-        <li>
-            <a class="dropdown-item" asp-controller="PaymentAudit" asp-action="Index">
-                <i class="bi bi-clock me-2" aria-hidden="true"></i>Pending Audit
-                <span class="badge bg-warning text-dark ms-1">@(ViewBag.PendingAuditCount ?? 0)</span>
-            </a>
-        </li>
         @if (ViewBag.CanCreate == true)
         {
-            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <a class="dropdown-item" asp-action="RecordPayment">
+                    <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>Add Payment
+                </a>
+            </li>
             <li>
                 <a class="dropdown-item" asp-action="MultiplePayments">
                     <i class="bi bi-layers me-2" aria-hidden="true"></i>Multiple Payments
                 </a>
             </li>
-            <li>
-                <a class="dropdown-item" asp-action="AddPayment">
-                    <i class="bi bi-plus-lg me-2" aria-hidden="true"></i>Add Payment
-                </a>
-            </li>
+            <li><hr class="dropdown-divider" /></li>
         }
-        <li><hr class="dropdown-divider" /></li>
         <li>
-            <button type="button" class="dropdown-item" onclick="window.location.reload()">
-                <i class="bi bi-arrow-clockwise me-2" aria-hidden="true"></i>Refresh
+            <button type="button" class="dropdown-item" id="btnPaymentReceiptOps">
+                <i class="bi bi-printer me-2" aria-hidden="true"></i>Payment Receipt
             </button>
         </li>
     </ul>

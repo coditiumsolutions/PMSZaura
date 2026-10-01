@@ -111,7 +111,7 @@ public sealed class NavigationService : INavigationService
                     Controller = "Payment",
                     Action = "CustomerPayments",
                     IconClass = "fas fa-money-bill-wave me-2",
-                    ActiveAction = "CustomerPayments"
+                    ActiveActions = new[] { "CustomerPayments", "Index" }
                 },
                 new NavigationMenuItemViewModel
                 {
@@ -123,11 +123,11 @@ public sealed class NavigationService : INavigationService
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Pending Payments",
-                    Controller = "Payment",
-                    Action = "PendingPayments",
-                    IconClass = "fas fa-clock me-2",
-                    ActiveAction = "PendingPayments"
+                    Label = "Audit Section",
+                    Controller = "PaymentAudit",
+                    Action = "Index",
+                    IconClass = "fas fa-clipboard-check me-2",
+                    ActiveActions = new[] { "Index", "Audit" }
                 }
             }
         },
@@ -438,16 +438,38 @@ public sealed class NavigationService : INavigationService
                 && string.Equals(queryId, item.ActiveRouteId, StringComparison.OrdinalIgnoreCase);
         }
 
+        var actionMatches = true;
         if (item.ActiveActions is { Length: > 0 })
         {
-            return item.ActiveActions.Any(a => string.Equals(action, a, StringComparison.OrdinalIgnoreCase));
+            actionMatches = item.ActiveActions.Any(a => string.Equals(action, a, StringComparison.OrdinalIgnoreCase));
+        }
+        else if (!string.IsNullOrEmpty(item.ActiveAction))
+        {
+            actionMatches = string.Equals(action, item.ActiveAction, StringComparison.OrdinalIgnoreCase);
+        }
+        else if (!string.IsNullOrEmpty(item.ExcludeActiveAction))
+        {
+            actionMatches = !string.Equals(action, item.ExcludeActiveAction, StringComparison.OrdinalIgnoreCase);
         }
 
-        if (!string.IsNullOrEmpty(item.ActiveAction))
-            return string.Equals(action, item.ActiveAction, StringComparison.OrdinalIgnoreCase);
+        if (!actionMatches)
+            return false;
 
-        if (!string.IsNullOrEmpty(item.ExcludeActiveAction))
-            return !string.Equals(action, item.ExcludeActiveAction, StringComparison.OrdinalIgnoreCase);
+        if (!string.IsNullOrEmpty(item.ActiveQueryKey))
+        {
+            var queryValue = httpContext?.Request.Query[item.ActiveQueryKey].ToString() ?? string.Empty;
+
+            if (!string.IsNullOrEmpty(item.ExcludeActiveQueryValue)
+                && string.Equals(queryValue, item.ExcludeActiveQueryValue, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (item.ActiveQueryValue != null)
+            {
+                return string.Equals(queryValue, item.ActiveQueryValue, StringComparison.OrdinalIgnoreCase);
+            }
+        }
 
         return true;
     }
