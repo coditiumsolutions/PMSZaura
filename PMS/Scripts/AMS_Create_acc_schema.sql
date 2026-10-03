@@ -1,7 +1,7 @@
 /*
   AMS — create acc schema and tables (from AMS_plan.md §3).
   Idempotent: skips objects that already exist.
-  Run against PMSAbbas (or your target DB). Ref: db.txt (dbo tables), dbAccounts.txt (module inventory).
+  Run against Zaura (or your target DB). Ref: db.txt (dbo tables), dbAccounts.txt (module inventory).
 
   PMS integration types (align with dbo / EF Models):
   - User refs (CreatedBy, PostedBy, …): NVARCHAR(10) — dbo.Users.UserID

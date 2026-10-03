@@ -13,7 +13,7 @@ class Program
         Console.WriteLine();
 
         var projectID = "5CF67911C0"; // Apartment project
-        var connectionString = "Server=localhost;Database=PMSAbbas;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;";
+        var connectionString = "Server=localhost;Database=DBZaura;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;";
         var optionsBuilder = new DbContextOptionsBuilder<PMSDbContext>();
         optionsBuilder.UseSqlServer(connectionString);
 

@@ -1,6 +1,6 @@
 param(
     [string]$ServerInstance = "localhost",
-    [string]$DatabaseName = "PMSAbbas",
+    [string]$DatabaseName = "DBZaura",
     [string]$OutputFile = "d:\PMS\PMS\PMS\Scripts\PMS_Migration_Full.sql",
     [string]$Username = "sa",
     [string]$Password = "Pakistan@786"

@@ -1,18 +1,18 @@
 ﻿-- ====================================================================
 -- PMS Migration SQL (schema + data)
 -- Generated: 2026-05-05 11:04:36
--- Source: localhost / PMSAbbas
+-- Source: localhost / DBZaura
 -- ====================================================================
 SET NOCOUNT ON;
 SET XACT_ABORT ON;
 GO
 
-IF DB_ID(N'PMSAbbas') IS NULL
+IF DB_ID(N'DBZaura') IS NULL
 BEGIN
-    CREATE DATABASE [PMSAbbas];
+    CREATE DATABASE [DBZaura];
 END
 GO
-USE [PMSAbbas];
+USE [DBZaura];
 GO
 
 

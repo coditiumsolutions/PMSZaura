@@ -12,7 +12,7 @@ class Program
         Console.WriteLine("=== Customer Generation Script ===");
         Console.WriteLine();
 
-        var connectionString = "Server=localhost;Database=PMSAbbas;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;";
+        var connectionString = "Server=localhost;Database=DBZaura;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;";
         var optionsBuilder = new DbContextOptionsBuilder<PMSDbContext>();
         optionsBuilder.UseSqlServer(connectionString);
 

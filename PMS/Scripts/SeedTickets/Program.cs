@@ -47,7 +47,7 @@ class Program
     {
         var connectionString = args.Length > 0
             ? args[0]
-            : "Server=localhost;Database=PMSAbbas;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;";
+            : "Server=localhost;Database=DBZaura;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;";
 
         var options = new DbContextOptionsBuilder<PMSDbContext>().UseSqlServer(connectionString).Options;
         using var context = new PMSDbContext(options);

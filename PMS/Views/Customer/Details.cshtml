@@ -440,10 +440,28 @@
                                     <div class="col-12 col-lg-10">
                                         <div class="pms-registration-details-value">
                                             <div class="btn-group" role="group">
-                                                <a asp-controller="Allotment" asp-action="Details" asp-route-id="@allotment.AllotmentID"
-                                                   class="btn btn-sm btn-outline-info" title="View Allotment">
-                                                    <i class="fas fa-eye me-1"></i>View
-                                                </a>
+                                                @{
+                                                    var floorPlanProjectId = allotment.Property?.ProjectID
+                                                        ?? Model.ProjectID
+                                                        ?? Model.PaymentPlan?.ProjectID;
+                                                    var floorPlanSubProject = allotment.Property?.SubProject;
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(floorPlanProjectId))
+                                                {
+                                                    <a asp-controller="Project" asp-action="FloorPlan"
+                                                       asp-route-projectId="@floorPlanProjectId"
+                                                       asp-route-subProject="@floorPlanSubProject"
+                                                       class="btn btn-sm btn-outline-info" title="Open Floor Plan Allotment">
+                                                        <i class="fas fa-layer-group me-1"></i>Allotment
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    <a asp-controller="Project" asp-action="FloorPlan"
+                                                       class="btn btn-sm btn-outline-info" title="Open Floor Plan Allotment">
+                                                        <i class="fas fa-layer-group me-1"></i>Allotment
+                                                    </a>
+                                                }
                                                 @if (allotment.WorkFlowStatus == "Pending" || allotment.WorkFlowStatus == "Pending Approval")
                                                 {
                                                     <a asp-controller="Allotment" asp-action="Details" asp-route-id="@allotment.AllotmentID"
@@ -453,7 +471,9 @@
                                                 }
                                                 else
                                                 {
-                                                    <a href="@Url.Action("UnAllot", "Allotment")"
+                                                    <a asp-controller="Allotment" asp-action="UnAllot"
+                                                       asp-route-allotmentId="@allotment.AllotmentID"
+                                                       asp-route-customerId="@Model.CustomerID"
                                                        class="btn btn-sm btn-outline-danger" title="Un-Allot Property">
                                                         <i class="fas fa-undo me-1"></i>Un-Allot
                                                     </a>
@@ -475,86 +495,65 @@
                             This customer does not have a property allotted yet. You can start the allotment process below.
                         </div>
 
-                        @if (Model.PaymentPlan == null || string.IsNullOrEmpty(Model.PaymentPlan.ProjectID) || string.IsNullOrEmpty(Model.RegisteredSize))
-                        {
-                            <div class="alert alert-warning">
-                                <i class="fas fa-exclamation-triangle me-2"></i>
-                                <strong>Cannot Create Allotment:</strong>
-                                @if (Model.PaymentPlan == null || string.IsNullOrEmpty(Model.PaymentPlan.ProjectID))
-                                {
-                                    <p>Customer must have a Payment Plan with an assigned Project.</p>
-                                }
-                                @if (string.IsNullOrEmpty(Model.RegisteredSize))
-                                {
-                                    <p>Customer must have a Registered Size set.</p>
-                                }
-                                <a asp-action="Edit" asp-route-id="@Model.CustomerID" class="btn btn-sm btn-primary mt-2">
-                                    <i class="fas fa-edit me-2"></i>Edit Customer to Set Required Information
-                                </a>
-                            </div>
-                        }
-                        else
-                        {
-                            <h6 class="mb-3 pms-customer-section-title">
-                                <i class="fas fa-plus-circle me-2"></i>Start Allotment Process
-                            </h6>
-                            <form id="createAllotmentForm">
-                                <input type="hidden" id="customerID" value="@Model.CustomerID" />
-                                <input type="hidden" id="projectID" value="@Model.PaymentPlan.ProjectID" />
-                                <input type="hidden" id="registeredSize" value="@Model.RegisteredSize" />
+                        <h6 class="mb-3 pms-customer-section-title">
+                            <i class="fas fa-plus-circle me-2"></i>Start Allotment Process
+                        </h6>
+                        <form id="createAllotmentForm">
+                            <input type="hidden" id="customerID" value="@Model.CustomerID" />
+                            <input type="hidden" id="projectID" value="@(Model.PaymentPlan?.ProjectID ?? Model.ProjectID)" />
+                            <input type="hidden" id="registeredSize" value="@Model.RegisteredSize" />
 
-                                <div class="pms-registration-4col-form">
-                                    <div class="row g-2 pms-registration-4col-row align-items-start">
-                                        <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label">Customer Project</label></div>
-                                        <div class="col-12 col-lg-4">
-                                            <input type="text" class="form-control" value="@(Model.PaymentPlan.Project?.ProjectName ?? "N/A")" readonly />
-                                            <small class="text-muted d-block">Properties will be filtered by this project</small>
-                                        </div>
-                                        <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label">Registered Size</label></div>
-                                        <div class="col-12 col-lg-4">
-                                            <input type="text" class="form-control" value="@Model.RegisteredSize" readonly />
-                                            <small class="text-muted d-block">Properties will be filtered by this size</small>
-                                        </div>
+                            <div class="pms-registration-4col-form">
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label">Customer Project</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <input type="text" class="form-control" value="@(Model.PaymentPlan?.Project?.ProjectName ?? Model.Project?.ProjectName ?? "N/A")" readonly />
+                                        <small class="text-muted d-block">Properties will be filtered by this project</small>
                                     </div>
-                                    <div class="row g-2 pms-registration-4col-row align-items-start">
-                                        <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="allotmentType">Allotment Type *</label></div>
-                                        <div class="col-12 col-lg-4">
-                                            <select id="allotmentType" class="form-select" required>
-                                                <option value="">Select Type</option>
-                                                <option value="Regular">Regular</option>
-                                                <option value="Transfer">Transfer</option>
-                                                <option value="Balloting">Balloting</option>
-                                                <option value="Special">Special</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="propertyID">Select Property *</label></div>
-                                        <div class="col-12 col-lg-4">
-                                            <select id="propertyID" class="form-select" required>
-                                                <option value="">Loading properties...</option>
-                                            </select>
-                                            <small class="text-muted d-block">Only available properties matching project and size are shown</small>
-                                        </div>
-                                    </div>
-                                    <div class="row g-2 pms-registration-4col-row align-items-start">
-                                        <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="comments">Comments</label></div>
-                                        <div class="col-12 col-lg-10">
-                                            <textarea id="comments" class="form-control" rows="3" placeholder="Enter any comments or notes..."></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="row g-2 pms-registration-4col-row align-items-start">
-                                        <div class="col-12 col-lg-2"></div>
-                                        <div class="col-12 col-lg-10">
-                                            <button type="submit" class="btn btn-success btn-sm">
-                                                <i class="fas fa-check me-1"></i>Create Allotment
-                                            </button>
-                                            <button type="button" class="btn btn-secondary btn-sm" onclick="loadProperties()">
-                                                <i class="fas fa-redo me-1"></i>Refresh Properties List
-                                            </button>
-                                        </div>
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label">Registered Size</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <input type="text" class="form-control" value="@(Model.RegisteredSize ?? "N/A")" readonly />
+                                        <small class="text-muted d-block">Properties will be filtered by this size</small>
                                     </div>
                                 </div>
-                            </form>
-                        }
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="allotmentType">Allotment Type *</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <select id="allotmentType" class="form-select" required>
+                                            <option value="">Select Type</option>
+                                            <option value="Regular">Regular</option>
+                                            <option value="Transfer">Transfer</option>
+                                            <option value="Balloting">Balloting</option>
+                                            <option value="Special">Special</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="propertyID">Select Property *</label></div>
+                                    <div class="col-12 col-lg-4">
+                                        <select id="propertyID" class="form-select" required>
+                                            <option value="">Loading properties...</option>
+                                        </select>
+                                        <small class="text-muted d-block">Only available properties matching project and size are shown</small>
+                                    </div>
+                                </div>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><label class="form-label pms-registration-4col-label" for="comments">Comments</label></div>
+                                    <div class="col-12 col-lg-10">
+                                        <textarea id="comments" class="form-control" rows="3" placeholder="Enter any comments or notes..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"></div>
+                                    <div class="col-12 col-lg-10">
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="fas fa-check me-1"></i>Create Allotment
+                                        </button>
+                                        <button type="button" class="btn btn-secondary btn-sm" onclick="loadProperties()">
+                                            <i class="fas fa-redo me-1"></i>Refresh Properties List
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 }
                     </div>

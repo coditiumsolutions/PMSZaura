@@ -582,22 +582,91 @@ namespace PMS.Controllers
 
             var normalized = raw.ToLowerInvariant().Replace("-", " ").Replace("_", " ");
             normalized = Regex.Replace(normalized, @"\s+", " ").Trim();
+            // "FIRST FLOOR" / "Floor 12" -> focus on the ordinal / number token(s)
+            normalized = Regex.Replace(normalized, @"\bfloor\b", " ").Trim();
+            normalized = Regex.Replace(normalized, @"\s+", " ").Trim();
 
-            // Desired sequence: Basement -> Lower Ground -> Ground -> 1st -> 2nd -> ...
+            // Desired sequence: Basement -> Lower Ground -> Ground -> 1st/First -> 2nd/Second -> ...
             if (normalized == "basement" || normalized == "bsmt")
                 return -100;
             if (normalized == "lower ground" || normalized == "lg")
                 return -50;
-            if (normalized == "ground" || normalized == "g" || normalized == "gf" || normalized == "ground floor")
+            if (normalized == "ground" || normalized == "g" || normalized == "gf")
                 return 0;
 
-            // Parse ordinals / numeric floors like "24th", "26th", "12", "Floor 12", etc.
+            // Numeric floors: "24th", "26th", "12", "Floor 12", etc.
             var match = Regex.Match(normalized, @"\d+");
             if (match.Success && int.TryParse(match.Value, out var n))
                 return n;
 
+            // Word ordinals: "FIRST", "SECOND", "EIGHTH", "ELEVENTH", "TWENTY FIRST", etc.
+            var wordOrder = ParseFloorWordNumber(normalized);
+            if (wordOrder.HasValue)
+                return wordOrder.Value;
+
             // Unknown text floors come after numbered floors and before "No floor mentioned".
             return 9000;
+        }
+
+        /// <summary>Maps spoken floor names (first, second, eleventh, twenty first, …) to a sort index.</summary>
+        private static int? ParseFloorWordNumber(string normalized)
+        {
+            if (string.IsNullOrWhiteSpace(normalized))
+                return null;
+
+            // Strip ordinal suffixes if mixed forms slip through (e.g. "firstst") — keep simple word map.
+            var units = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["zero"] = 0,
+                ["first"] = 1, ["one"] = 1,
+                ["second"] = 2, ["two"] = 2,
+                ["third"] = 3, ["three"] = 3,
+                ["fourth"] = 4, ["four"] = 4,
+                ["fifth"] = 5, ["five"] = 5,
+                ["sixth"] = 6, ["six"] = 6,
+                ["seventh"] = 7, ["seven"] = 7,
+                ["eighth"] = 8, ["eight"] = 8,
+                ["ninth"] = 9, ["nine"] = 9,
+                ["tenth"] = 10, ["ten"] = 10,
+                ["eleventh"] = 11, ["eleven"] = 11,
+                ["twelfth"] = 12, ["twelve"] = 12,
+                ["thirteenth"] = 13, ["thirteen"] = 13,
+                ["fourteenth"] = 14, ["fourteen"] = 14,
+                ["fifteenth"] = 15, ["fifteen"] = 15,
+                ["sixteenth"] = 16, ["sixteen"] = 16,
+                ["seventeenth"] = 17, ["seventeen"] = 17,
+                ["eighteenth"] = 18, ["eighteen"] = 18,
+                ["nineteenth"] = 19, ["nineteen"] = 19,
+                ["twentieth"] = 20, ["twenty"] = 20,
+                ["thirtieth"] = 30, ["thirty"] = 30,
+                ["fortieth"] = 40, ["forty"] = 40,
+                ["fiftieth"] = 50, ["fifty"] = 50,
+            };
+
+            var tokens = normalized.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length == 1)
+            {
+                return units.TryGetValue(tokens[0], out var single) ? single : null;
+            }
+
+            // "twenty first", "twenty one", "thirty second", …
+            if (tokens.Length >= 2
+                && units.TryGetValue(tokens[0], out var tens)
+                && tens >= 20 && tens % 10 == 0
+                && units.TryGetValue(tokens[1], out var unit)
+                && unit >= 1 && unit <= 9)
+            {
+                return tens + unit;
+            }
+
+            // Prefer the first recognizable ordinal token in the phrase.
+            foreach (var token in tokens)
+            {
+                if (units.TryGetValue(token, out var value) && value > 0)
+                    return value;
+            }
+
+            return null;
         }
 
         private sealed class SubProjectPrefixMapping

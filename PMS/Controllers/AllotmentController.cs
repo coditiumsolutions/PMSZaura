@@ -896,17 +896,37 @@ namespace PMS.Controllers
             return RedirectToAction(nameof(Edit), new { id });
         }
 
-        // GET: Allotment/UnAllot
-        public async Task<IActionResult> UnAllot()
+        // GET: Allotment/UnAllot?allotmentId=&customerId=
+        public async Task<IActionResult> UnAllot(string? allotmentId = null, string? customerId = null)
         {
             var denied = await EnsurePermissionAsync("Admin");
             if (denied != null) return denied;
-            var allotments = await _context.Allotments
+
+            var allotmentIdTrimmed = allotmentId?.Trim();
+            var customerIdTrimmed = customerId?.Trim();
+
+            var query = _context.Allotments
                 .Include(a => a.Customer)
                 .Include(a => a.Property)
-                .ThenInclude(p => p.Project)
+                .ThenInclude(p => p!.Project)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(allotmentIdTrimmed))
+            {
+                query = query.Where(a => a.AllotmentID == allotmentIdTrimmed);
+            }
+            else if (!string.IsNullOrWhiteSpace(customerIdTrimmed))
+            {
+                query = query.Where(a => a.CustomerID == customerIdTrimmed);
+            }
+
+            var allotments = await query
                 .OrderByDescending(a => a.AllotmentDate)
                 .ToListAsync();
+
+            ViewBag.FilteredAllotmentId = allotmentIdTrimmed;
+            ViewBag.FilteredCustomerId = customerIdTrimmed
+                ?? allotments.FirstOrDefault()?.CustomerID?.Trim();
 
             return View(allotments);
         }
@@ -914,7 +934,7 @@ namespace PMS.Controllers
         // POST: Allotment/ProcessUnAllot
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ProcessUnAllot(string allotmentID, string reason)
+        public async Task<IActionResult> ProcessUnAllot(string allotmentID, string reason, string? returnCustomerId = null)
         {
             var denied = await EnsurePermissionAsync("Admin");
             if (denied != null) return denied;
@@ -938,6 +958,9 @@ namespace PMS.Controllers
 
                 var propertyID = allotment.PropertyID;
                 var customerID = allotment.CustomerID;
+                var redirectCustomerId = !string.IsNullOrWhiteSpace(returnCustomerId)
+                    ? returnCustomerId.Trim()
+                    : customerID?.Trim();
 
                 // Remove allotment
                 _context.Allotments.Remove(allotment);
@@ -963,6 +986,11 @@ namespace PMS.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Allotment successfully cancelled. Property is now available.";
+                if (!string.IsNullOrWhiteSpace(redirectCustomerId))
+                {
+                    return RedirectToAction("Details", "Customer", new { id = redirectCustomerId });
+                }
+
                 return RedirectToAction(nameof(UnAllot));
             }
             catch (Exception ex)

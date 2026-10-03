@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Un-Allot Property";
+    var filteredAllotmentId = ViewBag.FilteredAllotmentId as string;
+    var filteredCustomerId = ViewBag.FilteredCustomerId as string;
+    var isFiltered = !string.IsNullOrWhiteSpace(filteredAllotmentId) || !string.IsNullOrWhiteSpace(filteredCustomerId);
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -9,6 +12,12 @@
         <i class="fas fa-undo me-2"></i>Un-Allot Property
     </h2>
     <div>
+        @if (!string.IsNullOrWhiteSpace(filteredCustomerId))
+        {
+            <a asp-controller="Customer" asp-action="Details" asp-route-id="@filteredCustomerId" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-user me-2"></i>Back to Customer
+            </a>
+        }
         <a asp-action="Index" class="btn btn-outline-primary me-2">
             <i class="fas fa-list me-2"></i>View All Allotments
         </a>
@@ -29,7 +38,19 @@
 <div class="card">
     <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
         <h5 class="mb-0 text-white">
-            <i class="fas fa-list me-2"></i>Current Allotments
+            <i class="fas fa-list me-2"></i>
+            @if (!string.IsNullOrWhiteSpace(filteredAllotmentId))
+            {
+                <text>Selected Allotment</text>
+            }
+            else if (!string.IsNullOrWhiteSpace(filteredCustomerId))
+            {
+                <text>Customer Allotments</text>
+            }
+            else
+            {
+                <text>Current Allotments</text>
+            }
         </h5>
     </div>
     <div class="card-body">
@@ -52,6 +73,7 @@
                     <tbody>
                         @foreach (var allotment in Model)
                         {
+                            var modalSuffix = (allotment.AllotmentID ?? string.Empty).Replace("ALLOT", "").Replace(" ", "");
                             <tr>
                                 <td>
                                     <code>@allotment.AllotmentID</code>
@@ -128,7 +150,7 @@
                                     <button type="button" 
                                             class="btn btn-sm btn-danger" 
                                             data-bs-toggle="modal" 
-                                            data-bs-target="#unallotModal@(allotment.AllotmentID.Replace("ALLOT", ""))"
+                                            data-bs-target="#unallotModal@(modalSuffix)"
                                             title="Un-Allot">
                                         <i class="fas fa-undo me-1"></i>Un-Allot
                                     </button>
@@ -143,7 +165,7 @@
                             </tr>
 
                             <!-- Un-Allot Confirmation Modal -->
-                            <div class="modal fade" id="unallotModal@(allotment.AllotmentID.Replace("ALLOT", ""))" tabindex="-1">
+                            <div class="modal fade" id="unallotModal@(modalSuffix)" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
                                         <div class="modal-header bg-danger text-white">
@@ -168,6 +190,7 @@
                                             <form asp-action="ProcessUnAllot" method="post">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="allotmentID" value="@allotment.AllotmentID" />
+                                                <input type="hidden" name="returnCustomerId" value="@(allotment.CustomerID ?? filteredCustomerId)" />
 
                                                 <div class="mb-3">
                                                     <label class="form-label fw-bold">Reason for Un-Allotment *</label>
@@ -198,10 +221,23 @@
             <div class="text-center py-5">
                 <i class="fas fa-inbox fa-4x mb-3 text-muted"></i>
                 <h5 class="text-muted">No Allotments Found</h5>
-                <p class="text-muted">There are currently no property allotments in the system.</p>
-                <a asp-action="Create" class="btn btn-primary">
-                    <i class="fas fa-hand-holding me-2"></i>Create First Allotment
-                </a>
+                @if (isFiltered)
+                {
+                    <p class="text-muted">No allotment matched this customer/selection.</p>
+                    @if (!string.IsNullOrWhiteSpace(filteredCustomerId))
+                    {
+                        <a asp-controller="Customer" asp-action="Details" asp-route-id="@filteredCustomerId" class="btn btn-outline-secondary">
+                            <i class="fas fa-user me-2"></i>Back to Customer
+                        </a>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">There are currently no property allotments in the system.</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-hand-holding me-2"></i>Create First Allotment
+                    </a>
+                }
             </div>
         }
     </div>
@@ -217,4 +253,3 @@
         font-weight: 600;
     }
 </style>
-

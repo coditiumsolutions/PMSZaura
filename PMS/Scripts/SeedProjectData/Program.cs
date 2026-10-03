@@ -9,7 +9,7 @@ using PMS.Models;
 /// <summary>
 /// Seeds 100 Customers and 100 Properties per project for dashboard/testing.
 /// Usage: dotnet run [connectionString]
-/// If connectionString is omitted, uses: Server=localhost;Database=PMS;User Id=sa;Password=Pakistan@786;TrustServerCertificate=true;
+/// If connectionString is omitted, uses: Server=localhost;Database=DBZaura;User Id=sa;Password=Pakistan@786;TrustServerCertificate=true;
 /// </summary>
 class Program
 {
@@ -17,7 +17,7 @@ class Program
     {
         var connectionString = args.Length > 0
             ? args[0]
-            : "Server=localhost;Database=PMS;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;";
+            : "Server=localhost;Database=DBZaura;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;";
 
         var optionsBuilder = new DbContextOptionsBuilder<PMSDbContext>();
         optionsBuilder.UseSqlServer(connectionString);

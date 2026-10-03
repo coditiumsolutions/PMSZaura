@@ -21,11 +21,11 @@ dotnet run
 Or with a custom connection string (e.g. different server or database name):
 
 ```powershell
-dotnet run "Server=172.20.229.3;Database=PMS;User Id=sa;Password=YourPassword;TrustServerCertificate=true;"
+dotnet run "Server=172.20.229.3;Database=DBZaura;User Id=sa;Password=YourPassword;TrustServerCertificate=true;"
 ```
 
 - Default connection string if no argument:  
-  `Server=localhost;Database=PMS;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;`
+  `Server=localhost;Database=DBZaura;User Id=sa;Password=Pakistan@786;Encrypt=Mandatory;TrustServerCertificate=true;`
 - Use your actual server, database, and password in the connection string as needed.
 
 ## Requirements

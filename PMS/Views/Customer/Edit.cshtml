@@ -454,7 +454,9 @@
                                                             }
                                                             else
                                                             {
-                                                                <a href="@Url.Action("UnAllot", "Allotment")"
+                                                                <a asp-controller="Allotment" asp-action="UnAllot"
+                                                                   asp-route-allotmentId="@allotment.AllotmentID"
+                                                                   asp-route-customerId="@Model.CustomerID"
                                                                    class="btn btn-sm btn-outline-danger" title="Un-Allot Property" onclick="event.stopPropagation();">
                                                                     <i class="fas fa-undo"></i>
                                                                 </a>

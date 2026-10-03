@@ -2,135 +2,105 @@
 
 @{
     ViewData["Title"] = "Delete Customer";
+    string Show(string? value) => string.IsNullOrWhiteSpace(value) ? "N/A" : value;
 }
 
-<div class="row">
-    <div class="col-md-8 mx-auto">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-danger">
-                <i class="fas fa-trash-alt me-2"></i>Delete Customer
-            </h2>
+<div class="d-flex justify-content-end align-items-center mb-3">
+    <div class="d-flex flex-wrap align-items-stretch gap-2 pms-customer-details-actions">
+        <a asp-action="Details" asp-route-id="@Model.CustomerID" class="btn btn-sm pms-customer-details-main-btn pms-customer-details-main-btn--operations">
+            <i class="fas fa-eye me-1"></i>View Details
+        </a>
+        <a asp-action="Index" class="btn btn-sm pms-customer-details-main-btn pms-customer-details-main-btn--back">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<div class="card pms-listing-flat pms-customer-details pms-customer-delete">
+    <div class="card-header p-0">
+        <div class="pms-customer-delete-bar">
+            <i class="fas fa-user-circle me-2"></i>Delete Customer
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="pms-customer-delete-note" role="status">
+            <i class="fas fa-exclamation-triangle me-2" aria-hidden="true"></i>
+            <span>Deleting <strong>@Model.FullName</strong> cannot be undone. Related allotments, payments, and activity logs may be affected.</span>
         </div>
 
-        <div class="alert alert-danger" role="alert">
-            <h4 class="alert-heading">
-                <i class="fas fa-exclamation-triangle me-2"></i>Warning!
-            </h4>
-            <p>Are you sure you want to delete this customer? This action cannot be undone.</p>
-            <hr>
-            <p class="mb-0">
-                <strong>Note:</strong> Deleting this customer may affect related records such as allotments, payments, and logs.
-            </p>
-        </div>
-
-        <div class="card mb-4">
-            <div class="card-header bg-danger text-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-user me-2"></i>Customer Information
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-id-badge me-2"></i>Customer ID</label>
-                            <p><code>@Model.CustomerID</code></p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-toggle-on me-2"></i>Status</label>
-                            <p>
-                                <span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-warning")">
-                                    @Model.Status
-                                </span>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-user me-2"></i>Full Name</label>
-                            <p>@Model.FullName</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-user-friends me-2"></i>Father Name</label>
-                            <p>@Model.FatherName</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-id-card me-2"></i>National ID</label>
-                            <p>@Model.CNIC</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-phone me-2"></i>Phone</label>
-                            <p>@Model.Phone</p>
-                            <label class="mt-2"><i class="fas fa-mobile-alt me-2"></i>Mobile</label>
-                            <p>@Model.MobileNo</p>
-                            @if (!string.IsNullOrWhiteSpace(Model.MobileNo2))
-                            {
-                                <label class="mt-2"><i class="fas fa-mobile-alt me-2"></i>Mobile 2</label>
-                                <p>@Model.MobileNo2</p>
-                            }
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-envelope me-2"></i>Email</label>
-                            <p>@Model.Email</p>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="detail-field">
-                            <label><i class="fas fa-city me-2"></i>City</label>
-                            <p>@Model.City</p>
-                        </div>
-                    </div>
-                    @if (Model.PaymentPlan != null)
-                    {
-                        <div class="col-md-12 mb-3">
-                            <div class="detail-field">
-                                <label><i class="fas fa-credit-card me-2"></i>Payment Plan</label>
-                                <p>@Model.PaymentPlan.PlanName - @Model.PaymentPlan.TotalAmount.ToString("C")</p>
-                            </div>
-                        </div>
-                    }
-                    <div class="col-md-6">
-                        <div class="detail-field">
-                            <label><i class="fas fa-calendar-alt me-2"></i>Created Date</label>
-                            <p>@Model.CreatedAt.ToString("MMMM dd, yyyy")</p>
-                        </div>
+        <div class="pms-registration-4col-form">
+            <div class="row g-2 pms-registration-4col-row align-items-start">
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Customer ID</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><code>@Model.CustomerID</code></div></div>
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Status</div></div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-registration-details-value">
+                        <span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-warning")">@Show(Model.Status)</span>
                     </div>
                 </div>
             </div>
+            <div class="row g-2 pms-registration-4col-row align-items-start">
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Full Name</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Show(Model.FullName)</div></div>
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">S/D/W/O</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Show(Model.FatherName)</div></div>
+            </div>
+            <div class="row g-2 pms-registration-4col-row align-items-start">
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">National ID</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Show(Model.CNIC)</div></div>
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Phone</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Show(Model.Phone)</div></div>
+            </div>
+            <div class="row g-2 pms-registration-4col-row align-items-start">
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Mobile</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Show(Model.MobileNo)</div></div>
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Email</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Show(Model.Email)</div></div>
+            </div>
+            <div class="row g-2 pms-registration-4col-row align-items-start">
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">City</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Show(Model.City)</div></div>
+                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Created</div></div>
+                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.CreatedAt.ToString("dd-MM-yyyy")</div></div>
+            </div>
+            @if (Model.PaymentPlan != null)
+            {
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Payment Plan</div></div>
+                    <div class="col-12 col-lg-10">
+                        <div class="pms-registration-details-value">@Model.PaymentPlan.PlanName — @Model.PaymentPlan.TotalAmount.ToString("C")</div>
+                    </div>
+                </div>
+            }
         </div>
 
-        <form asp-action="Delete" method="post">
+        <h6 class="pms-customer-section-title">Confirm deletion</h6>
+        <form asp-action="Delete" method="post" id="customerDeleteForm">
             <input type="hidden" asp-for="CustomerID" />
-            <div class="card border-danger">
-                <div class="card-body text-center">
-                    <h5 class="text-danger mb-4">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        Confirm Deletion
-                    </h5>
-                    <p class="mb-4">
-                        Type <strong>DELETE</strong> below to confirm this action:
-                    </p>
-                    <div class="mb-4">
-                        <input type="text" id="confirmText" class="form-control text-center" 
-                               placeholder="Type DELETE to confirm" style="max-width: 300px; margin: 0 auto;" />
+            <div class="pms-registration-4col-form">
+                <div class="row g-2 pms-registration-4col-row align-items-start">
+                    <div class="col-12 col-lg-2">
+                        <label for="confirmText" class="pms-registration-4col-label">Type DELETE</label>
                     </div>
-                    <div class="d-flex justify-content-center gap-2">
-                        <button type="submit" class="btn btn-danger" id="deleteBtn" disabled>
-                            <i class="fas fa-trash-alt me-2"></i>Yes, Delete Customer
-                        </button>
-                        <a asp-action="Index" class="btn btn-secondary">
-                            <i class="fas fa-times me-2"></i>Cancel
-                        </a>
+                    <div class="col-12 col-lg-4">
+                        <input type="text"
+                               id="confirmText"
+                               class="form-control"
+                               autocomplete="off"
+                               spellcheck="false"
+                               placeholder="DELETE"
+                               aria-describedby="confirmHelp" />
+                    </div>
+                    <div class="col-12 col-lg-6">
+                        <div class="d-flex flex-wrap gap-2 pms-customer-delete-actions">
+                            <button type="submit" class="btn btn-sm pms-customer-delete-btn" id="deleteBtn" disabled>
+                                <i class="fas fa-trash-alt me-1"></i>Delete Customer
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.CustomerID" class="btn btn-sm pms-customer-details-main-btn pms-customer-details-main-btn--back">
+                                Cancel
+                            </a>
+                        </div>
+                        <div id="confirmHelp" class="pms-customer-delete-help">Enter DELETE to enable the button.</div>
                     </div>
                 </div>
             </div>
@@ -139,74 +109,180 @@
 </div>
 
 <style>
-    .detail-field {
-        padding: 12px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #fff5f5 100%);
-        border-radius: 8px;
-        border-left: 3px solid #dc3545;
+    .pms-customer-details-actions > .pms-customer-details-main-btn,
+    .pms-customer-delete-actions > .pms-customer-details-main-btn,
+    .pms-customer-delete-actions > .pms-customer-delete-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
     }
 
-    .detail-field label {
-        display: block;
-        margin-bottom: 5px;
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        color: #666;
+    .pms-customer-details-main-btn,
+    .pms-customer-delete-btn {
+        height: 38px;
+        min-height: 38px;
+        min-width: 8.5rem;
+        padding: 0.4rem 1rem;
+        border-radius: 0 !important;
         font-weight: 600;
+        font-size: 0.875rem;
+        line-height: 1.2;
+        border: 1px solid transparent;
+        box-shadow: none;
     }
 
-    .detail-field p {
-        font-size: 15px;
-        color: var(--text-dark);
-        margin-bottom: 0;
-        font-weight: 500;
+    .pms-customer-details-main-btn--operations {
+        background-color: #7679EE !important;
+        border-color: #6366e0 !important;
+        color: #fff !important;
     }
 
-    code {
-        background: #ffe5e5;
-        color: #dc3545;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 13px;
+    .pms-customer-details-main-btn--operations:hover,
+    .pms-customer-details-main-btn--operations:focus {
+        background-color: #6366e0 !important;
+        border-color: #5558d4 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-details-main-btn--back {
+        background-color: #F6B801 !important;
+        border-color: #dda500 !important;
+        color: #1f1700 !important;
+    }
+
+    .pms-customer-details-main-btn--back:hover,
+    .pms-customer-details-main-btn--back:focus {
+        background-color: #dda500 !important;
+        border-color: #c79400 !important;
+        color: #140f00 !important;
+    }
+
+    .pms-customer-delete.card {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+
+    .pms-customer-delete > .card-header {
+        background-color: #6059A6 !important;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+    }
+
+    .pms-customer-delete-bar {
+        background-color: #6059A6;
+        color: #fff;
+        font-weight: 700;
+        font-size: 0.78rem;
+        padding: 0.55rem 0.7rem;
+        letter-spacing: 0.01em;
+    }
+
+    .pms-customer-delete > .card-body {
+        background: transparent;
+        padding: 0.65rem 0 0;
+    }
+
+    .pms-customer-delete-note {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.15rem;
+        margin: 0.15rem 0 0.7rem;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.8125rem;
+        line-height: 1.35;
+        color: #7c2d12;
+        background: #fff7ed;
+        border-left: 3px solid #f59e0b;
+    }
+
+    .pms-customer-delete .pms-registration-4col-label {
+        color: #000 !important;
         font-weight: 600;
+        font-size: 0.72rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 0 !important;
+    }
+
+    .pms-customer-delete .pms-customer-section-title {
+        margin-top: 0.9rem !important;
+        margin-bottom: 0.45rem !important;
+        padding-bottom: 0.3rem !important;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #0f172a;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .pms-customer-delete .form-control {
+        min-height: 32px;
+        height: 32px;
+        padding: 0.25rem 0.6rem;
+        font-size: 0.8125rem;
+        border-radius: 0;
+        border: 1.5px solid #334155;
+        color: #1e3a8a;
+    }
+
+    .pms-customer-delete .form-control:focus {
+        border-color: #0f172a;
+        box-shadow: 0 0 0 0.15rem rgba(15, 23, 42, 0.12);
+    }
+
+    .pms-customer-delete-btn {
+        background-color: #dc3545 !important;
+        border-color: #b02a37 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-delete-btn:hover:not(:disabled),
+    .pms-customer-delete-btn:focus:not(:disabled) {
+        background-color: #bb2d3b !important;
+        border-color: #b02a37 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-delete-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+
+    .pms-customer-delete-help {
+        margin-top: 0.3rem;
+        font-size: 0.72rem;
+        color: #64748b;
+    }
+
+    @@media (max-width: 991.98px) {
+        .pms-customer-delete-actions {
+            margin-top: 0.35rem;
+        }
     }
 </style>
 
 @section Scripts {
     <script>
-        document.getElementById('confirmText').addEventListener('input', function() {
-            const deleteBtn = document.getElementById('deleteBtn');
-            if (this.value.toUpperCase() === 'DELETE') {
-                deleteBtn.disabled = false;
-                deleteBtn.classList.add('pulse');
-            } else {
-                deleteBtn.disabled = true;
-                deleteBtn.classList.remove('pulse');
-            }
-        });
+        (function () {
+            var input = document.getElementById('confirmText');
+            var deleteBtn = document.getElementById('deleteBtn');
+            var form = document.getElementById('customerDeleteForm');
+            if (!input || !deleteBtn || !form) return;
 
-        // Prevent accidental form submission
-        document.querySelector('form').addEventListener('submit', function(e) {
-            const confirmText = document.getElementById('confirmText').value;
-            if (confirmText.toUpperCase() !== 'DELETE') {
-                e.preventDefault();
-                alert('Please type DELETE to confirm deletion.');
-                return false;
+            function isConfirmed() {
+                return input.value.trim().toUpperCase() === 'DELETE';
             }
-            return confirm('Are you absolutely sure you want to delete this customer?');
-        });
+
+            input.addEventListener('input', function () {
+                deleteBtn.disabled = !isConfirmed();
+            });
+
+            form.addEventListener('submit', function (e) {
+                if (!isConfirmed()) {
+                    e.preventDefault();
+                    input.focus();
+                }
+            });
+        })();
     </script>
-
-    <style>
-        @@keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .pulse {
-            animation: pulse 1s infinite;
-        }
-    </style>
 }
-
