@@ -215,8 +215,40 @@
           <Border><Style>None</Style></Border>
         </Style>
       </Tablix>
+      <Textbox Name="DealByPersonBox">
+        <CanGrow>true</CanGrow>
+        <KeepTogether>true</KeepTogether>
+        <Paragraphs>
+          <Paragraph>
+            <TextRuns>
+              <TextRun>
+                <Value>="Deal By Person : " &amp; First(Fields!DealByPerson.Value, "AccountStatementHeader")</Value>
+                <Style>
+                  <FontFamily>Segoe UI</FontFamily>
+                  <FontSize>9pt</FontSize>
+                  <FontWeight>Bold</FontWeight>
+                  <Color>#000000</Color>
+                </Style>
+              </TextRun>
+            </TextRuns>
+            <Style />
+          </Paragraph>
+        </Paragraphs>
+        <Top>2.10in</Top>
+        <Left>0in</Left>
+        <Height>0.25in</Height>
+        <Width>7.19in</Width>
+        <ZIndex>2</ZIndex>
+        <Style>
+          <Border>
+            <Style>None</Style>
+          </Border>
+          <PaddingTop>6pt</PaddingTop>
+          <PaddingLeft>2pt</PaddingLeft>
+        </Style>
+      </Textbox>
     </ReportItems>
-    <Height>2.15in</Height>
+    <Height>2.45in</Height>
     <Style />
   </Body>
   <Width>7.5in</Width>
@@ -600,6 +632,10 @@
         </Field>
         <Field Name="PaymentPlanId">
           <DataField>PaymentPlanId</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="DealByPerson">
+          <DataField>DealByPerson</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>

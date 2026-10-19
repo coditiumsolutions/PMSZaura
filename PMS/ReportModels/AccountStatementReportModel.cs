@@ -29,6 +29,7 @@
         public string GrandTotalText { get; set; } = string.Empty;
         public string TotalPaidText { get; set; } = string.Empty;
         public string OutstandingBalanceText { get; set; } = string.Empty;
+        public string DealByPerson { get; set; } = string.Empty;
         public byte[] CompanyLogo { get; set; } = Array.Empty<byte>();
     }
 

@@ -171,7 +171,7 @@ namespace PMS.Services
 
             var header = new AccountStatementReportModel
             {
-                CompanyName = "DHA City M-9, Gateway Prime",
+                CompanyName = "DHA City M-9, Gateway Prime M-2",
                 ReportTitle = "Account Statement",
                 CustomerName = customerName,
                 PlotNumber = plotNumber,
@@ -197,10 +197,25 @@ namespace PMS.Services
                 GrandTotalText = Math.Round(grandTotal, 0, MidpointRounding.AwayFromZero).ToString("N0", EnUs),
                 TotalPaidText = Math.Round(totalPaid, 0, MidpointRounding.AwayFromZero).ToString("N0", EnUs),
                 OutstandingBalanceText = Math.Round(outstanding, 0, MidpointRounding.AwayFromZero).ToString("N0", EnUs),
+                DealByPerson = ResolveDealByPerson(customer),
                 CompanyLogo = await LoadAccountStatementLogoAsync() ?? Array.Empty<byte>()
             };
 
             return (header, lines);
+        }
+
+        /// <summary>
+        /// Same dealer display rules as Customer Details: manual DealerName when not registered, else DealershipName.
+        /// </summary>
+        private static string ResolveDealByPerson(Customer customer)
+        {
+            if (customer.IsDealerRegistered == 0 && !string.IsNullOrWhiteSpace(customer.DealerName))
+                return customer.DealerName.Trim();
+            if (!string.IsNullOrWhiteSpace(customer.Dealer?.DealershipName))
+                return customer.Dealer!.DealershipName.Trim();
+            if (!string.IsNullOrWhiteSpace(customer.DealerName))
+                return customer.DealerName.Trim();
+            return "-";
         }
 
         private static string ResolveStatus(decimal paidAmount, decimal balance, List<Payment> payments)

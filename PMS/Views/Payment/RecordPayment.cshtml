@@ -722,6 +722,46 @@
                 setSubmitState();
             });
 
+            // Payment method placeholder + Cash locks Bank Name
+            var previousBankName = $('#bankName').val() || '';
+            function ensureCashBankOption() {
+                var $bank = $('#bankName');
+                if ($bank.find('option[value="Cash"]').length === 0) {
+                    $bank.append($('<option></option>').attr('value', 'Cash').text('Cash').attr('data-auto-cash', '1'));
+                }
+            }
+            function applyPaymentMethodBankRules() {
+                var method = $('#method').val();
+                var $bank = $('#bankName');
+                var refInput = $('#referenceNo');
+
+                if (method === 'Cash') {
+                    refInput.attr('placeholder', 'Receipt Number (optional)');
+                    if (!$bank.prop('disabled')) {
+                        previousBankName = $bank.val() || '';
+                    }
+                    ensureCashBankOption();
+                    $bank.val('Cash').prop('disabled', true);
+                } else {
+                    if (method === 'DD/DS') refInput.attr('placeholder', 'DD/DS Reference Number');
+                    else if (method === 'Bank Transfer') refInput.attr('placeholder', 'Transaction Reference Number');
+                    else if (method === 'Cheque') refInput.attr('placeholder', 'Cheque Number');
+                    else if (method === 'Online') refInput.attr('placeholder', 'Online Transaction ID');
+                    else if (method === 'Mobile Money') refInput.attr('placeholder', 'Mobile Money Transaction ID');
+                    else refInput.attr('placeholder', 'Transaction/Receipt/Cheque Number');
+
+                    $bank.prop('disabled', false);
+                    $bank.find('option[data-auto-cash="1"]').remove();
+                    if (previousBankName && $bank.find('option').filter(function () { return $(this).val() === previousBankName; }).length) {
+                        $bank.val(previousBankName);
+                    } else if ($bank.val() === 'Cash') {
+                        $bank.val('');
+                    }
+                }
+            }
+            $('#method').on('change', applyPaymentMethodBankRules);
+            applyPaymentMethodBankRules(); // set default DD/DS placeholder on load
+
             // Form submit: ensure amount does not exceed Total Due
             $('#paymentForm').on('submit', function(e) {
                 var $schedule = $('#scheduleId').find('option:selected');
@@ -732,6 +772,7 @@
                 var isSurchargePayment = $('#scheduleId').val() === 'SURCHARGE_PAYMENT';
                 if (maxDue > 0 && amount > maxDue) {
                     e.preventDefault();
+                    applyPaymentMethodBankRules();
                     $('#amountValidationError').css('display', 'block').addClass('text-danger')
                         .text((isSurchargePayment ? 'Amount must not exceed Total Due Surcharge (PKR ' : 'Amount must not exceed Total Due (PKR ') + formatCurrency(maxDue) + ').');
                     $('#amount').addClass('is-invalid').focus();
@@ -739,6 +780,7 @@
                 }
                 if (addExtraPayment && extraAmount <= 0) {
                     e.preventDefault();
+                    applyPaymentMethodBankRules();
                     $('#extraAmount').addClass('is-invalid').focus();
                     alert('Enter extra amount greater than zero, or uncheck Add Extra Payment.');
                     return false;
@@ -746,21 +788,12 @@
                 if (!addExtraPayment) {
                     $('#extraAmount').val('');
                 }
+                // Disabled selects are not posted — re-enable Cash bank so value is submitted
+                if ($('#method').val() === 'Cash') {
+                    ensureCashBankOption();
+                    $('#bankName').val('Cash').prop('disabled', false);
+                }
             });
-
-            // Payment method placeholder
-            $('#method').on('change', function() {
-                var method = $(this).val();
-                var refInput = $('#referenceNo');
-                if (method === 'Cash') refInput.attr('placeholder', 'Receipt Number (optional)');
-                else if (method === 'DD/DS') refInput.attr('placeholder', 'DD/DS Reference Number');
-                else if (method === 'Bank Transfer') refInput.attr('placeholder', 'Transaction Reference Number');
-                else if (method === 'Cheque') refInput.attr('placeholder', 'Cheque Number');
-                else if (method === 'Online') refInput.attr('placeholder', 'Online Transaction ID');
-                else if (method === 'Mobile Money') refInput.attr('placeholder', 'Mobile Money Transaction ID');
-                else refInput.attr('placeholder', 'Transaction/Receipt/Cheque Number');
-            });
-            $('#method').trigger('change'); // set default DD/DS placeholder on load
 
             // Pre-fill from URL (e.g. from Payment Schedule link)
             @if (!string.IsNullOrEmpty(preSelectedCustomerId))

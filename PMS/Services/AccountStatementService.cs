@@ -56,6 +56,7 @@ namespace PMS.Services
             {
                 customer = await _context.Customers
                     .Include(c => c.Project)
+                    .Include(c => c.Dealer)
                     .Include(c => c.PaymentPlan)
                         .ThenInclude(pp => pp!.Project)
                     .Include(c => c.PaymentPlan)
@@ -70,6 +71,7 @@ namespace PMS.Services
             {
                 customer = await _context.Customers
                     .Include(c => c.Project)
+                    .Include(c => c.Dealer)
                     .Include(c => c.PaymentPlan)
                         .ThenInclude(pp => pp!.Project)
                     .Include(c => c.PaymentPlan)

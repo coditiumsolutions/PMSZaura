@@ -47,7 +47,7 @@
         <div class="a4-header">
             <div class="a4-header-center text-center">
                 <div class="a4-title">Account Statement</div>
-                <div class="a4-subtitle">DHA City M-9, Gateway Prime</div>
+                <div class="a4-subtitle">DHA City M-9, Gateway Prime M-2</div>
                 <div class="a4-subtitle">ZKB - Property Management System</div>
             </div>
             <div class="a4-header-right text-end">
@@ -302,6 +302,21 @@
             </table>
         </div>
 
+        @{
+            string dealByPerson;
+            if (Model.IsDealerRegistered == 0 && !string.IsNullOrWhiteSpace(Model.DealerName))
+                dealByPerson = Model.DealerName.Trim();
+            else if (!string.IsNullOrWhiteSpace(Model.Dealer?.DealershipName))
+                dealByPerson = Model.Dealer!.DealershipName.Trim();
+            else if (!string.IsNullOrWhiteSpace(Model.DealerName))
+                dealByPerson = Model.DealerName.Trim();
+            else
+                dealByPerson = "-";
+        }
+        <div class="a4-deal-by mt-3 mb-2">
+            <strong>Deal By Person :</strong> @dealByPerson
+        </div>
+
         <!-- Footer -->
         <div class="a4-footer">
             <div>This is a system-generated document and does not require a signature.</div>
@@ -458,6 +473,12 @@
         background: #f8f9fa;
         font-weight: bold;
         border-top: 2px solid #333;
+    }
+
+    .a4-deal-by {
+        font-size: 11px;
+        color: #000;
+        font-weight: 600;
     }
 
     .a4-footer {

@@ -433,6 +433,25 @@ namespace PMS.Controllers
             ViewBag.LogoDataUrl = await ResolveAccountStatementLogoDataUrlAsync();
             ViewBag.LogoPath = "~/images/logo-main.jpeg";
 
+            var printedByUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            string? printedByName = null;
+            if (!string.IsNullOrWhiteSpace(printedByUserId))
+            {
+                printedByName = await _context.Users
+                    .AsNoTracking()
+                    .Where(u => u.UserID == printedByUserId)
+                    .Select(u => u.FullName)
+                    .FirstOrDefaultAsync();
+            }
+            if (string.IsNullOrWhiteSpace(printedByName))
+            {
+                printedByName = User.Identity?.Name
+                    ?? User.FindFirst(ClaimTypes.Name)?.Value
+                    ?? User.FindFirst(ClaimTypes.Email)?.Value
+                    ?? "Unknown";
+            }
+            ViewBag.PrintedByName = printedByName.Trim();
+
             return View(payment);
         }
 
