@@ -666,6 +666,18 @@ body:has(.pms-dashboard) .main-content {
     padding-left: 0.15rem;
 }
 
+#appSidebar .sidebar-nav-title {
+    color: #2563eb !important;
+    letter-spacing: 0.06em !important;
+}
+
+#appSidebar .sidebar-subsection-child .nav-link,
+#appSidebar .sidebar-subsection-child .nav-link.active,
+#appSidebar .sidebar-submenu .nav-link,
+#appSidebar .sidebar-submenu .nav-link.active {
+    font-weight: 400 !important;
+}
+
 #appSidebar .sidebar .nav-link,
 #appSidebar .nav-link {
     color: rgba(255, 255, 255, 0.88) !important;
@@ -690,9 +702,10 @@ body:has(.pms-dashboard) .main-content {
 
 #appSidebar .sidebar .nav-link:hover,
 #appSidebar .nav-link:hover {
-    background: rgba(255, 255, 255, 0.08) !important;
-    color: #e2e8f0 !important;
-    transform: translateX(4px);
+    background: rgba(255, 255, 255, 0.16) !important;
+    color: #fff !important;
+    text-decoration: none !important;
+    transform: none !important;
 }
 
 #appSidebar .sidebar-main-item .nav-link,
@@ -708,24 +721,40 @@ body:has(.pms-dashboard) .main-content {
 }
 
 #appSidebar .sidebar-main-item .nav-link:hover,
-#appSidebar .sidebar-module-item .nav-link:hover {
-    background: none !important;
+#appSidebar .sidebar-module-item .nav-link:hover,
+#appSidebar .sidebar-submenu .nav-link:hover {
+    background: rgba(255, 255, 255, 0.16) !important;
     color: #fff !important;
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    text-decoration: none !important;
+    text-underline-offset: 0;
+    border-radius: 6px;
     transform: none !important;
 }
 
 #appSidebar .sidebar-main-item .nav-link.active,
-#appSidebar .sidebar-module-item .nav-link.active {
-    background: none !important;
+#appSidebar .sidebar-module-item .nav-link.active,
+#appSidebar .sidebar-submenu .nav-link.active,
+#appSidebar .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.18) !important;
     box-shadow: none !important;
     border-left: none !important;
     color: #fff !important;
-    font-weight: 600;
-    text-decoration: underline;
-    text-decoration-color: #c9a227;
-    text-underline-offset: 3px;
+    text-decoration: none !important;
+    text-underline-offset: 0;
+    transform: none !important;
+}
+
+#appSidebar .sidebar-main-item .nav-link:hover,
+#appSidebar .sidebar-module-item .nav-link:hover,
+#appSidebar .sidebar-submenu .nav-link:hover,
+#appSidebar .nav-link:hover {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 255, 0.18) !important;
+    color: #fff !important;
+    text-decoration: none !important;
+    box-shadow: none !important;
     transform: none !important;
 }
 
@@ -813,6 +842,44 @@ body:has(.pms-dashboard) .main-content {
     padding-left: 12px !important;
     padding-right: 10px !important;
     font-size: 12px !important;
+}
+
+/* Hover highlight spans the full sidebar row, with no text underline */
+#appSidebar .sidebar-sticky-inner > ul.nav {
+    margin-left: -12px;
+    margin-right: -12px;
+}
+
+#appSidebar .sidebar-subsection-block,
+#appSidebar .sidebar-module-item,
+#appSidebar .sidebar-submenu > .nav-item {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+#appSidebar .sidebar-subsection-chevron {
+    margin-left: 20px;
+}
+
+#appSidebar .sidebar-subsection-child .nav-link,
+#appSidebar .sidebar-submenu .nav-link {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 0 !important;
+    padding-top: 0.45rem !important;
+    padding-bottom: 0.45rem !important;
+    padding-left: 48px !important;
+    padding-right: 16px !important;
+}
+
+#appSidebar .sidebar-module-item .nav-link:hover,
+#appSidebar .sidebar-submenu .nav-link:hover,
+#appSidebar a.sidebar-main-link:hover,
+#appSidebar .nav-link:hover {
+    border-radius: 0 !important;
+    background-color: rgba(255, 255, 255, 0.18) !important;
+    text-decoration: none !important;
 }
 
 /* Page header banner — top of main content, matches sidebar */

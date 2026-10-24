@@ -38,6 +38,12 @@
   <ItemGroup>
     <Content Include="Reports\AccountStatement.rdlc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <!-- Receipt / Account Statement logo (ContentRoot/images) — not under wwwroot by default -->
+    <Content Include="images\logo-main.jpeg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
   </ItemGroup>
 

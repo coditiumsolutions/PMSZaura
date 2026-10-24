@@ -148,7 +148,9 @@ namespace PMS.Controllers
                 customers,
                 scheduleCount = plan.PaymentSchedules?.Count ?? 0,
                 paymentCount,
-                canDelete = paymentCount == 0,
+                canDelete = paymentCount == 0
+                    && (plan.PaymentSchedules?.Count ?? 0) == 0
+                    && (plan.Customers?.Count ?? 0) == 0,
                 message = paymentCount > 0
                     ? $"This plan cannot be deleted because {paymentCount} payment record(s) are linked to its installments. Remove or reassign those payments first."
                     : null
@@ -177,6 +179,15 @@ namespace PMS.Controllers
             if (plan == null)
             {
                 TempData["Error"] = "Payment plan was not found.";
+                return RedirectToAction(nameof(PaymentPlans));
+            }
+
+            var scheduleCount = plan.PaymentSchedules?.Count ?? 0;
+            var customerCount = plan.Customers?.Count ?? 0;
+            if (scheduleCount > 0 || customerCount > 0)
+            {
+                TempData["Error"] =
+                    $"Cannot delete plan \"{plan.PlanName}\" because it has child records.";
                 return RedirectToAction(nameof(PaymentPlans));
             }
 
@@ -429,9 +440,11 @@ namespace PMS.Controllers
             ViewBag.ProjectDisplayName = !string.IsNullOrWhiteSpace(siteConfig?.ProjectName)
                 ? siteConfig.ProjectName
                 : "Property Management System";
-            // Same logo source as Account Statement report (logo-main.jpeg)
-            ViewBag.LogoDataUrl = await ResolveAccountStatementLogoDataUrlAsync();
-            ViewBag.LogoPath = "~/images/logo-main.jpeg";
+            // Prefer embedded data URL so print/PDF works even if static files are missing.
+            ViewBag.LogoDataUrl = await ResolveAccountStatementLogoDataUrlAsync(siteConfig?.LogoPath);
+            ViewBag.LogoPath = !string.IsNullOrWhiteSpace(siteConfig?.LogoPath)
+                ? siteConfig.LogoPath
+                : "~/images/logo-main.jpeg";
 
             var printedByUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             string? printedByName = null;
@@ -456,20 +469,47 @@ namespace PMS.Controllers
         }
 
         /// <summary>Same logo resolution order as <c>AccountStatementReportService.LoadAccountStatementLogoAsync</c>.</summary>
-        private async Task<string?> ResolveAccountStatementLogoDataUrlAsync()
+        private async Task<string?> ResolveAccountStatementLogoDataUrlAsync(string? siteLogoPath = null)
         {
-            var candidates = new[]
-            {
-                Path.Combine(_env.ContentRootPath, "images", "logo-main.jpeg"),
-                Path.Combine(_env.WebRootPath ?? string.Empty, "images", "logo-main.jpeg"),
-                Path.Combine(_env.ContentRootPath, "wwwroot", "images", "logo-main.jpeg")
-            };
+            var webRoot = _env.WebRootPath ?? string.Empty;
+            var contentRoot = _env.ContentRootPath ?? string.Empty;
+            var baseDir = AppContext.BaseDirectory ?? string.Empty;
 
-            foreach (var path in candidates.Where(p => !string.IsNullOrWhiteSpace(p) && System.IO.File.Exists(p)))
+            var candidates = new List<string>();
+            void AddCandidate(string? path)
             {
+                if (!string.IsNullOrWhiteSpace(path))
+                    candidates.Add(path);
+            }
+
+            // Site branding first (uploaded logo), then account-statement logo, then common fallbacks.
+            if (!string.IsNullOrWhiteSpace(siteLogoPath))
+            {
+                var relative = siteLogoPath.Replace("~/", string.Empty).TrimStart('/', '\\')
+                    .Replace('/', Path.DirectorySeparatorChar);
+                AddCandidate(Path.Combine(webRoot, relative));
+                AddCandidate(Path.Combine(contentRoot, "wwwroot", relative));
+            }
+
+            AddCandidate(Path.Combine(contentRoot, "images", "logo-main.jpeg"));
+            AddCandidate(Path.Combine(baseDir, "images", "logo-main.jpeg"));
+            AddCandidate(Path.Combine(webRoot, "images", "logo-main.jpeg"));
+            AddCandidate(Path.Combine(contentRoot, "wwwroot", "images", "logo-main.jpeg"));
+            AddCandidate(Path.Combine(webRoot, "images", "logohome.png"));
+            AddCandidate(Path.Combine(webRoot, "images", "logo.jpeg"));
+            AddCandidate(Path.Combine(webRoot, "images", "logohome.jpg"));
+
+            foreach (var path in candidates.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                if (!System.IO.File.Exists(path))
+                    continue;
                 var bytes = await System.IO.File.ReadAllBytesAsync(path);
-                if (bytes.Length == 0) continue;
-                return "data:image/jpeg;base64," + Convert.ToBase64String(bytes);
+                if (bytes.Length == 0)
+                    continue;
+                var mime = path.EndsWith(".png", StringComparison.OrdinalIgnoreCase) ? "image/png"
+                    : path.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || path.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase) ? "image/jpeg"
+                    : "application/octet-stream";
+                return $"data:{mime};base64," + Convert.ToBase64String(bytes);
             }
 
             return null;
@@ -1444,6 +1484,8 @@ namespace PMS.Controllers
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
 
+            await LoadPaymentFrequenciesAsync();
+
             if (string.IsNullOrWhiteSpace(planId))
             {
                 return View(new AddPlanViewModel());
@@ -1484,6 +1526,8 @@ namespace PMS.Controllers
         {
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
+
+            await LoadPaymentFrequenciesAsync();
 
             // Step 1: Plan Detail → dbo.PaymentPlan only.
             foreach (var key in new[]
@@ -1545,6 +1589,8 @@ namespace PMS.Controllers
             var denied = await EnsurePermissionAsync("Edit");
             if (denied != null) return denied;
 
+            await LoadPaymentFrequenciesAsync();
+
             if (string.IsNullOrWhiteSpace(model.PlanID))
             {
                 TempData["Error"] = "Save Plan Detail first, then add a payment schedule.";
@@ -1568,28 +1614,33 @@ namespace PMS.Controllers
                 ModelState.AddModelError(nameof(model.Frequency), "Frequency is required.");
             }
 
-            if (!model.FirstDueDate.HasValue)
-            {
-                ModelState.AddModelError(nameof(model.FirstDueDate), "First Due Date is required.");
-            }
+            var isOneTime = IsOneTimePaymentFrequency(model.Frequency);
 
             if (!model.DueDate.HasValue)
             {
                 ModelState.AddModelError(nameof(model.DueDate), "Due Date is required.");
             }
 
-            if (!model.StartRange.HasValue)
+            if (!isOneTime)
             {
-                ModelState.AddModelError(nameof(model.StartRange), "Start Range is required.");
-            }
+                if (!model.FirstDueDate.HasValue)
+                {
+                    ModelState.AddModelError(nameof(model.FirstDueDate), "First Due Date is required.");
+                }
 
-            if (!model.EndRange.HasValue)
-            {
-                ModelState.AddModelError(nameof(model.EndRange), "End Range is required.");
-            }
-            else if (model.StartRange.HasValue && model.EndRange.Value < model.StartRange.Value)
-            {
-                ModelState.AddModelError(nameof(model.EndRange), "End Range must be greater than or equal to Start Range.");
+                if (!model.StartRange.HasValue)
+                {
+                    ModelState.AddModelError(nameof(model.StartRange), "Start Range is required.");
+                }
+
+                if (!model.EndRange.HasValue)
+                {
+                    ModelState.AddModelError(nameof(model.EndRange), "End Range is required.");
+                }
+                else if (model.StartRange.HasValue && model.EndRange.Value < model.StartRange.Value)
+                {
+                    ModelState.AddModelError(nameof(model.EndRange), "End Range must be greater than or equal to Start Range.");
+                }
             }
 
             if (!model.Amount.HasValue || model.Amount.Value <= 0m)
@@ -1616,14 +1667,17 @@ namespace PMS.Controllers
                     model.SurchargeRate = 0.05m;
                 }
 
-                var monthsPer = model.Frequency switch
+                var monthsPer = MonthsPerPaymentFrequency(model.Frequency);
+
+                if (isOneTime)
                 {
-                    "Monthly" => 1,
-                    "Quarterly" => 3,
-                    "Half Yearly" => 6,
-                    "Yearly" => 12,
-                    _ => 1
-                };
+                    var nextInstallment = (await _context.PaymentSchedules
+                        .Where(s => s.PlanID == model.PlanID && s.InstallmentNo.HasValue)
+                        .MaxAsync(s => (int?)s.InstallmentNo) ?? 0) + 1;
+                    model.StartRange = nextInstallment;
+                    model.EndRange = nextInstallment;
+                    model.FirstDueDate = model.DueDate;
+                }
 
                 var startRange = model.StartRange!.Value;
                 var endRange = model.EndRange!.Value;
@@ -1679,11 +1733,14 @@ namespace PMS.Controllers
                 }
 
                 plan.Frequency = model.Frequency!.Trim();
-                var maxInstallment = Math.Max(endRange,
-                    await _context.PaymentSchedules
-                        .Where(s => s.PlanID == model.PlanID && s.InstallmentNo.HasValue)
-                        .MaxAsync(s => (int?)s.InstallmentNo) ?? endRange);
-                plan.DurationMonths = maxInstallment * monthsPer;
+                if (monthsPer > 0)
+                {
+                    var maxInstallment = Math.Max(endRange,
+                        await _context.PaymentSchedules
+                            .Where(s => s.PlanID == model.PlanID && s.InstallmentNo.HasValue)
+                            .MaxAsync(s => (int?)s.InstallmentNo) ?? endRange);
+                    plan.DurationMonths = maxInstallment * monthsPer;
+                }
 
                 var usedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var schedules = new List<PaymentSchedule>(totalInstallments);
@@ -1718,7 +1775,9 @@ namespace PMS.Controllers
                     await LogActivityAsync(userId, $"Add Plan Schedule {startRange}-{endRange}", "PaymentPlan", model.PlanID);
                 }
 
-                TempData["Success"] = $"Created installments {startRange} to {endRange} ({totalInstallments} row(s)) in PaymentSchedule.";
+                TempData["Success"] = isOneTime
+                    ? $"Created one-time payment \"{paymentDescription}\" in PaymentSchedule."
+                    : $"Created installments {startRange} to {endRange} ({totalInstallments} row(s)) in PaymentSchedule.";
                 return RedirectToAction(nameof(AddPlan), new { planId = model.PlanID });
             }
             catch (Exception ex)
@@ -1728,6 +1787,63 @@ namespace PMS.Controllers
                 await PopulateAddPlanParentAndSchedulesAsync(model);
                 return View(nameof(AddPlan), model);
             }
+        }
+
+        private async Task LoadPaymentFrequenciesAsync()
+        {
+            var configValue = await _context.Configurations.AsNoTracking()
+                .Where(c => c.ConfigKey == "PaymentFrequency")
+                .Select(c => c.ConfigValue)
+                .FirstOrDefaultAsync();
+
+            ViewBag.PaymentFrequencies = (configValue ?? string.Empty)
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Where(value => !string.IsNullOrWhiteSpace(value))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private static bool IsOneTimePaymentFrequency(string? frequency)
+        {
+            var value = (frequency ?? string.Empty).Trim().Replace(" ", string.Empty).Replace("-", string.Empty);
+            return value.Equals("OneTime", StringComparison.OrdinalIgnoreCase)
+                || value.Equals("Onetime", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static int MonthsPerPaymentFrequency(string? frequency)
+        {
+            if (IsOneTimePaymentFrequency(frequency))
+            {
+                return 0;
+            }
+
+            var value = (frequency ?? string.Empty).Trim();
+
+            if (value.Equals("Monthly", StringComparison.OrdinalIgnoreCase))
+            {
+                return 1;
+            }
+
+            if (value.Equals("Quarterly", StringComparison.OrdinalIgnoreCase)
+                || value.Equals("Quartely", StringComparison.OrdinalIgnoreCase))
+            {
+                return 3;
+            }
+
+            if (value.Equals("Half Yearly", StringComparison.OrdinalIgnoreCase)
+                || value.Equals("Half-Yearly", StringComparison.OrdinalIgnoreCase))
+            {
+                return 6;
+            }
+
+            if (value.Equals("Yearly", StringComparison.OrdinalIgnoreCase)
+                || value.Equals("Annually", StringComparison.OrdinalIgnoreCase)
+                || value.Equals("Annual", StringComparison.OrdinalIgnoreCase))
+            {
+                return 12;
+            }
+
+            return 1;
         }
 
         private async Task PopulateAddPlanParentAndSchedulesAsync(AddPlanViewModel model)

@@ -83,7 +83,7 @@ public sealed class NavigationService : INavigationService
                 },
                 new NavigationMenuItemViewModel
                 {
-                    Label = "Properties",
+                    Label = "All Units",
                     Controller = "Property",
                     Action = "Index",
                     IconClass = "fas fa-home me-2"

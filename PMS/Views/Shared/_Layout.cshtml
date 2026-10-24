@@ -195,9 +195,10 @@
         }
 
         .sidebar .nav-link:hover {
-            color: var(--primary-light);
-            background: var(--surface);
-            transform: translateX(5px);
+            color: #fff;
+            background: rgba(255, 255, 255, 0.16);
+            text-decoration: none;
+            transform: none;
         }
 
         .sidebar .nav-link.active {
@@ -312,6 +313,25 @@
             font-weight: 500;
         }
 
+        .sidebar-nav-title {
+            margin: 0.55rem 14px 0.4rem;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            line-height: 1.2;
+            color: #2563eb;
+            text-align: left;
+        }
+
+        #appSidebar .sidebar-subsection-child .nav-link,
+        #appSidebar .sidebar-subsection-child .nav-link.active,
+        #appSidebar .sidebar-submenu .nav-link,
+        #appSidebar .sidebar-submenu .nav-link.active {
+            font-weight: 400;
+        }
+
         /* Prevent accidental value changes on numeric inputs */
         input[type="number"]::-webkit-outer-spin-button,
         input[type="number"]::-webkit-inner-spin-button {
@@ -409,22 +429,21 @@
         }
 
         .sidebar .nav-item.sidebar-module-item .nav-link:hover {
-            background: none !important;
+            background: rgba(255, 255, 255, 0.16) !important;
             color: #fff;
-            text-decoration: underline;
-            text-underline-offset: 3px;
+            text-decoration: none !important;
+            text-underline-offset: 0;
+            border-radius: 6px;
             transform: none !important;
         }
 
         .sidebar .nav-item.sidebar-module-item .nav-link.active {
-            background: none !important;
+            background: rgba(255, 255, 255, 0.18) !important;
             box-shadow: none !important;
             border-left: none !important;
             color: #fff;
-            font-weight: 600;
-            text-decoration: underline;
-            text-decoration-color: #c9a227;
-            text-underline-offset: 3px;
+            text-decoration: none !important;
+            text-underline-offset: 0;
         }
 
         .sidebar .nav-item.sidebar-module-item .nav-link i {
@@ -1597,6 +1616,8 @@
                             <div class="brand-subtitle">Sales</div>
                         }
                     </div>
+
+                    <div class="sidebar-nav-title">PMS</div>
                     
                     <ul class="nav flex-column">
                         @{

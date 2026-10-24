@@ -129,7 +129,26 @@
                     }
                     else
                     {
+                        var enteredInstallmentTotal = Model.Schedules?.Sum(s => s.Amount) ?? 0m;
+                        var unallocatedBalance = Model.TotalAmount - enteredInstallmentTotal;
                         <div class="pms-registration-4col-form pms-cpp-form pms-addplan-schedule-config">
+                            <div class="row g-0 g-lg-1 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2">
+                                    <label for="UnallocatedBalance" class="form-label pms-registration-4col-label">Unallocated Balance</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input id="UnallocatedBalance"
+                                           class="form-control form-control-sm @(unallocatedBalance < 0m ? "pms-unallocated-negative" : "")"
+                                           type="text"
+                                           readonly
+                                           value="@unallocatedBalance.ToString("N2")"
+                                           data-total="@Model.TotalAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                           data-entered="@enteredInstallmentTotal.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                </div>
+                                <div class="col-12 col-lg-6">
+                                    <span class="small text-muted">Total Amount minus the sum of entered installments.</span>
+                                </div>
+                            </div>
                             <div class="row g-0 g-lg-1 pms-registration-4col-row align-items-center">
                                 <div class="col-12 col-lg-2">
                                     <label asp-for="Frequency" class="form-label pms-registration-4col-label">Frequency *</label>
@@ -137,17 +156,20 @@
                                 <div class="col-12 col-lg-4">
                                     <select asp-for="Frequency" class="form-select form-select-sm" required>
                                         <option value="">Select Frequency</option>
-                                        <option value="Monthly">Monthly</option>
-                                        <option value="Quarterly">Quarterly</option>
-                                        <option value="Half Yearly">Half Yearly</option>
-                                        <option value="Yearly">Yearly</option>
+                                        @{
+                                            var paymentFrequencies = ViewBag.PaymentFrequencies as IEnumerable<string> ?? Enumerable.Empty<string>();
+                                        }
+                                        @foreach (var paymentFrequency in paymentFrequencies)
+                                        {
+                                            <option value="@paymentFrequency">@paymentFrequency</option>
+                                        }
                                     </select>
                                     <span asp-validation-for="Frequency" class="text-danger"></span>
                                 </div>
-                                <div class="col-12 col-lg-2">
+                                <div class="col-12 col-lg-2 pms-addplan-repeat-field">
                                     <label asp-for="FirstDueDate" class="form-label pms-registration-4col-label">First Due Date *</label>
                                 </div>
-                                <div class="col-12 col-lg-4">
+                                <div class="col-12 col-lg-4 pms-addplan-repeat-field">
                                     <input asp-for="FirstDueDate" class="form-control form-control-sm" type="date" required />
                                     <span asp-validation-for="FirstDueDate" class="text-danger"></span>
                                 </div>
@@ -170,7 +192,7 @@
                                 </div>
                             </div>
 
-                            <div class="row g-0 g-lg-1 pms-registration-4col-row align-items-center">
+                            <div class="row g-0 g-lg-1 pms-registration-4col-row align-items-center pms-addplan-repeat-field">
                                 <div class="col-12 col-lg-2">
                                     <label asp-for="StartRange" class="form-label pms-registration-4col-label">Start Range *</label>
                                 </div>
@@ -218,10 +240,13 @@
                                 <div class="col-12 col-lg-4"></div>
                             </div>
 
-                            <div class="alert alert-light border py-1 px-2 mb-0 mt-1 small">
+                            <div class="alert alert-light border py-1 px-2 mb-0 mt-1 small pms-addplan-repeat-field">
                                 Creates installments from <strong>Start Range</strong> to <strong>End Range</strong>
                                 (e.g. 6→10 = InstallmentNo 6,7,8,9,10) with the same Payment Title and Amount.
-                                Due dates start at <strong>Due Date</strong>, then add 1 month (Monthly) or 3 months (Quarterly) per installment.
+                                Due dates start at <strong>Due Date</strong>, then advance by the selected Frequency.
+                            </div>
+                            <div class="alert alert-light border py-1 px-2 mb-0 mt-1 small pms-addplan-onetime-note" style="display:none;">
+                                One Time saves a single payment using <strong>Payment Title</strong>, <strong>Due Date</strong>, and <strong>Amount</strong>.
                             </div>
                         </div>
                     }
@@ -482,6 +507,11 @@
     .pms-create-payment-plan .pms-cpp-form .form-check-label {
         font-size: 0.8125rem;
     }
+
+    .pms-create-payment-plan .pms-cpp-form #UnallocatedBalance.pms-unallocated-negative {
+        color: #b91c1c !important;
+        font-weight: 600;
+    }
 </style>
 
 @section Scripts {
@@ -558,6 +588,20 @@
             $('#SurchargePolicyStatus').on('change', function () {
                 $('#SurchargeRate').prop('disabled', !$(this).is(':checked'));
             }).trigger('change');
+
+            function isOneTimeFrequency(value) {
+                return String(value || '').trim().toLowerCase().replace(/[\s-]/g, '') === 'onetime';
+            }
+
+            function syncOneTimeScheduleFields() {
+                var oneTime = isOneTimeFrequency($('#Frequency').val());
+                $('.pms-addplan-repeat-field').toggle(!oneTime);
+                $('.pms-addplan-onetime-note').toggle(oneTime);
+                $('#FirstDueDate, #StartRange, #EndRange').prop('required', !oneTime);
+            }
+
+            $('#Frequency').on('change', syncOneTimeScheduleFields);
+            syncOneTimeScheduleFields();
         });
     </script>
 }

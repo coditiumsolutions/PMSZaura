@@ -4,6 +4,7 @@
 @{
     ViewData["Title"] = "Payment Plans (Batches)";
     var EnUs = CultureInfo.GetCultureInfo("en-US");
+    var canDeletePlans = ViewBag.CanDelete == true;
     var plansOrdered = Model?.OrderBy(p => p.PlanName).ToList() ?? new List<PMS.Models.PaymentPlan>();
     var totalCount = plansOrdered.Count;
 }
@@ -54,6 +55,10 @@
                             <th>Duration</th>
                             <th>Freq.</th>
                             <th>Sched.</th>
+                            @if (canDeletePlans)
+                            {
+                                <th class="text-center">Delete</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -87,6 +92,20 @@
                                 <td data-label="Sched.">
                                     @(plan.PaymentSchedules?.Count ?? 0)
                                 </td>
+                                @if (canDeletePlans)
+                                {
+                                    var hasChildRecords = (plan.PaymentSchedules?.Count ?? 0) > 0 || (plan.Customers?.Count ?? 0) > 0;
+                                    <td class="text-center" data-label="Delete">
+                                        @if (!hasChildRecords)
+                                        {
+                                            <form asp-action="DeletePaymentPlan" method="post" class="d-inline" onsubmit="return confirm('Delete this payment plan?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="planId" value="@plan.PlanID" />
+                                                <button type="submit" class="btn btn-sm btn-outline-danger pms-plan-delete">Delete</button>
+                                            </form>
+                                        }
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>
@@ -117,8 +136,9 @@
         border: 1px solid #94a3b8;
     }
 
-    .pms-payment-listing {
-        --saas-row-h: 64px;
+    .pms-payment-listing,
+    .pms-payment-listing .pms-saas-grid {
+        --saas-row-h: 32px;
     }
 
     .pms-payment-listing .pms-payment-plans-grid-wrap {
@@ -166,15 +186,23 @@
     }
 
     .pms-payment-listing #plansTable tbody td {
-        height: var(--saas-row-h) !important;
-        padding: 0 1rem !important;
+        height: 32px !important;
+        padding: 0 0.65rem !important;
         vertical-align: middle;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        font-size: 0.875rem;
-        border-bottom: 1px solid #e2e8f0 !important;
+        font-size: 0.8125rem;
+        line-height: 1.2;
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        border-bottom: 1px solid #2563eb !important;
         max-width: none;
+    }
+
+    .pms-payment-listing #plansTable tbody tr:last-child td {
+        border-bottom: 1px solid #2563eb !important;
     }
 
     .pms-payment-listing #plansTable tbody tr:nth-child(even) {
@@ -191,9 +219,16 @@
         box-shadow: inset 3px 0 0 #2563eb;
     }
 
+    .pms-payment-listing #plansTable .pms-plan-delete {
+        font-size: 0.72rem;
+        line-height: 1.1;
+        padding: 0 0.4rem;
+        border-radius: 0;
+    }
+
     .pms-payment-listing #plansTable .pms-pill {
-        font-size: 0.78rem;
-        padding: 0.15rem 0.45rem;
+        font-size: 0.72rem;
+        padding: 0.05rem 0.4rem;
         line-height: 1.2;
         border-radius: 999px;
         color: #000 !important;
@@ -241,6 +276,19 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            var hasDeleteColumn = $('#plansTable thead th').length > 6;
+            var columnDefs = [
+                { width: '30%', searchable: true, targets: 0 },
+                { width: '14%', searchable: false, targets: 1 },
+                { width: '8%', searchable: false, targets: 2 },
+                { width: '14%', searchable: false, targets: 3 },
+                { width: '12%', searchable: true, targets: 4 },
+                { width: '8%', searchable: false, targets: 5 }
+            ];
+            if (hasDeleteColumn) {
+                columnDefs.push({ width: '14%', searchable: false, targets: 6 });
+            }
+
             var table = $('#plansTable').DataTable({
                 pageLength: 10,
                 ordering: false,
@@ -251,14 +299,7 @@
                 autoWidth: false,
                 searching: true,
                 dom: 'rt<"pms-plans-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>',
-                columnDefs: [
-                    { width: '36%', searchable: true, targets: 0 },   // Plan Name
-                    { width: '16%', searchable: false, targets: 1 },  // Total
-                    { width: '10%', searchable: false, targets: 2 },  // Curr.
-                    { width: '16%', searchable: false, targets: 3 },  // Duration
-                    { width: '14%', searchable: true, targets: 4 },   // Freq.
-                    { width: '8%', searchable: false, targets: 5 }    // Sched.
-                ],
+                columnDefs: columnDefs,
                 language: {
                     search: 'Search:',
                     lengthMenu: 'Show _MENU_ per page',

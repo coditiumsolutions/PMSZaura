@@ -35,7 +35,10 @@
 
 <div class="a4-container">
     <div class="a4-header text-center">
-        <img src="@logoSrc" alt="@projectDisplayName" class="a4-logo" />
+        @if (!string.IsNullOrWhiteSpace(logoSrc))
+        {
+            <img src="@logoSrc" alt="@projectDisplayName" class="a4-logo" onerror="this.style.display='none';" />
+        }
         <div class="a4-title">Payment Receipt</div>
         <div class="a4-subtitle">Generated on: @DateTime.Now.ToString("dd-MM-yyyy HH:mm")</div>
         <div class="a4-subtitle">Printed by: @printedByName</div>

@@ -236,11 +236,18 @@ namespace PMS.Services
 
         private async Task<byte[]?> LoadAccountStatementLogoAsync()
         {
+            var webRoot = _env.WebRootPath ?? string.Empty;
+            var contentRoot = _env.ContentRootPath ?? string.Empty;
+            var baseDir = AppContext.BaseDirectory ?? string.Empty;
             var candidates = new[]
             {
-                Path.Combine(_env.ContentRootPath, "images", "logo-main.jpeg"),
-                Path.Combine(_env.WebRootPath ?? string.Empty, "images", "logo-main.jpeg"),
-                Path.Combine(_env.ContentRootPath, "wwwroot", "images", "logo-main.jpeg")
+                Path.Combine(contentRoot, "images", "logo-main.jpeg"),
+                Path.Combine(baseDir, "images", "logo-main.jpeg"),
+                Path.Combine(webRoot, "images", "logo-main.jpeg"),
+                Path.Combine(contentRoot, "wwwroot", "images", "logo-main.jpeg"),
+                Path.Combine(webRoot, "images", "logohome.png"),
+                Path.Combine(webRoot, "images", "logo.jpeg"),
+                Path.Combine(webRoot, "images", "logohome.jpg")
             };
 
             foreach (var path in candidates.Where(p => !string.IsNullOrWhiteSpace(p) && File.Exists(p)))

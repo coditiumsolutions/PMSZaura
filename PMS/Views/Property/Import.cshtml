@@ -2,7 +2,7 @@
     ViewData["Title"] = "Import Properties";
 }
 
-<div class="row">
+<div class="property-import-page row">
     <div class="col-12">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h2><i class="fas fa-file-upload me-2"></i></h2>
@@ -70,7 +70,7 @@
         }
 
         <div class="card">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header">
                 <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Import Instructions</h5>
             </div>
             <div class="card-body">
@@ -126,7 +126,7 @@
                             </table>
                         </div>
 
-                        <div class="alert alert-info mt-3">
+                        <div class="mt-3">
                             <i class="fas fa-lightbulb me-2"></i>
                             <strong>Note:</strong> 
                             <ul class="mb-0 mt-2">
@@ -160,7 +160,7 @@
                     @Html.AntiForgeryToken()
                     
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="projectId" class="form-label">Project *</label>
                                 <select class="form-select" id="projectId" name="projectId" required>
@@ -179,15 +179,7 @@
                                 <span class="text-danger field-validation-valid" data-valmsg-for="projectId" data-valmsg-replace="true"></span>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="mb-3">
-                                <label class="form-label">SubProject</label>
-                                <div class="form-control-plaintext text-muted small">
-                                    Read from uploaded file (first column).
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="dealerId" class="form-label">Dealer *</label>
                                 <select class="form-select" id="dealerId" name="dealerId" required>
@@ -206,7 +198,7 @@
                                 <span class="text-danger field-validation-valid" data-valmsg-for="dealerId" data-valmsg-replace="true"></span>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="mb-3">
                                 <label for="file" class="form-label">Select File (CSV or Excel) *</label>
                                 <input type="file" class="form-control" id="file" name="file" accept=".csv,.xlsx,.xls" required />
@@ -216,7 +208,7 @@
                     </div>
 
                     <div class="d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn property-import-upload">
                             <i class="fas fa-upload me-2"></i>Upload and Preview
                         </button>
                     </div>
@@ -227,6 +219,34 @@
 </div>
 
 @section Scripts {
+    <style>
+        .property-import-page .card,
+        .property-import-page .card-header,
+        .property-import-page .card-body {
+            background: transparent !important;
+            background-color: transparent !important;
+            box-shadow: none;
+        }
+
+        .property-import-page .form-control,
+        .property-import-page .form-select,
+        .property-import-page .property-import-upload {
+            border-radius: 0 !important;
+        }
+
+        .property-import-page .property-import-upload {
+            background: transparent !important;
+            background-color: transparent !important;
+            border: 1px solid #212529;
+            color: #212529;
+            padding: 8px 16px;
+        }
+
+        .property-import-page .property-import-upload:hover {
+            background: transparent !important;
+            color: #212529;
+        }
+    </style>
     <script>
         // File size validation
         document.getElementById('file').addEventListener('change', function(e) {
