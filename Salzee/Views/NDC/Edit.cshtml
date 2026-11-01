@@ -1,0 +1,158 @@
+@model Salzee.Models.NDC
+
+@{
+    ViewData["Title"] = "Edit NDC";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="fas fa-edit me-2"></i>Edit NDC</h2>
+    <a asp-action="Details" asp-route-id="@Model.NDCID" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left me-2"></i>Back to Details
+    </a>
+</div>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+        <h5 class="mb-0 text-white"><i class="fas fa-file-certificate me-2"></i>Update NDC Record</h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            <input type="hidden" asp-for="NDCID" />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">NDC ID</label>
+                    <input class="form-control" value="@Model.NDCID" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Customer ID</label>
+                    <input class="form-control" value="@Model.CustomerID" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Created At</label>
+                    <input class="form-control" value="@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")" readonly />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Customer Name</label>
+                    <input class="form-control" value="@Model.Customer?.FullName" readonly />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Plan / Project</label>
+                    <input class="form-control" value="@(Model.Customer?.PaymentPlan?.PlanName) / @(Model.Customer?.PaymentPlan?.Project?.ProjectName)" readonly />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Total Due (snapshot)</label>
+                    <input class="form-control" value="@(Model.TotalDueAmount?.ToString("N0") ?? "—")" readonly />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Total Paid (snapshot)</label>
+                    <input class="form-control" value="@(Model.TotalDueInstallments?.ToString("N0") ?? "—")" readonly />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Remaining Dues (snapshot)</label>
+                    <input class="form-control" value="@(Model.RemainingDues?.ToString("N0") ?? "—")" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Amount Per Unit</label>
+                    <input class="form-control" value="@(Model.AmountPerUnit?.ToString("N2") ?? "—")" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Property Size</label>
+                    <input class="form-control" value="@(Model.PropertySize?.ToString("N2") ?? "—")" readonly />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Transfer Fee Amount</label>
+                    <input class="form-control" value="@(Model.TransferFeeAmount?.ToString("N0") ?? "—")" readonly />
+                </div>
+            </div>
+
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <label asp-for="NDCType" class="form-label">NDC Type</label>
+                    <select asp-for="NDCType" class="form-select">
+                        <option value="">-- Select --</option>
+                        @if (ViewBag.NDCTypes != null)
+                        {
+                            foreach (var t in (string[])ViewBag.NDCTypes)
+                            {
+                                <option value="@t" selected="@(Model.NDCType == t)">@t</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="WorkFlowStatus" class="form-label">Workflow Status</label>
+                    <select asp-for="WorkFlowStatus" class="form-select">
+                        @if (ViewBag.WorkflowStatuses != null)
+                        {
+                            foreach (var s in (string[])ViewBag.WorkflowStatuses)
+                            {
+                                <option value="@s" selected="@(Model.WorkFlowStatus == s)">@s</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Title" class="form-label">Title</label>
+                    <input asp-for="Title" class="form-control" />
+                </div>
+                <div class="col-12">
+                    <label asp-for="Comments" class="form-label">Comments</label>
+                    <textarea asp-for="Comments" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Remarks" class="form-label">Remarks</label>
+                    <input asp-for="Remarks" class="form-control" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Add Attachment (Optional)</label>
+                    <input type="file" name="ndcAttachment" class="form-control" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
+                    <small class="text-muted">Allowed: JPG, PNG, GIF, BMP, PDF (max 8MB)</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Attachment Title / Notes (Optional)</label>
+                    <input type="text" name="ndcAttachmentTitle" class="form-control" maxlength="500" placeholder="e.g. Additional proof" />
+                </div>
+            </div>
+
+            @{
+                var ndcAttachments = ViewBag.NdcAttachments as List<Salzee.Models.Attachment> ?? new List<Salzee.Models.Attachment>();
+            }
+            @if (ndcAttachments.Count > 0)
+            {
+                <div class="mt-3">
+                    <label class="form-label fw-bold">Existing Attachments</label>
+                    <ul class="mb-0 ps-3">
+                        @foreach (var att in ndcAttachments)
+                        {
+                            <li class="mb-1">
+                                <a href="@att.FilePath" target="_blank" rel="noopener">@att.FileName</a>
+                                @if (!string.IsNullOrWhiteSpace(att.Description))
+                                {
+                                    <span class="text-muted"> - @att.Description</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>Save Changes
+                </button>
+                <a asp-action="Details" asp-route-id="@Model.NDCID" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+

@@ -1,0 +1,577 @@
+@model Salzee.Models.Customer
+
+@{
+	Layout = null;
+    ViewData["Title"] = "Account Statement";
+    var plan = Model.PaymentPlan;
+    var jointOwnerNames = (Model.JointOwners ?? new List<Salzee.Models.JointOwner>())
+        .Select(j => j.JointOwnerName?.Trim())
+        .Where(n => !string.IsNullOrWhiteSpace(n))
+        .ToList();
+    var customerNameWithJointOwners = jointOwnerNames.Any()
+        ? string.Join(" / ", (new[] { Model.FullName }).Concat(jointOwnerNames.Where(n => !string.Equals(n, Model.FullName, StringComparison.OrdinalIgnoreCase))))
+        : (Model.FullName ?? "-");
+    var schedules = plan?.PaymentSchedules?.OrderBy(ps => ps.DueDate).ThenBy(ps => ps.InstallmentNo ?? int.MaxValue).ToList() ?? new List<Salzee.Models.PaymentSchedule>();
+    var surchargeBySchedule = ViewBag.SurchargeBySchedule as IReadOnlyDictionary<string, Salzee.Services.SurchargeComputationRow>
+        ?? new Dictionary<string, Salzee.Services.SurchargeComputationRow>(StringComparer.OrdinalIgnoreCase);
+    var otherAccountHeadPayments = ViewBag.OtherAccountHeadPayments as List<Salzee.Models.Payment> ?? new List<Salzee.Models.Payment>();
+    var customerStatus = Model.Status?.Trim() ?? string.Empty;
+    var showStatusBanner = !string.IsNullOrWhiteSpace(customerStatus) && !string.Equals(customerStatus, "Active", StringComparison.OrdinalIgnoreCase);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/juba-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+
+<!-- Print/Download Controls -->
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <h3 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Account Statement</h3>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()"><i class="fas fa-print me-1"></i>Print</button>
+        <a class="btn btn-outline-primary btn-sm" asp-controller="Report" asp-action="AccountStatement" asp-route-accountNo="@Model.CustomerID" target="_blank"><i class="fas fa-file-pdf me-1"></i>Download PDF</a>
+    </div>
+</div>
+
+<div class="a4-container">
+    <div id="statement-root">
+        <!-- Header Section -->
+        <div class="a4-header">
+            <div class="a4-header-center text-center">
+                <div class="a4-title">Account Statement</div>
+                <div class="a4-subtitle">DHA City M-9, Gateway Prime M-2</div>
+                <div class="a4-subtitle">ZKB - Property Management System</div>
+            </div>
+            <div class="a4-header-right text-end">
+                <div class="a4-subtitle">Date (@DateTime.Now.ToString("MMMM, dd; yyyy"))</div>
+            </div>
+        </div>
+        @if (showStatusBanner)
+        {
+            <div class="alert alert-warning py-2 px-3 mb-3 text-center">
+                <strong>Status:</strong> @customerStatus
+            </div>
+        }
+
+        <!-- Customer and Plot Information -->
+        <div class="a4-section">
+            <div class="a4-info-grid">
+                <div class="a4-info-block">
+                    <h6>Customer Information</h6>
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">Customer ID:</span>
+                        <span class="a4-info-value"><code>@Model.CustomerID</code></span>
+                    </div>
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">Customer Name:</span>
+                        <span class="a4-info-value">@customerNameWithJointOwners</span>
+                    </div>
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">Address:</span>
+                        <span class="a4-info-value">@(Model.MailingAddress ?? Model.PermanentAddress ?? "-")</span>
+                    </div>
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">Phone:</span>
+                        <span class="a4-info-value">@Model.Phone</span>
+                    </div>
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">Mobile:</span>
+                        <span class="a4-info-value">@Model.MobileNo</span>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.MobileNo2))
+                    {
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">Mobile 2:</span>
+                        <span class="a4-info-value">@Model.MobileNo2</span>
+                    </div>
+                    }
+                </div>
+                <div class="a4-info-block">
+                    <h6>Project / Plan Information</h6>
+                    @{
+                        var property = (Model.Allotments?
+                            .Where(a => !string.IsNullOrWhiteSpace(a.Property?.PlotNo))
+                            .OrderByDescending(a => string.Equals(a.WorkFlowStatus, "Approved", StringComparison.OrdinalIgnoreCase))
+                            .ThenByDescending(a => a.AllotmentDate)
+                            .FirstOrDefault()
+                            ?? Model.Allotments?
+                                .OrderByDescending(a => a.AllotmentDate)
+                                .FirstOrDefault())?.Property;
+                    }
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">Project Name:</span>
+                        <span class="a4-info-value">@(plan?.Project?.ProjectName ?? Model.Project?.ProjectName ?? "-")</span>
+                    </div>
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">SubProject:</span>
+                        <span class="a4-info-value">@(property?.SubProject ?? Model.SubProject ?? plan?.SubProject ?? "-")</span>
+                    </div>
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">Unit:</span>
+                        <span class="a4-info-value">@(string.IsNullOrWhiteSpace(property?.PlotNo) ? "-" : property!.PlotNo)</span>
+                    </div>
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">Registered Size:</span>
+                        <span class="a4-info-value">@(property?.Size ?? Model.RegisteredSize ?? "-")</span>
+                    </div>
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">Property Type:</span>
+                        <span class="a4-info-value">@(property?.PropertyType ?? property?.PlotType ?? "-")</span>
+                    </div>
+                    <div class="a4-info-row">
+                        <span class="a4-info-label">Plan Name:</span>
+                        <span class="a4-info-value">@(plan?.PlanName ?? "-")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Surcharge Policy Information -->
+        <div class="a4-section">
+
+
+        <!-- Payment Schedule Table -->
+        <div class="a4-section">
+            <div class="a4-section-title">Payment Schedule</div>
+            <table class="a4-table">
+                <thead>
+                    <tr>
+                        <th class="text-start">Account Head</th>
+                        <th>Inst No</th>
+                        <th class="text-end">Due Amount</th>
+                        <th>Due Date</th>
+                        <th class="text-end">Amount Paid</th>
+                        <th>Paid On</th>
+                        <th class="text-start">DD/DS No</th>
+                        <th class="text-end">Outstanding</th>
+                        <th class="text-end">Surcharge</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @{
+                    decimal totalDueAmount = 0m;
+                    decimal totalAmountDue = 0m;
+                    decimal totalAmountPaid = 0m;
+                    decimal totalSurcharge = 0m;
+                }
+                @foreach (var sch in schedules)
+                {
+                    var accountHeadLabel = string.IsNullOrWhiteSpace(sch.PaymentDescription)
+                        ? "Installment"
+                        : sch.PaymentDescription.Trim();
+                    var currentCustomerId = Model.CustomerID?.Trim();
+                    var payments = (sch.Payments ?? new List<Salzee.Models.Payment>())
+                        .Where(p => string.Equals(p.CustomerID?.Trim(), currentCustomerId, StringComparison.OrdinalIgnoreCase)
+                            && !string.Equals(p.Status, "Pending", StringComparison.OrdinalIgnoreCase)
+                            && !string.Equals(p.AuditStatus, "Declined", StringComparison.OrdinalIgnoreCase)
+                            && !string.IsNullOrWhiteSpace(sch.ScheduleID)
+                            && string.Equals(p.ScheduleID?.Trim(), sch.ScheduleID.Trim(), StringComparison.OrdinalIgnoreCase))
+                        .OrderBy(p => p.PaymentDate)
+                        .ThenBy(p => p.PaymentID)
+                        .ToList();
+                    var amountPaid = payments.Sum(p => p.Amount);
+                    var amountDue = Math.Max(0m, sch.Amount - amountPaid);
+                    var surchargeData = !string.IsNullOrWhiteSpace(sch.ScheduleID)
+                        && (surchargeBySchedule.TryGetValue(sch.ScheduleID.Trim(), out var mapped)
+                            || surchargeBySchedule.TryGetValue(sch.ScheduleID, out mapped))
+                        ? mapped
+                        : null;
+                    var surcharge = surchargeData?.Surcharge ?? 0m;
+
+                    totalDueAmount += sch.Amount;
+                    totalAmountDue += amountDue;
+                    totalAmountPaid += amountPaid;
+                    totalSurcharge += surcharge;
+
+                    if (payments.Any())
+                    {
+                        decimal runningPaid = 0m;
+                        for (var idx = 0; idx < payments.Count; idx++)
+                        {
+                            var payment = payments[idx];
+                            runningPaid += payment.Amount;
+                            var runningOutstanding = Math.Max(0m, sch.Amount - runningPaid);
+                            var paymentStatus = payment.Status?.Trim();
+                            var showStatusWithReference = !string.IsNullOrWhiteSpace(paymentStatus)
+                                && !string.Equals(paymentStatus, "Paid", StringComparison.OrdinalIgnoreCase)
+                                && !string.Equals(paymentStatus, "Partially Paid", StringComparison.OrdinalIgnoreCase);
+
+                            <tr>
+                                <td class="text-start">@accountHeadLabel</td>
+                                <td>@((sch.InstallmentNo ?? 0) == 0 ? "" : sch.InstallmentNo?.ToString())</td>
+                                <td class="text-end">@(idx == 0 ? $"{sch.Amount:N0}" : "-")</td>
+                                <td>@(idx == 0 ? sch.DueDate.ToString("MMM dd, yyyy") : "-")</td>
+                                <td class="text-end">@($"{payment.Amount:N0}")</td>
+                                <td>@payment.PaymentDate.ToString("MMM dd, yyyy")</td>
+                                <td class="text-start">
+                                    @if (!string.IsNullOrWhiteSpace(payment.ReferenceNo))
+                                    {
+                                        @(showStatusWithReference ? $"{payment.ReferenceNo} ({paymentStatus})" : payment.ReferenceNo)
+                                    }
+                                    else
+                                    {
+                                        @("-")
+                                    }
+                                </td>
+                                <td class="text-end">@($"{runningOutstanding:N0}")</td>
+                                <td class="text-end">@(idx == 0 ? $"{surcharge:N0}" : "-")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td class="text-start">@accountHeadLabel</td>
+                            <td>@((sch.InstallmentNo ?? 0) == 0 ? "" : sch.InstallmentNo?.ToString())</td>
+                            <td class="text-end">@($"{sch.Amount:N0}")</td>
+                            <td>@sch.DueDate.ToString("MMM dd, yyyy")</td>
+                            <td class="text-end">0</td>
+                            <td>-</td>
+                            <td class="text-start">-</td>
+                            <td class="text-end">@($"{sch.Amount:N0}")</td>
+                            <td class="text-end">@($"{surcharge:N0}")</td>
+                        </tr>
+                    }
+                }
+                @foreach (var other in otherAccountHeadPayments)
+                {
+                    var accountHead = !string.IsNullOrWhiteSpace(other.AccountHead) ? other.AccountHead.Trim() : "Waived Off";
+                    if (string.IsNullOrWhiteSpace(other.AccountHead) && !string.IsNullOrWhiteSpace(other.Remarks))
+                    {
+                        const string marker = "AccountHead:";
+                        var idx = other.Remarks.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+                        if (idx >= 0)
+                        {
+                            var parsed = other.Remarks[(idx + marker.Length)..].Trim();
+                            if (!string.IsNullOrWhiteSpace(parsed))
+                            {
+                                accountHead = parsed;
+                            }
+                        }
+                    }
+                    var isSurchargeWaiverLine =
+                        string.Equals(accountHead, "Surcharge Waived Off", StringComparison.OrdinalIgnoreCase)
+                        || (string.Equals(other.Method, "Waiver", StringComparison.OrdinalIgnoreCase)
+                            && string.Equals(accountHead, "Waived Off", StringComparison.OrdinalIgnoreCase));
+                    var isSurchargePaymentLine =
+                        string.Equals(accountHead, "Surcharge Payment", StringComparison.OrdinalIgnoreCase)
+                        || (other.Remarks ?? string.Empty).Contains("Surcharge payment", StringComparison.OrdinalIgnoreCase);
+                    var isSurchargeAdjustmentLine = isSurchargeWaiverLine || isSurchargePaymentLine;
+                    var surchargeAdjustmentAmount = isSurchargeWaiverLine
+                        ? other.Amount
+                        : (isSurchargePaymentLine ? -other.Amount : 0m);
+                    var amountPaidDisplay = isSurchargeAdjustmentLine ? "-" : other.Amount.ToString("N0");
+                    var surchargeDisplay = isSurchargeAdjustmentLine ? surchargeAdjustmentAmount.ToString("N0") : "-";
+                    if (isSurchargeAdjustmentLine)
+                    {
+                        totalSurcharge += surchargeAdjustmentAmount;
+                    }
+                    <tr>
+                        <td class="text-start">@accountHead</td>
+                        <td></td>
+                        <td class="text-end">-</td>
+                        <td>@other.PaymentDate.ToString("MMM dd, yyyy")</td>
+                        <td class="text-end">@amountPaidDisplay</td>
+                        <td>@other.PaymentDate.ToString("MMM dd, yyyy")</td>
+                        <td class="text-start">@(!string.IsNullOrWhiteSpace(other.ReferenceNo) ? other.ReferenceNo : "-")</td>
+                        <td class="text-end">-</td>
+                        <td class="text-end">@surchargeDisplay</td>
+                    </tr>
+                }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="text-end">Totals</td>
+                        <td class="text-end">@($"{totalDueAmount:N0}")</td>
+                        <td></td>
+                        <td class="text-end">@($"{totalAmountPaid:N0}")</td>
+                        <td></td>
+                        <td></td>
+                        <td class="text-end">@($"{totalAmountDue:N0}")</td>
+                        <td class="text-end">@($"{totalSurcharge:N0}")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        @{
+            string dealByPerson;
+            if (Model.IsDealerRegistered == 0 && !string.IsNullOrWhiteSpace(Model.DealerName))
+                dealByPerson = Model.DealerName.Trim();
+            else if (!string.IsNullOrWhiteSpace(Model.Dealer?.DealershipName))
+                dealByPerson = Model.Dealer!.DealershipName.Trim();
+            else if (!string.IsNullOrWhiteSpace(Model.DealerName))
+                dealByPerson = Model.DealerName.Trim();
+            else
+                dealByPerson = "-";
+        }
+        <div class="a4-deal-by mt-3 mb-2">
+            <strong>Deal By Person :</strong> @dealByPerson
+        </div>
+
+        <!-- Footer -->
+        <div class="a4-footer">
+            <div>This is a system-generated document and does not require a signature.</div>
+            <div>Errors and omissions are subject to correction. Processing fee and discount(s), if any, are non-refundable.</div>
+            <div>Please clear your outstanding dues promptly to avoid surcharge or cancellation. Payments made after blocking or cancellation due to non-payment will not be entertained.</div>
+            <div>For queries or feedback, please email: care@zkbeclipse.pk</div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    /* A4 Paper Size Styling */
+    .a4-container {
+        width: 210mm;
+        min-height: 297mm;
+        height: auto;
+        margin: 0 auto;
+        padding: 15mm;
+        background: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow: visible;
+    }
+
+    .a4-header {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+    }
+
+    .a4-header-center {
+        text-align: center;
+    }
+
+    .a4-header-right {
+        text-align: right;
+    }
+
+    .a4-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .a4-subtitle {
+        font-size: 11px;
+        color: #666;
+        margin-bottom: 3px;
+    }
+
+    .a4-section {
+        margin-bottom: 12px;
+    }
+
+    .a4-section-title {
+        font-size: 13px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8px;
+        padding-bottom: 3px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .a4-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 12px;
+    }
+
+    .a4-info-block {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+    }
+
+    .a4-info-block h6 {
+        font-size: 11px;
+        font-weight: bold;
+        margin-bottom: 6px;
+        color: #333;
+    }
+
+    .a4-info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 3px;
+        font-size: 10px;
+    }
+
+    .a4-info-label {
+        font-weight: 600;
+        color: #555;
+    }
+
+    .a4-info-value {
+        color: #333;
+    }
+
+    /* Customer Information + Project / Plan Information: emphasize data values */
+    .a4-info-block .a4-info-value {
+        font-weight: 700;
+        font-size: 12px;
+        color: #1a1a1a;
+        line-height: 1.35;
+    }
+
+    .a4-info-block .a4-info-value code {
+        font-weight: 700;
+        font-size: 12px;
+        color: #1a1a1a;
+        background: transparent;
+        padding: 0;
+    }
+
+    .a4-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9px;
+        margin-bottom: 10px;
+    }
+
+    .a4-table th {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        padding: 4px 3px;
+        font-weight: bold;
+        text-align: center;
+        font-size: 9px;
+    }
+
+    .a4-table td {
+        border: 1px solid #ddd;
+        padding: 4px 3px;
+        text-align: center;
+        font-size: 9px;
+    }
+
+    .a4-table .text-start {
+        text-align: left;
+    }
+
+    .a4-table .text-end {
+        text-align: right;
+    }
+
+    .a4-table tfoot td {
+        background: #f8f9fa;
+        font-weight: bold;
+        border-top: 2px solid #333;
+    }
+
+    .a4-deal-by {
+        font-size: 11px;
+        color: #000;
+        font-weight: 600;
+    }
+
+    .a4-footer {
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px solid #ddd;
+        font-size: 9px;
+        color: #666;
+        text-align: center;
+    }
+
+    /* Print Styles */
+    @@media print {
+        @@page {
+            size: A4;
+            margin: 0;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: white;
+        }
+        
+        .a4-container {
+            width: 210mm;
+            min-height: 0;
+            height: auto;
+            margin: 0;
+            padding: 12mm;
+            box-shadow: none;
+            page-break-after: auto;
+            page-break-inside: auto;
+            overflow: visible;
+        }
+        
+        .no-print {
+            display: none !important;
+        }
+        
+        .a4-table {
+            page-break-inside: auto;
+            font-size: 8px;
+        }
+        
+        .a4-table th,
+        .a4-table td {
+            padding: 3px 2px;
+            font-size: 8px;
+        }
+        
+        .a4-section {
+            page-break-inside: auto;
+            margin-bottom: 8px;
+        }
+        
+        .a4-header {
+            grid-template-columns: 1fr auto;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+        }
+        
+        .a4-footer {
+            margin-top: 8px;
+            padding-top: 5px;
+        }
+        
+        /* Prevent page breaks */
+        .a4-info-grid {
+            page-break-inside: avoid;
+        }
+
+        .a4-info-block .a4-info-value,
+        .a4-info-block .a4-info-value code {
+            font-weight: 700;
+            font-size: 11px;
+        }
+    }
+
+    /* Screen Styles */
+    @@media screen {
+        body {
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .a4-container {
+            margin: 20px auto;
+        }
+    }
+</style>
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

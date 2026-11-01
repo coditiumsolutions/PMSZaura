@@ -1,4 +1,4 @@
-name: Deploy PMS to GCP
+name: Deploy Salzee to GCP
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - main
       - master
     paths:
-      - "PMS/**"
+      - "Salzee/**"
       - ".github/workflows/deploy-gcp.yml"
   workflow_dispatch:
 
@@ -69,19 +69,19 @@ jobs:
           echo "Domain: ${SSH_DOMAIN_NAME}"
 
       - name: Publish (linux-x64)
-        working-directory: PMS
+        working-directory: Salzee
         run: |
           set -euo pipefail
-          dotnet publish PMS.csproj \
+          dotnet publish Salzee.csproj \
             --configuration Release \
             --runtime linux-x64 \
             --self-contained false \
             --output ./publish-out/linux-x64
-          test -f ./publish-out/linux-x64/PMS.dll
+          test -f ./publish-out/linux-x64/Salzee.dll
           ls -lah ./publish-out/linux-x64 | head -n 30 || true
 
       - name: Package deployment archive
-        working-directory: PMS
+        working-directory: Salzee
         run: |
           tar -czf /tmp/pms-gcp-deploy.tar.gz -C ./publish-out/linux-x64 .
           ls -lh /tmp/pms-gcp-deploy.tar.gz

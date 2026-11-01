@@ -1,0 +1,249 @@
+@model List<Salzee.Controllers.DefaulterReportViewModel>
+
+@{
+    ViewData["Title"] = "Defaulters Report";
+}
+
+<!-- Banner with purple gradient -->
+<div class="custom-banner mb-4" style="margin-top: 20px;">
+    <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); padding: 25px 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-white mb-1" style="font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    <!-- <i class="fas fa-exclamation-triangle me-2"></i>Defaulters Report -->
+                </h2>
+                <p class="text-white mb-0" style="opacity: 0.95; font-size: 0.95rem;">
+                    Customers with overdue payments and outstanding balances
+                </p>
+            </div>
+            <div>
+                <button onclick="window.print()" class="btn btn-light">
+                    <i class="fas fa-print me-2"></i>Print Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-sm rounded-circle bg-danger bg-soft text-danger">
+                            <i class="fas fa-exclamation-circle font-size-24"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Total Defaulters</h6>
+                        <h4 class="mb-0">@Model.Select(d => d.CustomerID).Distinct().Count()</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-sm rounded-circle bg-warning bg-soft text-warning">
+                            <i class="fas fa-coins font-size-24"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Total Outstanding (PKR)</h6>
+                        <h4 class="mb-0" data-format-number="@Model.Sum(d => d.Balance)">@Model.Sum(d => d.Balance).ToString("N0")</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-sm rounded-circle bg-danger bg-soft text-danger">
+                            <i class="fas fa-calendar-times font-size-24"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Overdue Installments</h6>
+                        <h4 class="mb-0">@Model.Count</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-sm rounded-circle bg-info bg-soft text-info">
+                            <i class="fas fa-clock font-size-24"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Avg Days Overdue</h6>
+                        <h4 class="mb-0">@(Model.Any() ? Model.Average(d => d.DaysOverdue).ToString("N0") : "0") days</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Defaulters Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
+        <h5 class="mb-0 text-white">
+            <i class="fas fa-list me-2"></i>Defaulters Details
+        </h5>
+    </div>
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table id="defaultersTable" class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Customer Name</th>
+                            <th>Phone</th>
+                            <th>Payment Plan</th>
+                            <th>Installment</th>
+                            <th>Due Date</th>
+                            <th>Amount Due</th>
+                            <th>Paid</th>
+                            <th>Balance</th>
+                            <th>Days Overdue</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var defaulter in Model)
+                        {
+                            <tr>
+                                <td><code>@defaulter.CustomerID</code></td>
+                                <td>
+                                    <strong>@defaulter.CustomerName</strong>
+                                </td>
+                                <td>@defaulter.Phone</td>
+                                <td>@defaulter.PlanName</td>
+                                <td>
+                                    <span class="badge bg-info">Installment #@(defaulter.InstallmentNo?.ToString() ?? "N/A")</span>
+                                </td>
+                                <td>
+                                    <span class="text-danger">
+                                        <i class="fas fa-calendar-alt me-1"></i>
+                                        @defaulter.DueDate.ToString("MMM dd, yyyy")
+                                    </span>
+                                </td>
+                                <td><strong><span data-format-number="@defaulter.AmountDue">@defaulter.AmountDue.ToString("N0")</span> PKR</strong></td>
+                                <td><span class="text-success"><span data-format-number="@defaulter.AmountPaid">@defaulter.AmountPaid.ToString("N0")</span> PKR</span></td>
+                                <td><strong class="text-danger"><span data-format-number="@defaulter.Balance">@defaulter.Balance.ToString("N0")</span> PKR</strong></td>
+                                <td>
+                                    <span class="badge @(defaulter.DaysOverdue > 90 ? "bg-danger" : defaulter.DaysOverdue > 30 ? "bg-warning" : "bg-secondary")">
+                                        @defaulter.DaysOverdue days
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (defaulter.Status == "Active")
+                                    {
+                                        <span class="badge bg-success">@defaulter.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">@defaulter.Status</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-check-circle fa-4x mb-3 text-success"></i>
+                <h5 class="text-success">No Defaulters Found!</h5>
+                <p class="text-muted">All customers are up to date with their payments.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .avatar-sm {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bg-soft {
+        background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+    }
+
+    .bg-danger.bg-soft {
+        background-color: rgba(220, 53, 69, 0.1) !important;
+    }
+
+    .bg-warning.bg-soft {
+        background-color: rgba(255, 193, 7, 0.1) !important;
+    }
+
+    .bg-info.bg-soft {
+        background-color: rgba(13, 202, 240, 0.1) !important;
+    }
+
+    .font-size-24 {
+        font-size: 24px;
+    }
+
+    code {
+        background: rgba(156, 106, 222, 0.1);
+        color: #9C6ADE;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    @@media print {
+        .custom-banner button,
+        .sidebar,
+        .btn {
+            display: none !important;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
+
+    <script>
+        $(document).ready(function () {
+            $('#defaultersTable').DataTable({
+                "order": [[9, "desc"]], // Sort by days overdue descending
+                "pageLength": 25,
+                "language": {
+                    "search": "Search defaulters:",
+                    "lengthMenu": "Show _MENU_ records per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ defaulters",
+                    "infoEmpty": "No defaulters found",
+                    "infoFiltered": "(filtered from _MAX_ total records)"
+                }
+            });
+        });
+    </script>
+}
+

@@ -1,0 +1,317 @@
+@model AmsBankVoucherCreateVm
+@using System.Text.Json
+@using Salzee.Utilities
+@{
+    var type = (ViewBag.TypeCode as string ?? Model.TypeCode ?? "BPV").ToUpperInvariant();
+    ViewData["Title"] = $"New {type}";
+    var fiscalYears = ViewBag.OpenFiscalYears as IEnumerable<AccFiscalYear> ?? Array.Empty<AccFiscalYear>();
+    var heads = ViewBag.AccountHeads as IEnumerable<AccAccountHead> ?? Array.Empty<AccAccountHead>();
+    var banks = ViewBag.BankAccounts as IEnumerable<AccBankAccount> ?? Array.Empty<AccBankAccount>();
+    var pendingCheques = ViewBag.PendingCheques as IEnumerable<AccChequeRegister> ?? Array.Empty<AccChequeRegister>();
+    var isBank = type is "BPV" or "BRV";
+    while (Model.Lines.Count < 2) { Model.Lines.Add(new AmsJvLineInputVm()); }
+    var bankJson = JsonSerializer.Serialize(banks.Select(b => new
+    {
+        b.BankAccountID,
+        b.BankName,
+        AccountHeadID = b.AccountHeadID,
+        GlLabel = b.AccountHead != null ? $"{b.AccountHead.AccountCode} — {b.AccountHead.AccountName}" : ""
+    }));
+    var headJson = JsonSerializer.Serialize(heads.Select(h => new { h.AccountHeadID, Label = $"{h.AccountCode} — {h.AccountName}" }));
+}
+<ul class="nav nav-pills flex-wrap gap-1 mb-3">
+    @foreach (var code in new[] { "BPV", "BRV", "CPV", "CRV" })
+    {
+        <li class="nav-item">
+            <a class="nav-link @(type == code ? "active" : "") py-1 px-2" asp-action="Create" asp-route-type="@code">@code</a>
+        </li>
+    }
+</ul>
+<form asp-action="Create" method="post" id="bankVoucherForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="TypeCode" value="@type" />
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label asp-for="FiscalYearID" class="form-label">Financial year</label>
+            <select asp-for="FiscalYearID" class="form-select" required id="fiscalYearSelect">
+                <option value="">— Select —</option>
+                @foreach (var fy in fiscalYears)
+                {
+                    <option value="@fy.FiscalYearID" selected="@(Model.FiscalYearID == fy.FiscalYearID)">@AmsAccountingPeriodGuard.FormatFiscalYearOption(fy)</option>
+                }
+            </select>
+            <span asp-validation-for="FiscalYearID" class="text-danger"></span>
+            <span class="form-text">Accounting month is set from voucher date.</span>
+        </div>
+        <div class="col-md-2">
+            <label asp-for="VoucherDate" class="form-label">Voucher date</label>
+            <input asp-for="VoucherDate" class="form-control" type="date" required id="voucherDate" />
+        </div>
+        <div class="col-md-2">
+            <label class="form-label">Vr. #</label>
+            <input type="text" class="form-control" value="@(ViewBag.NextVoucherNo as string ?? "—")" readonly />
+            <span class="form-text">Assigned on save</span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Amount" class="form-label">Amount</label>
+            <input asp-for="Amount" class="form-control text-end" type="number" step="0.01" min="0.01" required id="voucherAmount" />
+            <span class="form-text">Updates debit/credit below; you may also edit lines directly.</span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="ReferenceNo" class="form-label">Reference</label>
+            <input asp-for="ReferenceNo" class="form-control" maxlength="100" />
+        </div>
+        <div class="col-12">
+            <label asp-for="Narration" class="form-label">Narration</label>
+            <textarea asp-for="Narration" class="form-control" rows="2" maxlength="1000"></textarea>
+        </div>
+    </div>
+
+    @if (isBank)
+    {
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label asp-for="BankAccountID" class="form-label">Bank account</label>
+                <select asp-for="BankAccountID" class="form-select" id="bankAccountSelect">
+                    <option value="">— Select —</option>
+                    @foreach (var b in banks)
+                    {
+                        <option value="@b.BankAccountID" selected="@(Model.BankAccountID == b.BankAccountID)">@b.BankName — @(b.AccountHead?.AccountCode)</option>
+                    }
+                </select>
+                <span asp-validation-for="BankAccountID" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="ContraAccountHeadID" class="form-label">Contra GL (non-bank)</label>
+                <select asp-for="ContraAccountHeadID" class="form-select ams-ledger-select" required id="contraSelect" data-placeholder="Search contra GL…" data-allow-clear="false">
+                    <option value="0">— Select —</option>
+                    @foreach (var h in heads)
+                    {
+                        <option value="@h.AccountHeadID" selected="@(Model.ContraAccountHeadID == h.AccountHeadID)">@h.AccountCode — @h.AccountName</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="card mb-3">
+            <div class="card-header py-2">Cheque (optional)</div>
+            <div class="card-body">
+                <div class="form-check mb-2">
+                    <input asp-for="UseCheque" class="form-check-input" />
+                    <label asp-for="UseCheque" class="form-check-label">Link or create cheque</label>
+                </div>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label asp-for="ChequeRegisterID" class="form-label">Pending cheque (same bank)</label>
+                        <select asp-for="ChequeRegisterID" class="form-select">
+                            <option value="">— New / none —</option>
+                            @foreach (var c in pendingCheques)
+                            {
+                                <option value="@c.ChequeRegisterID">#@c.ChequeNo — @c.Amount.ToString("N2") @(c.IsPostDated ? "(PDC)" : "")</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NewChequeNo" class="form-label">New cheque no.</label>
+                        <input asp-for="NewChequeNo" class="form-control" maxlength="30" />
+                    </div>
+                    <div class="col-md-3">
+                        <label asp-for="NewChequeDate" class="form-label">Cheque date</label>
+                        <input asp-for="NewChequeDate" class="form-control" type="date" />
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input asp-for="IsPostDated" class="form-check-input" />
+                            <label asp-for="IsPostDated" class="form-check-label">Post-dated (PDC)</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label asp-for="CashAccountHeadID" class="form-label">Cash / hand GL</label>
+                <select asp-for="CashAccountHeadID" class="form-select ams-ledger-select" required id="cashSelect" data-placeholder="Search cash / hand GL…" data-allow-clear="false">
+                    <option value="0">— Select —</option>
+                    @foreach (var h in heads)
+                    {
+                        <option value="@h.AccountHeadID" selected="@(Model.CashAccountHeadID == h.AccountHeadID)">@h.AccountCode — @h.AccountName</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label asp-for="ContraAccountHeadID" class="form-label">Contra GL</label>
+                <select asp-for="ContraAccountHeadID" class="form-select ams-ledger-select" required id="contraSelect" data-placeholder="Search contra GL…" data-allow-clear="false">
+                    <option value="0">— Select —</option>
+                    @foreach (var h in heads)
+                    {
+                        <option value="@h.AccountHeadID" selected="@(Model.ContraAccountHeadID == h.AccountHeadID)">@h.AccountCode — @h.AccountName</option>
+                    }
+                </select>
+            </div>
+        </div>
+    }
+
+    <p class="small text-muted mb-2">Voucher lines (same layout as journal voucher). Total debits must equal total credits.</p>
+    <div class="table-responsive mb-2">
+        <table class="table table-sm align-middle table-bordered" id="voucherLinesTable">
+            <thead class="table-light">
+                <tr>
+                    <th style="width:4%">#</th>
+                    <th style="width:42%">Account</th>
+                    <th class="text-end">Debit</th>
+                    <th class="text-end">Credit</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < 2; i++)
+                {
+                    <tr data-line-index="@i">
+                        <td>@(i + 1)</td>
+                        <td class="line-account-label text-muted small">—</td>
+                        <td>
+                            <input name="Lines[@i].DebitAmount" class="form-control form-control-sm text-end line-debit" type="number" step="0.01" min="0" value="@Model.Lines[i].DebitAmount.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" />
+                        </td>
+                        <td>
+                            <input name="Lines[@i].CreditAmount" class="form-control form-control-sm text-end line-credit" type="number" step="0.01" min="0" value="@Model.Lines[i].CreditAmount.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)" />
+                        </td>
+                        <td>
+                            <input name="Lines[@i].Description" class="form-control form-control-sm line-desc" maxlength="500" value="@Model.Lines[i].Description" />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot class="table-light">
+                <tr>
+                    <th colspan="2" class="text-end">Totals</th>
+                    <th class="text-end" id="totalDebit">0.00</th>
+                    <th class="text-end" id="totalCredit">0.00</th>
+                    <th><span id="balanceHint" class="small text-muted"></span></th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <button type="submit" class="btn btn-primary">Save draft</button>
+    <a class="btn btn-outline-secondary" asp-action="Index" asp-route-type="@type">Cancel</a>
+</form>
+<partial name="_AmsDuplicateVoucherModal" />
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const typeCode = @Html.Raw(JsonSerializer.Serialize(type));
+            const isBank = typeCode === 'BPV' || typeCode === 'BRV';
+            const banks = @Html.Raw(bankJson);
+            const heads = @Html.Raw(headJson);
+
+            const amountEl = document.getElementById('voucherAmount');
+            const bankSel = document.getElementById('bankAccountSelect');
+            const contraSel = document.getElementById('contraSelect');
+            const cashSel = document.getElementById('cashSelect');
+            const rows = document.querySelectorAll('#voucherLinesTable tbody tr');
+
+            function fmt(n) { return (Number(n) || 0).toFixed(2); }
+            function parseAmt(el) { return parseFloat(el?.value) || 0; }
+
+            function selectedLabel(sel) {
+                if (!sel || sel.selectedIndex < 0) return '—';
+                const opt = sel.options[sel.selectedIndex];
+                return opt && opt.value && opt.value !== '0' ? opt.text : '—';
+            }
+
+            function bankGlInfo() {
+                const id = parseInt(bankSel?.value, 10);
+                if (!id) return null;
+                return banks.find(b => b.BankAccountID === id) || null;
+            }
+
+            function applyLinePattern(amount) {
+                const amt = Math.max(0, parseFloat(amount) || 0);
+                const contraLabel = selectedLabel(contraSel);
+                const bankInfo = bankGlInfo();
+                    const bankLabel = bankInfo ? (bankInfo.BankName + ' — ' + (bankInfo.GlLabel || '')) : selectedLabel(bankSel);
+                const cashLabel = selectedLabel(cashSel);
+
+                let line0 = { account: '—', debit: 0, credit: 0, desc: '' };
+                let line1 = { account: '—', debit: 0, credit: 0, desc: '' };
+
+                switch (typeCode) {
+                    case 'BPV':
+                        line0 = { account: contraLabel, debit: amt, credit: 0, desc: 'BPV contra' };
+                        line1 = { account: bankLabel, debit: 0, credit: amt, desc: 'BPV bank' };
+                        break;
+                    case 'BRV':
+                        line0 = { account: bankLabel, debit: amt, credit: 0, desc: 'BRV bank' };
+                        line1 = { account: contraLabel, debit: 0, credit: amt, desc: 'BRV contra' };
+                        break;
+                    case 'CPV':
+                        line0 = { account: contraLabel, debit: amt, credit: 0, desc: 'CPV expense' };
+                        line1 = { account: cashLabel, debit: 0, credit: amt, desc: 'CPV cash' };
+                        break;
+                    case 'CRV':
+                        line0 = { account: cashLabel, debit: amt, credit: 0, desc: 'CRV cash' };
+                        line1 = { account: contraLabel, debit: 0, credit: amt, desc: 'CRV contra' };
+                        break;
+                }
+
+                const lines = [line0, line1];
+                rows.forEach((row, i) => {
+                    row.querySelector('.line-account-label').textContent = lines[i].account;
+                    row.querySelector('.line-debit').value = lines[i].debit > 0 ? lines[i].debit.toFixed(2) : '';
+                    row.querySelector('.line-credit').value = lines[i].credit > 0 ? lines[i].credit.toFixed(2) : '';
+                    const desc = row.querySelector('.line-desc');
+                    if (!desc.value) desc.value = lines[i].desc;
+                });
+                updateTotals();
+            }
+
+            function updateTotals() {
+                let td = 0, tc = 0;
+                rows.forEach(row => {
+                    td += parseAmt(row.querySelector('.line-debit'));
+                    tc += parseAmt(row.querySelector('.line-credit'));
+                });
+                document.getElementById('totalDebit').textContent = fmt(td);
+                document.getElementById('totalCredit').textContent = fmt(tc);
+                const hint = document.getElementById('balanceHint');
+                if (td === 0 && tc === 0) {
+                    hint.textContent = '';
+                    hint.className = 'small text-muted';
+                } else if (Math.abs(td - tc) < 0.005) {
+                    hint.textContent = 'Balanced';
+                    hint.className = 'small text-success';
+                } else {
+                    hint.textContent = 'Out of balance';
+                    hint.className = 'small text-danger';
+                }
+            }
+
+            function onLineEdit() {
+                let td = 0, tc = 0;
+                rows.forEach(row => {
+                    td += parseAmt(row.querySelector('.line-debit'));
+                    tc += parseAmt(row.querySelector('.line-credit'));
+                });
+                const amt = Math.max(td, tc);
+                if (amt > 0) amountEl.value = amt.toFixed(2);
+                updateTotals();
+            }
+
+            amountEl?.addEventListener('input', () => applyLinePattern(amountEl.value));
+            bankSel?.addEventListener('change', () => applyLinePattern(amountEl.value));
+            contraSel?.addEventListener('change', () => applyLinePattern(amountEl.value));
+            cashSel?.addEventListener('change', () => applyLinePattern(amountEl.value));
+            rows.forEach(row => {
+                row.querySelector('.line-debit')?.addEventListener('input', onLineEdit);
+                row.querySelector('.line-credit')?.addEventListener('input', onLineEdit);
+            });
+
+            applyLinePattern(amountEl.value);
+        })();
+    </script>
+}

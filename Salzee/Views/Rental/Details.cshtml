@@ -1,0 +1,292 @@
+@model Salzee.Models.Rental
+
+@{
+    ViewData["Title"] = "Rental Details";
+    var totalDue = Model.RentalPayments?.Sum(p => p.AmountDue) ?? 0m;
+    var totalPaid = Model.RentalPayments?.Sum(p => p.AmountPaid) ?? 0m;
+    var pendingCount = Model.RentalPayments?.Count(p => p.Status != Salzee.Models.RentalPayment.StatusPaid) ?? 0;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h2 class="mb-0"><i class="fas fa-key me-2"></i>Rental Details</h2>
+        <div class="text-muted small">Rental ID: <span class="badge bg-secondary">@Model.RentalID</span></div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-2"></i>Back</a>
+        @if (Model.Status == Salzee.Models.Rental.StatusActive)
+        {
+            <form asp-action="CloseRental" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.RentalID" />
+                <input type="hidden" name="closeStatus" value="@Salzee.Models.Rental.StatusCompleted" />
+                <button type="submit" class="btn btn-success" onclick="return confirm('Close this rental as Completed? This will mark the property Available again if it is currently marked Rented.');">
+                    <i class="fas fa-check me-2"></i>Close Rental
+                </button>
+            </form>
+            <form asp-action="CloseRental" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.RentalID" />
+                <input type="hidden" name="closeStatus" value="@Salzee.Models.Rental.StatusCancelled" />
+                <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Cancel this rental?');">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-7">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
+                <h5 class="mb-0 text-white"><i class="fas fa-home me-2"></i>Property</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <div class="text-muted small">Property ID</div>
+                        <div class="fw-bold"><code>@Model.PropertyID</code></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small">Plot / Block</div>
+                        <div class="fw-bold">@(Model.Property?.PlotNo ?? "—") / @(Model.Property?.Block ?? "—")</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-muted small">Type / Size</div>
+                        <div class="fw-bold">@(Model.Property?.PropertyType ?? Model.Property?.PlotType ?? "—") / @(Model.Property?.Size ?? "—")</div>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <div class="text-muted small">Project</div>
+                        <div class="fw-bold">@(Model.Property?.Project?.ProjectName ?? "—")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
+                <h5 class="mb-0 text-white"><i class="fas fa-user me-2"></i>Tenant & Terms</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <div class="text-muted small">Tenant</div>
+                    <div class="fw-bold">@Model.TenantName</div>
+                    <div class="text-muted small">
+                        @(string.IsNullOrWhiteSpace(Model.TenantPhone) ? "" : Model.TenantPhone)
+                        @(string.IsNullOrWhiteSpace(Model.TenantCNIC) ? "" : " • " + Model.TenantCNIC)
+                    </div>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="text-muted small">Start</div>
+                        <div class="fw-bold">@Model.StartDate.ToString("MMM dd, yyyy")</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small">End</div>
+                        <div class="fw-bold">@(Model.EndDate.HasValue ? Model.EndDate.Value.ToString("MMM dd, yyyy") : "—")</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small">Monthly Rent</div>
+                        <div class="fw-bold">@Model.MonthlyRent.ToString("N0") @Model.Currency</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small">Status</div>
+                        <div class="fw-bold">
+                            @if (Model.Status == Salzee.Models.Rental.StatusActive)
+                            { <span class="badge bg-success">@Model.Status</span> }
+                            else if (Model.Status == Salzee.Models.Rental.StatusCompleted)
+                            { <span class="badge bg-secondary">@Model.Status</span> }
+                            else
+                            { <span class="badge bg-warning">@Model.Status</span> }
+                        </div>
+                    </div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Notes))
+                {
+                    <hr />
+                    <div class="text-muted small">Notes</div>
+                    <div>@Model.Notes</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-sm rounded-circle bg-primary bg-soft text-primary">
+                            <i class="fas fa-list-check"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Total Schedule</h6>
+                        <h4 class="mb-0">@((Model.RentalPayments?.Count ?? 0).ToString())</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-sm rounded-circle bg-success bg-soft text-success">
+                            <i class="fas fa-coins"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Total Paid</h6>
+                        <h4 class="mb-0">@totalPaid.ToString("N0")</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-sm rounded-circle bg-warning bg-soft text-warning">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Pending / Partial</h6>
+                        <h4 class="mb-0">@pendingCount</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
+        <h5 class="mb-0 text-white"><i class="fas fa-calendar-alt me-2"></i>Rental Payments (Monthly)</h5>
+    </div>
+    <div class="card-body">
+        @if (Model.RentalPayments != null && Model.RentalPayments.Any())
+        {
+            <div class="table-responsive">
+                <table id="rentalPaymentsTable" class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Period</th>
+                            <th>Due Date</th>
+                            <th>Amount Due</th>
+                            <th>Status</th>
+                            <th>Paid On</th>
+                            <th>Paid Amount</th>
+                            <th>Method</th>
+                            <th>Reference</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in Model.RentalPayments.OrderBy(x => x.DueDate))
+                        {
+                            <tr>
+                                <td>
+                                    <span class="badge bg-info">
+                                        @p.BillingYear-@p.BillingMonth.ToString("D2")
+                                    </span>
+                                </td>
+                                <td>@p.DueDate.ToString("MMM dd, yyyy")</td>
+                                <td><strong>@p.AmountDue.ToString("N0")</strong></td>
+                                <td>
+                                    @if (p.Status == Salzee.Models.RentalPayment.StatusPaid)
+                                    {
+                                        <span class="badge bg-success">@p.Status</span>
+                                    }
+                                    else if (p.Status == Salzee.Models.RentalPayment.StatusPartiallyPaid)
+                                    {
+                                        <span class="badge bg-warning">@p.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@p.Status</span>
+                                    }
+                                </td>
+                                <td>@(p.PaidOn.HasValue ? p.PaidOn.Value.ToString("MMM dd, yyyy") : "—")</td>
+                                <td>@p.AmountPaid.ToString("N0")</td>
+                                <td>@(string.IsNullOrWhiteSpace(p.PaymentMethod) ? "—" : p.PaymentMethod)</td>
+                                <td>@(string.IsNullOrWhiteSpace(p.ReferenceNo) ? "—" : p.ReferenceNo)</td>
+                                <td class="rental-actions-cell">
+                                    <div class="btn-group" role="group">
+                                        @if (Model.Status == Salzee.Models.Rental.StatusActive && p.Status != Salzee.Models.RentalPayment.StatusPaid)
+                                        {
+                                            <a asp-action="RecordPayment" asp-route-id="@p.RentalPaymentID" class="btn btn-sm btn-outline-primary" title="Record Payment">
+                                                <i class="fas fa-receipt"></i>
+                                            </a>
+                                        }
+                                        <a asp-action="PrintReceipt" asp-route-id="@p.RentalPaymentID" class="btn btn-sm btn-outline-secondary" title="Print Receipt" target="_blank">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-secondary btn-copy-payment-id"
+                                                data-payment-id="@p.RentalPaymentID"
+                                                title="Copy Payment ID">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-calendar-alt fa-4x mb-3 text-muted"></i>
+                <h5 class="text-muted">No Schedule Found</h5>
+                <p class="text-muted">This rental does not have any rental payments generated.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#rentalPaymentsTable').DataTable({
+                order: [[1, 'asc']],
+                pageLength: 25,
+                columnDefs: [{ orderable: false, targets: 8 }]
+            });
+
+            // Keep Actions column compact and usable
+            $(document).on('click', '.btn-copy-payment-id', function () {
+                var id = $(this).data('payment-id');
+                if (!id) return;
+                navigator.clipboard.writeText(id.toString()).then(() => {
+                    var $btn = $(this);
+                    var old = $btn.attr('title');
+                    $btn.attr('title', 'Copied!');
+                    setTimeout(() => $btn.attr('title', old), 1200);
+                });
+            });
+        });
+    </script>
+}
+
+<style>
+    /* Fix Action column overflow/wrapping (the long IDs were stretching rows) */
+    td.rental-actions-cell {
+        white-space: nowrap;
+        min-width: 110px;
+    }
+    td.rental-actions-cell .btn {
+        padding: 6px 10px;
+    }
+</style>
+

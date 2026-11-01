@@ -1,0 +1,139 @@
+@model Salzee.Models.ActivityLogIndexViewModel
+@{
+    ViewData["Title"] = "Audit Logs";
+    string PageUrl(int p) => Url.Action("AuditLogs", "ActivityLog", new { btNo = Model.BtNo, page = p, pageSize = Model.PageSize }) ?? "#";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <h3 class="mb-0"><i class="fas fa-history me-2"></i>Audit Logs</h3>
+    <a asp-controller="Home" asp-action="Workspace" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-th-large me-1"></i>Workspace
+    </a>
+</div>
+
+<form method="get" asp-action="AuditLogs" class="mb-3 pms-audit-search">
+    <input type="hidden" name="page" value="1" />
+    <label class="form-label fw-semibold mb-1" for="btNo">BT No</label>
+    <div class="d-flex flex-nowrap align-items-center gap-2">
+        <input id="btNo" name="btNo" value="@Model.BtNo" class="form-control" placeholder="Enter BT No" autocomplete="off" />
+        <div class="d-flex flex-nowrap gap-2 align-items-center pms-listing-search-actions flex-shrink-0">
+            <button type="submit" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">
+                <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+            </button>
+            <a asp-action="AuditLogs" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--operations">
+                <i class="bi bi-arrow-counterclockwise me-1" aria-hidden="true"></i>Clear
+            </a>
+        </div>
+    </div>
+</form>
+
+<style>
+    .pms-audit-search,
+    .pms-audit-search .pms-listing-search-actions {
+        background: transparent !important;
+        border: 0;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .pms-audit-search .form-control {
+        border-radius: 0 !important;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .pms-audit-grid,
+    .pms-audit-grid .card-header,
+    .pms-audit-grid .card-body,
+    .pms-audit-grid .card-footer,
+    .pms-audit-grid .table,
+    .pms-audit-grid .table > :not(caption) > * > * {
+        background-color: #fff !important;
+    }
+
+    .pms-listing-scope .pms-audit-grid .table-responsive > table.table thead th,
+    .pms-audit-grid .table thead th {
+        background: #fff !important;
+        background-color: #fff !important;
+        border-bottom: 1px solid #2563eb !important;
+    }
+
+    .pms-audit-grid {
+        border-bottom: 1px solid #2563eb !important;
+    }
+
+    .pms-audit-grid .table tbody td {
+        border-bottom: 1px solid #2563eb !important;
+    }
+</style>
+
+@if (!Model.HasSearched)
+{
+    <div class="alert alert-light border mb-0">Enter a BT No to find related activity logs.</div>
+}
+else
+{
+    <div class="card pms-audit-grid">
+        <div class="card-header d-flex align-items-center justify-content-between">
+            <div>
+                <strong>Results for @Model.BtNo</strong>
+                <span class="text-muted ms-2">(@Model.TotalCount)</span>
+            </div>
+            <div class="text-muted">Page @Model.Page of @Model.TotalPages</div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 150px;">Date</th>
+                            <th style="width: 180px;">User</th>
+                            <th>Action</th>
+                            <th style="width: 130px;">Ref Type</th>
+                            <th style="width: 140px;">Ref ID</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Logs.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No activity logs found for this BT No.</td>
+                            </tr>
+                        }
+                        else
+                        {
+                            foreach (var row in Model.Logs)
+                            {
+                                <tr>
+                                    <td>@row.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                    <td>@row.UserName</td>
+                                    <td>@row.Action</td>
+                                    <td>@(string.IsNullOrWhiteSpace(row.RefType) ? "—" : row.RefType)</td>
+                                    <td>@(string.IsNullOrWhiteSpace(row.RefId) ? "—" : row.RefId)</td>
+                                    <td class="small">@(string.IsNullOrWhiteSpace(row.Details) ? "—" : row.Details)</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @if (Model.TotalPages > 1)
+        {
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    Showing @((Model.Page - 1) * Model.PageSize + 1)-@Math.Min(Model.Page * Model.PageSize, Model.TotalCount) of @Model.TotalCount
+                </div>
+                <ul class="pagination mb-0">
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                        <a class="page-link" href="@(Model.Page <= 1 ? "#" : PageUrl(Model.Page - 1))">Prev</a>
+                    </li>
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" href="@(Model.Page >= Model.TotalPages ? "#" : PageUrl(Model.Page + 1))">Next</a>
+                    </li>
+                </ul>
+            </div>
+        }
+    </div>
+}

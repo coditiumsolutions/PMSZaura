@@ -1,0 +1,143 @@
+@model Salzee.Models.Customer
+@{
+    Layout = null;
+    ViewData["Title"] = "Allotment Letter";
+    var latestAllotment = Model.Allotments?
+        .OrderByDescending(a => a.AllotmentDate)
+        .FirstOrDefault();
+    var property = latestAllotment?.Property;
+    var project = property?.Project ?? Model.PaymentPlan?.Project;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Allotment Letter - @Model.CustomerID - ZKB Eclipse</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <h3 class="mb-0"><i class="fas fa-file-signature me-2"></i>Allotment Letter</h3>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()"><i class="fas fa-print me-1"></i>Print</button>
+    </div>
+</div>
+
+<div class="a4-container">
+    <div class="a4-header text-center">
+        <img src="~/images/logo.jpeg" alt="JUBA Smart City Logo" class="a4-logo" />
+        <div class="a4-title">Allotment Letter</div>
+        <div class="a4-subtitle">ZKB - Property Management System</div>
+        <div class="a4-subtitle">Proof of Property Allotment</div>
+        <div class="a4-subtitle">Generated on: @DateTime.Now.ToString("MMMM dd, yyyy")</div>
+    </div>
+
+    <!-- Customer Information -->
+    <div class="a4-section">
+        <div class="a4-section-title">Customer Information</div>
+        <div class="a4-info-grid">
+            <div class="a4-info-block">
+                <div class="a4-info-row"><span class="a4-info-label">Customer ID:</span><span class="a4-info-value"><strong>@Model.CustomerID</strong></span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Name:</span><span class="a4-info-value">@(Model.FullName ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Father's Name:</span><span class="a4-info-value">@(Model.FatherName ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">CNIC:</span><span class="a4-info-value">@(Model.CNIC ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Phone:</span><span class="a4-info-value">@(Model.Phone ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Mobile:</span><span class="a4-info-value">@(Model.MobileNo ?? "—")</span></div>
+                @if (!string.IsNullOrWhiteSpace(Model.MobileNo2))
+                {
+                <div class="a4-info-row"><span class="a4-info-label">Mobile 2:</span><span class="a4-info-value">@Model.MobileNo2</span></div>
+                }
+                <div class="a4-info-row"><span class="a4-info-label">Email:</span><span class="a4-info-value">@(Model.Email ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Address:</span><span class="a4-info-value">@(Model.MailingAddress ?? Model.PermanentAddress ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">City / Country:</span><span class="a4-info-value">@(Model.City ?? "—") @(Model.Country != null ? ", " + Model.Country : "")</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Allotment & Property Information -->
+    <div class="a4-section">
+        <div class="a4-section-title">Allotment & Property Details</div>
+        <div class="a4-info-grid">
+            <div class="a4-info-block">
+                <div class="a4-info-row"><span class="a4-info-label">Allotment ID:</span><span class="a4-info-value"><strong>@(latestAllotment?.AllotmentID ?? "—")</strong></span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Allotment Date:</span><span class="a4-info-value">@(latestAllotment?.AllotmentDate.ToString("MMMM dd, yyyy") ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Type:</span><span class="a4-info-value">@(latestAllotment?.AllottmentType ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Status:</span><span class="a4-info-value">@(latestAllotment?.WorkFlowStatus ?? "—")</span></div>
+            </div>
+            <div class="a4-info-block">
+                <div class="a4-info-row"><span class="a4-info-label">Project:</span><span class="a4-info-value">@(project?.ProjectName ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Property ID:</span><span class="a4-info-value"><code>@(property?.PropertyID ?? "—")</code></span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Plot No:</span><span class="a4-info-value">@(property?.PlotNo ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Block:</span><span class="a4-info-value">@(property?.Block ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Street:</span><span class="a4-info-value">@(property?.Street ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Size:</span><span class="a4-info-value">@(property?.Size ?? Model.RegisteredSize ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Plot Type:</span><span class="a4-info-value">@(property?.PlotType ?? "—")</span></div>
+                <div class="a4-info-row"><span class="a4-info-label">Property Type:</span><span class="a4-info-value">@(property?.PropertyType ?? "—")</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statement -->
+    <div class="a4-section">
+        <div class="a4-section-title">Statement</div>
+        <p class="a4-statement">
+            This is to certify that the above-named customer (<strong>@(Model.FullName ?? Model.CustomerID)</strong>, Customer ID: <strong>@Model.CustomerID</strong>) has been allotted the property described above under project <strong>@(project?.ProjectName ?? "—")</strong>. Allotment reference: <strong>@(latestAllotment?.AllotmentID ?? "—")</strong>, dated <strong>@(latestAllotment?.AllotmentDate.ToString("MMMM dd, yyyy") ?? "—")</strong>. This letter serves as proof of allotment and may be printed for the customer's records.
+        </p>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(latestAllotment?.Comments))
+    {
+        <div class="a4-section">
+            <div class="a4-section-title">Remarks</div>
+            <p class="a4-statement">@latestAllotment.Comments</p>
+        </div>
+    }
+
+    <div class="a4-footer">
+        This letter is a system-generated proof of allotment.<br />
+        Customer ID: @Model.CustomerID | Allotment ID: @(latestAllotment?.AllotmentID ?? "—") | Generated on @DateTime.Now.ToString("yyyy-MM-dd HH:mm")
+    </div>
+</div>
+
+<style>
+    .a4-container {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        padding: 15px 20px;
+        background: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .a4-header { border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 12px; }
+    .a4-title { font-size: 20px; font-weight: bold; color: #333; margin-bottom: 5px; }
+    .a4-subtitle { font-size: 11px; color: #666; margin-bottom: 3px; }
+    .a4-section { margin-bottom: 12px; }
+    .a4-section-title { font-size: 13px; font-weight: bold; color: #333; margin-bottom: 8px; padding-bottom: 3px; border-bottom: 1px solid #ddd; }
+    .a4-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; }
+    .a4-info-block { background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 4px solid #007bff; }
+    .a4-info-block h6 { font-size: 11px; font-weight: bold; margin-bottom: 6px; color: #333; }
+    .a4-info-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 11px; }
+    .a4-info-label { font-weight: 600; color: #555; }
+    .a4-info-value { color: #333; }
+    .a4-statement { font-size: 11px; line-height: 1.5; color: #333; margin-bottom: 0; }
+    .a4-footer { margin-top: 15px; padding-top: 8px; border-top: 1px solid #ddd; font-size: 9px; color: #666; text-align: center; }
+    .a4-logo { max-width: 120px; height: auto; margin-bottom: 10px; }
+    @@media print {
+        @@page { size: A4; margin: 0; }
+        body { margin: 0; padding: 0; background: white; }
+        .a4-container { width: 210mm; min-height: 297mm; margin: 0; padding: 12mm; box-shadow: none; }
+        .no-print { display: none !important; }
+    }
+    @@media screen {
+        body { background: #f5f5f5; padding: 20px; }
+        .a4-container { margin: 20px auto; }
+    }
+</style>
+</body>
+</html>

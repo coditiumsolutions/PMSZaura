@@ -1,0 +1,565 @@
+@model IEnumerable<Salzee.Models.Payment>
+
+@{
+    ViewData["Title"] = ViewBag.IsPendingPayments == true ? "Pending Payments" : "Customer Payments";
+    var paymentList = Model?.ToList() ?? new List<Salzee.Models.Payment>();
+    var totalCount = paymentList.Count;
+    var auditFilter = ViewBag.AuditFilter as string ?? "";
+    var isPendingPayments = ViewBag.IsPendingPayments == true;
+    var listAction = isPendingPayments ? "PendingPayments" : "CustomerPayments";
+    var pageHeading = isPendingPayments ? "Pending Payments" : "Customer Payments";
+}
+
+<div class="pms-payment-listing pms-listing-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h5 class="pms-grid-title mb-0">@pageHeading</h5>
+        <span class="badge rounded-pill pms-record-badge">@totalCount record@(totalCount == 1 ? "" : "s")</span>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show py-2 px-3 mb-2 small" role="alert">
+            @TempData["Success"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show py-2 px-3 mb-2 small" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-2 mb-2">
+        <div class="col-6 col-md-6">
+            <div class="card border-0 h-100 pms-cp-stat-card pms-cp-stat-card--payments">
+                <div class="card-body py-1 px-2 d-flex align-items-center justify-content-center gap-2">
+                    <span class="text-uppercase fw-semibold mb-0">Total Payments</span>
+                    <span class="fw-bold mb-0">@totalCount</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-6">
+            <a href="@Url.Action("Index", "PaymentAudit")" class="text-decoration-none">
+                <div class="card border-0 h-100 pms-cp-stat-card pms-cp-stat-card--audit">
+                    <div class="card-body py-1 px-2 d-flex align-items-center justify-content-center gap-2">
+                        <span class="text-uppercase fw-semibold mb-0">Pending Audit</span>
+                        <span class="fw-bold mb-0">@(ViewBag.PendingAuditCount ?? 0)</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <form method="get" asp-action="@listAction" class="mb-2" id="paymentsFilterForm">
+        <div class="pms-listing-search-wrap">
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-md-4 col-lg-3">
+                    <div class="pms-compact-field pms-select-dropdown">
+                        <label for="auditFilter" class="form-label">Audit Status</label>
+                        <select name="auditFilter" id="auditFilter" class="form-select" onchange="this.form.submit()">
+                            <option value="" selected="@(string.IsNullOrEmpty(auditFilter))">All</option>
+                            <option value="Pending" selected="@(auditFilter == "Pending")">Pending</option>
+                            <option value="Approved" selected="@(auditFilter == "Approved")">Approved</option>
+                            <option value="Declined" selected="@(auditFilter == "Declined")">Declined</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 col-lg-4">
+                    <div class="pms-compact-field">
+                        <label for="paymentsSearch" class="form-label">Search</label>
+                        <input type="text"
+                               id="paymentsSearch"
+                               class="form-control"
+                               placeholder="Search payments…"
+                               autocomplete="off" />
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 col-lg-5">
+                    <div class="d-flex flex-wrap gap-2 pms-listing-search-actions align-items-end pb-1 justify-content-md-end">
+                        <partial name="_OperationsDropdown" />
+                        @if (ViewBag.CanEdit == true)
+                        {
+                            <button type="button" id="btnEditSelectedPayment" class="btn btn-sm btn-primary pms-cp-action-btn" disabled>
+                                <i class="fas fa-edit me-1"></i>Edit
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="card pms-grid-card pms-listing-flat pms-saas-grid mb-2">
+        <div class="card-body py-2">
+            @if (paymentList.Any())
+            {
+                <div class="pms-saas-table-wrap pms-payment-grid-wrap">
+                    <table id="paymentsTable" class="table pms-saas-table pms-payment-grid-table">
+                        <thead>
+                            <tr>
+                                <th class="text-center">Sel</th>
+                                <th>Cust ID</th>
+                                <th>Cust name</th>
+                                <th>Account Head</th>
+                                <th>Ref No</th>
+                                <th class="text-end">Amount</th>
+                                <th>Audit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var payment in paymentList)
+                            {
+                                var accountHead = !string.IsNullOrWhiteSpace(payment.AccountHead)
+                                    ? payment.AccountHead.Trim()
+                                    : (payment.PaymentSchedule?.PaymentDescription?.Trim() ?? "—");
+                                var instNo = payment.PaymentSchedule?.InstallmentNo;
+                                var accountHeadDisplay = instNo.HasValue
+                                    ? $"{accountHead} {instNo.Value}"
+                                    : accountHead;
+                                var auditStatus = payment.AuditStatus ?? "Pending";
+                                var isApproved = string.Equals(auditStatus, "Approved", StringComparison.OrdinalIgnoreCase);
+                                <tr data-payment-id="@payment.PaymentID" data-audit-approved="@(isApproved ? "1" : "0")">
+                                    <td class="text-center" data-label="Sel">
+                                        <input type="radio"
+                                               class="form-check-input m-0 pms-cp-select-radio"
+                                               name="selectedPaymentId"
+                                               value="@payment.PaymentID"
+                                               data-audit-approved="@(isApproved ? "true" : "false")"
+                                               aria-label="Select payment @payment.PaymentID" />
+                                    </td>
+                                    <td data-label="Cust ID"><code>@payment.CustomerID</code></td>
+                                    <td data-label="Cust name">@(payment.Customer?.FullName ?? "—")</td>
+                                    <td data-label="Account Head">@accountHeadDisplay</td>
+                                    <td data-label="Ref No">@(string.IsNullOrWhiteSpace(payment.ReferenceNo) ? "—" : payment.ReferenceNo)</td>
+                                    <td class="text-end fw-semibold" data-label="Amount">@payment.Amount.ToString("N0")</td>
+                                    <td data-label="Audit">@auditStatus</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <i class="fas fa-money-bill-wave fa-2x mb-2 text-muted"></i>
+                    <h6 class="text-muted mb-1">@(isPendingPayments ? "No Pending Payments" : "No Payments Recorded Yet")</h6>
+                    <p class="text-muted small mb-2">
+                        @(isPendingPayments
+                            ? "There are no payments with Status = Pending."
+                            : "Start recording customer payments to track transactions.")
+                    </p>
+                    @if (!isPendingPayments && ViewBag.CanCreate == true)
+                    {
+                        <a asp-action="RecordPayment" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-1"></i>Record Payment
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@foreach (var payment in paymentList)
+{
+    <div class="modal fade" id="paymentModal@(payment.PaymentID)" tabindex="-1" aria-labelledby="paymentModalLabel@(payment.PaymentID)" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header py-2" style="background: var(--primary);">
+                    <h6 class="modal-title text-white mb-0" id="paymentModalLabel@(payment.PaymentID)">
+                        <i class="fas fa-receipt me-1"></i>Payment — @payment.PaymentID
+                    </h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-2">
+                    <div class="row g-2 small">
+                        <div class="col-md-6">
+                            <label class="text-muted">Payment ID</label>
+                            <p class="mb-1"><code>@payment.PaymentID</code></p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">Payment Date</label>
+                            <p class="mb-1">@payment.PaymentDate.ToString("dd-MM-yyyy hh:mm tt")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">Deposit Date</label>
+                            <p class="mb-1">@(payment.DepositDate?.ToString("dd-MM-yyyy") ?? "—")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">Customer</label>
+                            <p class="mb-1"><strong>@payment.Customer?.FullName</strong> <code>@payment.CustomerID</code></p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">Payment Plan</label>
+                            <p class="mb-1">@(payment.PaymentSchedule?.PaymentPlan?.PlanName ?? "—")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">Installment</label>
+                            <p class="mb-1">
+                                @if (payment.PaymentSchedule != null)
+                                {
+                                    <span>#@(payment.PaymentSchedule.InstallmentNo?.ToString() ?? "—")</span>
+                                }
+                                else
+                                {
+                                    <span>—</span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">Amount (PKR)</label>
+                            <p class="mb-1"><strong class="text-success">@payment.Amount.ToString("N0")</strong></p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">Method</label>
+                            <p class="mb-1">@payment.Method</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">Reference</label>
+                            <p class="mb-1"><code>@(payment.ReferenceNo ?? "—")</code></p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">Bank</label>
+                            <p class="mb-1">@(!string.IsNullOrWhiteSpace(payment.BankName) ? payment.BankName : "—")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">Status</label>
+                            <p class="mb-1">@payment.Status</p>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted">Audit Status</label>
+                            <p class="mb-1">@(payment.AuditStatus ?? "Pending")</p>
+                        </div>
+                        @if (!string.IsNullOrEmpty(payment.Remarks))
+                        {
+                            <div class="col-12">
+                                <label class="text-muted">Remarks</label>
+                                <p class="mb-0">@payment.Remarks</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer py-2">
+                    <a asp-action="Receipt" asp-route-id="@payment.PaymentID" class="btn btn-primary btn-sm" target="_blank">
+                        <i class="fas fa-print me-1"></i>Print Receipt
+                    </a>
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<style>
+    .pms-payment-listing.pms-listing-page,
+    .pms-payment-listing.pms-saas-grid,
+    .pms-payment-listing {
+        --saas-row-h: 40px;
+    }
+
+    .pms-payment-listing .pms-grid-title {
+        font-size: 1.25rem;
+        color: #000;
+        font-weight: 700;
+    }
+
+    .pms-payment-listing .pms-cp-stat-card .card-body {
+        min-height: 0;
+        padding-top: 0.25rem !important;
+        padding-bottom: 0.25rem !important;
+        line-height: 1.2;
+        color: #000 !important;
+        font-size: 0.95rem;
+    }
+
+    .pms-payment-listing .pms-cp-stat-card .card-body span {
+        color: #000 !important;
+        font-size: 0.95rem;
+    }
+
+    .pms-payment-listing .pms-cp-stat-card--payments {
+        background: #93c5fd !important;
+    }
+
+    .pms-payment-listing .pms-cp-stat-card--audit {
+        background: #fbbf24 !important;
+    }
+
+    .pms-payment-listing .pms-payment-grid-wrap {
+        overflow-x: hidden;
+        overflow-y: visible;
+        max-height: none;
+        min-height: 486px;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table {
+        table-layout: fixed;
+        width: 100% !important;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table th,
+    .pms-payment-listing .pms-payment-grid-table td,
+    .pms-payment-listing .pms-payment-grid-table td code {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+        font-size: 0.875rem !important;
+        color: #000 !important;
+        padding: 0.4rem 0.35rem !important;
+        line-height: 1.25 !important;
+    }
+
+    .pms-payment-listing .pms-saas-grid .pms-saas-table tbody td,
+    .pms-payment-listing .pms-payment-grid-table tbody td {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        padding-top: 0.4rem !important;
+        padding-bottom: 0.4rem !important;
+        padding-left: 0.35rem !important;
+        padding-right: 0.35rem !important;
+        line-height: 1.25 !important;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table tbody tr {
+        height: auto !important;
+    }
+
+    .pms-payment-listing .pms-cp-select-radio {
+        width: 0.85rem;
+        height: 0.85rem;
+        margin: 0 !important;
+        vertical-align: middle;
+        cursor: pointer;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table tbody td code {
+        padding: 0 !important;
+        line-height: inherit !important;
+        background: transparent;
+    }
+
+    .pms-payment-listing .pms-cp-action-btn {
+        min-width: 5.5rem;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table thead th,
+    .pms-payment-listing #paymentsTable thead th,
+    .pms-payment-listing .pms-saas-table thead th {
+        font-size: 0.78rem !important;
+        line-height: 1.35;
+        padding-top: 0.45rem !important;
+        padding-bottom: 0.45rem !important;
+        min-height: 2.1rem;
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        border-color: #524c96 !important;
+        cursor: default !important;
+        pointer-events: none;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table thead th.sorting,
+    .pms-payment-listing .pms-payment-grid-table thead th.sorting_asc,
+    .pms-payment-listing .pms-payment-grid-table thead th.sorting_desc,
+    .pms-payment-listing .pms-payment-grid-table thead th.sorting_disabled {
+        background-image: none !important;
+        padding-right: 0.35rem !important;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table .pms-saas-td-actions {
+        overflow: visible;
+        white-space: nowrap;
+    }
+
+    .pms-payment-listing .pms-payment-grid-table .pms-row-actions {
+        flex-wrap: nowrap;
+    }
+
+    .pms-payment-listing .dataTables_wrapper .dataTables_scroll,
+    .pms-payment-listing .dataTables_wrapper .dataTables_scrollBody {
+        overflow-x: hidden !important;
+    }
+
+    .pms-payment-listing .dataTables_wrapper .dataTables_length,
+    .pms-payment-listing .dataTables_wrapper .dataTables_filter {
+        display: none !important;
+    }
+
+    .pms-payment-listing .dataTables_wrapper .dataTables_info,
+    .pms-payment-listing .dataTables_wrapper .dataTables_paginate {
+        margin-top: 0.5rem;
+    }
+
+    .pms-payment-listing .pms-payments-dt-footer {
+        margin-top: 0.5rem;
+    }
+
+    .pms-payment-listing .pms-listing-operations-btn,
+    .pms-payment-listing .pms-pair-action-btn--operations {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        min-width: 11.5rem !important;
+        width: 11.5rem !important;
+        padding: 0.4rem 1.15rem !important;
+        background-color: #6059A6 !important;
+        border-color: #524c96 !important;
+        color: #fff !important;
+        font-weight: 600;
+        font-size: 0.9rem !important;
+        border-radius: 0 !important;
+    }
+
+    .pms-payment-listing .pms-listing-operations-btn:hover,
+    .pms-payment-listing .pms-listing-operations-btn:focus,
+    .pms-payment-listing .pms-listing-operations-btn.show,
+    .pms-payment-listing .pms-pair-action-btn--operations:hover,
+    .pms-payment-listing .pms-pair-action-btn--operations:focus,
+    .pms-payment-listing .pms-pair-action-btn--operations.show {
+        background-color: #4f4a8c !important;
+        border-color: #433e7a !important;
+        color: #fff !important;
+    }
+
+    .pms-payment-listing .pms-listing-operations-dropdown .dropdown-menu {
+        background-color: #fff !important;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 0.5rem 1rem rgba(15, 23, 42, 0.12);
+    }
+
+    .pms-payment-listing .pms-listing-operations-dropdown .dropdown-item {
+        background-color: #fff !important;
+        color: #000 !important;
+    }
+
+    .pms-payment-listing .pms-listing-operations-dropdown .dropdown-item:hover,
+    .pms-payment-listing .pms-listing-operations-dropdown .dropdown-item:focus {
+        background-color: #f1f5f9 !important;
+        color: #000 !important;
+    }
+
+    .modal-backdrop {
+        display: none !important;
+    }
+
+    body.modal-open .modal-backdrop,
+    body.modal-open::before {
+        display: none !important;
+        background: transparent !important;
+    }
+
+    .modal,
+    .modal.show {
+        background: transparent !important;
+    }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
+
+    <script>
+        $(document).ready(function () {
+            @if (paymentList.Any())
+            {
+                <text>
+                var paymentsTable = $('#paymentsTable').DataTable({
+                    order: [],
+                    ordering: false,
+                    pageLength: 20,
+                    lengthChange: false,
+                    paging: true,
+                    searching: true,
+                    scrollX: false,
+                    autoWidth: false,
+                    dom: 'rt<"pms-payments-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2"ip>',
+                    columnDefs: [
+                        { width: '5%',  targets: 0, className: 'text-center' }, // Sel
+                        { width: '12%', targets: 1 }, // Cust ID
+                        { width: '20%', targets: 2 }, // Cust name
+                        { width: '22%', targets: 3 }, // Account Head
+                        { width: '14%', targets: 4 }, // Ref No
+                        { width: '14%', targets: 5 }, // Amount
+                        { width: '13%', targets: 6 }  // Audit
+                    ],
+                    language: {
+                        info: "Showing _START_ to _END_ of _TOTAL_ payments",
+                        infoEmpty: "No payments",
+                        infoFiltered: "(filtered from _MAX_)",
+                        paginate: {
+                            first: "First",
+                            last: "Last",
+                            next: "Next",
+                            previous: "Previous"
+                        }
+                    }
+                });
+
+                var editUrlTemplate = '@Url.Action("EditPayment", "Payment", new { paymentId = "__ID__" })';
+                var receiptUrlTemplate = '@Url.Action("Receipt", "Payment", new { id = "__ID__" })';
+                var $editBtn = $('#btnEditSelectedPayment');
+
+                function syncPaymentActionButtons() {
+                    var hasSelection = $('input[name="selectedPaymentId"]:checked').length > 0;
+                    if ($editBtn.length) {
+                        $editBtn.prop('disabled', !hasSelection);
+                    }
+                }
+
+                $('#paymentsTable').on('change', 'input[name="selectedPaymentId"]', syncPaymentActionButtons);
+
+                $editBtn.on('click', function () {
+                    var id = $('input[name="selectedPaymentId"]:checked').val();
+                    if (!id) return;
+                    window.location.href = editUrlTemplate.replace('__ID__', encodeURIComponent(id));
+                });
+
+                $('#btnPaymentReceiptOps').on('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var id = $('input[name="selectedPaymentId"]:checked').val();
+                    if (!id) {
+                        alert('Select a payment row first, then choose Payment Receipt.');
+                        return;
+                    }
+                    var url = receiptUrlTemplate.replace('__ID__', encodeURIComponent(id));
+                    window.open(url, '_blank', 'noopener');
+                });
+
+                syncPaymentActionButtons();
+
+                $('#paymentsSearch').on('keyup input', function () {
+                    paymentsTable.search(this.value || '').draw();
+                });
+                $('#paymentsFilterForm').on('submit', function (e) {
+                    // Audit filter still posts via select onchange; block search-input Enter from navigating
+                    if (document.activeElement && document.activeElement.id === 'paymentsSearch') {
+                        e.preventDefault();
+                        paymentsTable.search($('#paymentsSearch').val() || '').draw();
+                    }
+                });
+                </text>
+            }
+
+            $('.modal-backdrop').remove();
+
+            $('.modal').on('show.bs.modal', function () {
+                $('.modal-backdrop').remove();
+                var modalInstance = bootstrap.Modal.getOrCreateInstance(this, { backdrop: false });
+                if (modalInstance && modalInstance._config) {
+                    modalInstance._config.backdrop = false;
+                }
+            });
+
+            $('.modal').on('shown.bs.modal hidden.bs.modal', function () {
+                $('.modal-backdrop').remove();
+            });
+        });
+    </script>
+}

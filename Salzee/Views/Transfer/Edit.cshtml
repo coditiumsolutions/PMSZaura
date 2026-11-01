@@ -1,0 +1,998 @@
+@model Salzee.Models.Transfer
+
+@{
+    ViewData["Title"] = "Edit Transfer";
+    var isApproved = Model.WorkFlowStatus == "Approved";
+    var openAttachmentsTab = ViewBag.OpenAttachmentsTab == true;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Transfer</h2>
+    <a asp-action="Details" asp-route-id="@Model.TransferID" class="btn btn-outline-primary"><i class="fas fa-arrow-left me-2"></i>Back to Details</a>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+        <h5 class="mb-0 text-white">@Model.TransferID — Customer: @Model.CustomerID</h5>
+    </div>
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <input type="hidden" asp-for="TransferID" />
+            <input type="hidden" asp-for="CustomerID" />
+            <input type="hidden" asp-for="CreatedAt" />
+            <input type="hidden" asp-for="SellerAttachments" id="SellerAttachments" />
+            <input type="hidden" asp-for="BuyerAttachments" id="BuyerAttachments" />
+            <input type="hidden" asp-for="SellerBiometric" id="SellerBiometric" />
+            <input type="hidden" asp-for="BuyerBiometric" id="BuyerBiometric" />
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Workflow Status</label>
+                    <select asp-for="WorkFlowStatus" class="form-select">
+                        @foreach (var s in (string[])ViewBag.WorkflowStatuses)
+                        {
+                            <option value="@s" selected="@(Model.WorkFlowStatus == s)">@s</option>
+                        }
+                    </select>
+                    <small class="text-muted">Setting to Approved will lock this record and update the customer file with buyer details.</small>
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs customer-tabs" id="editTabs" role="tablist">
+                <li class="nav-item"><button class="nav-link @(openAttachmentsTab ? "" : "active")" type="button" data-bs-toggle="tab" data-bs-target="#seller" role="tab">Seller</button></li>
+                <li class="nav-item"><button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#buyer" role="tab">Buyer</button></li>
+                <li class="nav-item"><button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#payment" role="tab">Payment & Fee</button></li>
+                <li class="nav-item"><button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#comments" role="tab">Comments</button></li>
+                <li class="nav-item"><button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#newJointOwners" role="tab">New Joint Owners</button></li>
+                <li class="nav-item"><button class="nav-link @(openAttachmentsTab ? "active" : "")" type="button" data-bs-toggle="tab" data-bs-target="#attachments" role="tab"><i class="fas fa-paperclip me-1"></i>Attachments</button></li>
+            </ul>
+            <div class="tab-content border border-top-0 p-3" id="editTabContent">
+                <div class="tab-pane fade @(openAttachmentsTab ? "" : "show active")" id="seller" role="tabpanel">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Seller Name</label>
+                            <input asp-for="SellerName" id="SellerName" class="form-control" placeholder="Letters only" />
+                            <span asp-validation-for="SellerName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Son/D/W/o</label>
+                            <input asp-for="SellerFatherName" id="SellerFatherName" class="form-control" placeholder="Letters only" />
+                            <span asp-validation-for="SellerFatherName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">CNIC</label>
+                            <input asp-for="SellerCNIC" id="SellerCNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+                            <small class="text-muted">Digits only — hyphens auto-inserted</small>
+                            <span asp-validation-for="SellerCNIC" class="text-danger small d-block"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Contact</label>
+                            <input asp-for="SellerContact" id="SellerContact" class="form-control" placeholder="Digits and + only" />
+                            <span asp-validation-for="SellerContact" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12"><label class="form-label">Address</label><input asp-for="SellerAddress" class="form-control" /></div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="buyer" role="tabpanel">
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <input asp-for="BuyerName" id="BuyerName" class="form-control" placeholder="Enter full name" required />
+                            <span asp-validation-for="BuyerName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Son/D/W/o</label>
+                            <input asp-for="BuyerFatherName" id="BuyerFatherName" class="form-control" placeholder="Letters only" />
+                            <span asp-validation-for="BuyerFatherName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">National ID (CNIC)</label>
+                            <input asp-for="BuyerCNIC" id="BuyerCNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+                            <small class="text-muted">Required format: 5 digits, hyphen, 7 digits, hyphen, 1 digit.</small>
+                            <span asp-validation-for="BuyerCNIC" class="text-danger small d-block"></span>
+                            <span id="buyerCnicError" class="text-danger small d-none"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Passport Number</label>
+                            <input asp-for="BuyerPassportNo" id="BuyerPassportNo" class="form-control" placeholder="Min 5 characters if no CNIC" />
+                            <small class="text-muted">Provide at least 5 characters if not providing CNIC.</small>
+                            <span asp-validation-for="BuyerPassportNo" class="text-danger small d-block"></span>
+                            <span id="buyerPassportError" class="text-danger small d-none"></span>
+                        </div>
+                        <div id="buyerCnicPassportRule" class="col-12 d-none">
+                            <div class="alert alert-warning small py-2 mb-0"><i class="fas fa-exclamation-triangle me-1"></i>Either Buyer CNIC or Passport Number must be provided.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Date of Birth</label>
+                            <input asp-for="BuyerDOB" id="BuyerDOB" type="date" class="form-control" lang="en-GB" value="@(Model.BuyerDOB?.ToString("yyyy-MM-dd") ?? "1990-01-01")" />
+                            <small class="text-muted">Use calendar selection (DD-MM-YYYY).</small>
+                            <span asp-validation-for="BuyerDOB" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Gender</label>
+                            <select asp-for="BuyerGender" class="form-select">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="BuyerGender" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Nationality</label>
+                            <input asp-for="BuyerNationality" class="form-control" list="nationalityList-transfer-edit" autocomplete="off" placeholder="Select from list or type a value" />
+                            <datalist id="nationalityList-transfer-edit">
+                                @if (ViewBag.Nationalities != null)
+                                {
+                                    foreach (var nationality in (IEnumerable<string>)ViewBag.Nationalities)
+                                    {
+                                        <option value="@nationality"></option>
+                                    }
+                                }
+                            </datalist>
+                            <small class="text-muted d-block">Suggestions from configuration; you may enter any nationality.</small>
+                            <span asp-validation-for="BuyerNationality" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address</label>
+                            <input asp-for="BuyerEmail" type="email" class="form-control" />
+                            <span asp-validation-for="BuyerEmail" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone (landline / primary contact) <span class="text-danger">*</span></label>
+                            <input asp-for="BuyerPhone" id="BuyerPhone" class="form-control" required />
+                            <span asp-validation-for="BuyerPhone" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mobile <span class="text-danger">*</span></label>
+                            <input asp-for="BuyerMobile" id="BuyerMobile" class="form-control" required />
+                            <span asp-validation-for="BuyerMobile" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Mobile 2</label>
+                            <input asp-for="BuyerMobile2" id="BuyerMobile2" class="form-control" />
+                            <small class="text-muted">Optional. Must differ from Phone and Mobile.</small>
+                            <span asp-validation-for="BuyerMobile2" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Mailing Address <span class="text-danger">*</span></label>
+                            <textarea asp-for="BuyerMailingAddress" class="form-control" rows="2" required></textarea>
+                            <span asp-validation-for="BuyerMailingAddress" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Permanent Address</label>
+                            <textarea asp-for="BuyerPermanentAddress" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="BuyerPermanentAddress" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">City <span class="text-danger">*</span></label>
+                            <select asp-for="BuyerCity" class="form-select" required>
+                                <option value="">Select City</option>
+                                @if (ViewBag.Cities != null)
+                                {
+                                    foreach (var city in (IEnumerable<string>)ViewBag.Cities)
+                                    {
+                                        <option value="@city">@city</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="BuyerCity" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Country <span class="text-danger">*</span></label>
+                            <select asp-for="BuyerCountry" class="form-select" required>
+                                <option value="">Select Country</option>
+                                @if (ViewBag.Countries != null)
+                                {
+                                    foreach (var country in (IEnumerable<string>)ViewBag.Countries)
+                                    {
+                                        <option value="@country">@country</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="BuyerCountry" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="payment" role="tabpanel">
+                    <div class="row g-2">
+                        <div class="col-md-6"><label class="form-label">Transfer Fee Due</label><input asp-for="TransferFeeDue" type="number" step="0.01" class="form-control" /></div>
+                        <div class="col-md-6"><label class="form-label">Transfer Fee Paid</label><input asp-for="TransferFeePaid" type="number" step="0.01" class="form-control" /></div>
+                        <div class="col-md-6"><label class="form-label">Payment Date</label><input asp-for="PaymentDate" type="date" class="form-control" /></div>
+                        <div class="col-md-6">
+                            <label class="form-label">Payment Mode</label>
+                            <select asp-for="PaymentMode" class="form-select">
+                                <option value="">Select Payment Mode</option>
+                                @if (ViewBag.PaymentMethods != null)
+                                {
+                                    @foreach (var pm in (IEnumerable<string>)ViewBag.PaymentMethods)
+                                    {
+                                        <option value="@pm">@pm</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6"><label class="form-label">Challan No</label><input asp-for="PaymentChallanNo" class="form-control" /></div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bank name</label>
+                            <select asp-for="BankName" class="form-select">
+                                <option value="">Select bank</option>
+                                @{
+                                    var bankNamesEdit = ViewBag.BankNames as IEnumerable<string> ?? Array.Empty<string>();
+                                    var currentBankEdit = Model.BankName?.Trim() ?? "";
+                                }
+                                @if (!string.IsNullOrEmpty(currentBankEdit) && !bankNamesEdit.Any(b => string.Equals(b, currentBankEdit, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    <option value="@currentBankEdit" selected>@currentBankEdit</option>
+                                }
+                                @foreach (var bank in bankNamesEdit)
+                                {
+                                    if (string.Equals(bank, currentBankEdit, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <option value="@bank" selected>@bank</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@bank">@bank</option>
+                                    }
+                                }
+                            </select>
+                            <small class="text-muted">From configuration <code>banks</code>.</small>
+                        </div>
+                        <div class="col-12"><label class="form-label">Payment details</label><textarea asp-for="PaymentDetails" class="form-control" rows="2"></textarea></div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="comments" role="tabpanel">
+                    <div class="mb-2"><label class="form-label">Details</label><textarea asp-for="Details" class="form-control" rows="2"></textarea></div>
+                    <div class="mb-2"><label class="form-label">CRO Comments</label><textarea asp-for="CROComments" class="form-control" rows="2"></textarea></div>
+                    <div class="mb-2"><label class="form-label">Accounts Comments</label><textarea asp-for="AccountsComments" class="form-control" rows="2"></textarea></div>
+                    <div class="mb-2"><label class="form-label">Transfer Comments</label><textarea asp-for="TransferComments" class="form-control" rows="2"></textarea></div>
+                </div>
+                <div class="tab-pane fade" id="newJointOwners" role="tabpanel">
+                    <div class="alert alert-info py-2">
+                        These joint owners will replace customer joint owners when this transfer is approved.
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Joint Owner Name *</label>
+                            <input type="text" id="transferJointOwnerName" class="form-control" />
+                            <small class="text-muted">Letters, spaces, dots and hyphens only.</small>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Son/D/W/o</label>
+                            <input type="text" id="transferJointOwnerFatherName" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">CNIC *</label>
+                            <input type="text" id="transferJointOwnerCNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Contact *</label>
+                            <input type="text" id="transferJointOwnerContact" class="form-control" />
+                            <small class="text-muted">Must be 11 to 13 digits.</small>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">Percentage</label>
+                            <input type="number" id="transferJointOwnerPercentage" class="form-control" min="0" max="100" step="0.01" />
+                        </div>
+                        <div class="col-md-8">
+                            <label class="form-label">Address</label>
+                            <input type="text" id="transferJointOwnerAddress" class="form-control" />
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Details</label>
+                            <input type="text" id="transferJointOwnerDetails" class="form-control" />
+                        </div>
+                        <div class="col-12">
+                            <button type="button" class="btn btn-primary btn-sm" id="addTransferJointOwnerBtn">
+                                <i class="fas fa-plus me-1"></i>Add New Joint Owner
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover" id="transferJointOwnersTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Son/D/W/o</th>
+                                    <th>CNIC</th>
+                                    <th>Contact</th>
+                                    <th>Percentage</th>
+                                    <th>Address</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="7" class="text-muted text-center">Loading transfer joint owners...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="tab-pane fade @(openAttachmentsTab ? "show active" : "")" id="attachments" role="tabpanel">
+                    <p class="text-muted small mb-3">Upload documents. Accepted: JPG, PNG, GIF, BMP, PDF. Max 8MB per file. Multiple files are allowed in all categories.</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100" style="border-color: rgb(104, 167, 226);">
+                                <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                    <h6 class="mb-0"><i class="fas fa-file-signature me-2"></i>Power of Attorney</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload file</label>
+                                        <input type="file" id="powerOfAttorneyFile" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" multiple />
+                                        <input type="text" id="powerOfAttorneyDescription" class="form-control form-control-sm mt-1" placeholder="Description (optional)" />
+                                        <button type="button" class="btn btn-sm text-white mt-2" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" id="uploadPowerOfAttorneyBtn">
+                                            <i class="fas fa-upload me-1"></i>Upload
+                                        </button>
+                                    </div>
+                                    <div id="powerOfAttorneyAttachmentsList" class="transfer-att-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100" style="border-color: rgb(104, 167, 226);">
+                                <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                    <h6 class="mb-0"><i class="fas fa-receipt me-2"></i>Payment Receipts</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload file</label>
+                                        <input type="file" id="paymentReceiptsFile" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" multiple />
+                                        <input type="text" id="paymentReceiptsDescription" class="form-control form-control-sm mt-1" placeholder="Description (optional)" />
+                                        <button type="button" class="btn btn-sm text-white mt-2" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" id="uploadPaymentReceiptsBtn">
+                                            <i class="fas fa-upload me-1"></i>Upload
+                                        </button>
+                                    </div>
+                                    <div id="paymentReceiptsAttachmentsList" class="transfer-att-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100" style="border-color: rgb(104, 167, 226);">
+                                <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                    <h6 class="mb-0"><i class="fas fa-file-contract me-2"></i>Booking Form</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload file</label>
+                                        <input type="file" id="bookingFormFile" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" multiple />
+                                        <input type="text" id="bookingFormDescription" class="form-control form-control-sm mt-1" placeholder="Description (optional)" />
+                                        <button type="button" class="btn btn-sm text-white mt-2" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" id="uploadBookingFormBtn">
+                                            <i class="fas fa-upload me-1"></i>Upload
+                                        </button>
+                                    </div>
+                                    <div id="bookingFormAttachmentsList" class="transfer-att-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100" style="border-color: rgb(104, 167, 226);">
+                                <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                    <h6 class="mb-0"><i class="fas fa-user me-2"></i>Buyer photo</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Choose file</label>
+                                        <input type="file" id="buyerPhotoFile" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" multiple />
+                                        <input type="text" id="buyerPhotoDescription" class="form-control form-control-sm mt-1" placeholder="Description (optional)" />
+                                        <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+                                            <button type="button" class="btn btn-sm text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" id="uploadBuyerPhotoBtn">
+                                                <i class="fas fa-upload me-1"></i>Upload
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="openBuyerPhotoCameraBtn" title="Capture with device camera">
+                                                <i class="fas fa-camera me-1"></i>Live camera
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="buyerPhotoAttachmentsList" class="transfer-att-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100" style="border-color: rgb(104, 167, 226);">
+                                <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                    <h6 class="mb-0"><i class="fas fa-user-tie me-2"></i>Seller photo</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Choose file</label>
+                                        <input type="file" id="sellerPhotoFile" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" multiple />
+                                        <input type="text" id="sellerPhotoDescription" class="form-control form-control-sm mt-1" placeholder="Description (optional)" />
+                                        <div class="d-flex flex-wrap gap-2 align-items-center mt-2">
+                                            <button type="button" class="btn btn-sm text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" id="uploadSellerPhotoBtn">
+                                                <i class="fas fa-upload me-1"></i>Upload
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" id="openSellerPhotoCameraBtn" title="Capture with device camera">
+                                                <i class="fas fa-camera me-1"></i>Live camera
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="sellerPhotoAttachmentsList" class="transfer-att-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100" style="border-color: rgb(104, 167, 226);">
+                                <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                    <h6 class="mb-0"><i class="fas fa-id-card me-2"></i>Buyer CNIC</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload file</label>
+                                        <input type="file" id="buyerCnicFile" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" multiple />
+                                        <input type="text" id="buyerCnicDescription" class="form-control form-control-sm mt-1" placeholder="Description (optional)" />
+                                        <button type="button" class="btn btn-sm text-white mt-2" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" id="uploadBuyerCnicBtn">
+                                            <i class="fas fa-upload me-1"></i>Upload
+                                        </button>
+                                    </div>
+                                    <div id="buyerCnicAttachmentsList" class="transfer-att-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100" style="border-color: rgb(104, 167, 226);">
+                                <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                    <h6 class="mb-0"><i class="fas fa-id-card me-2"></i>Seller CNIC</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload file</label>
+                                        <input type="file" id="sellerCnicFile" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" multiple />
+                                        <input type="text" id="sellerCnicDescription" class="form-control form-control-sm mt-1" placeholder="Description (optional)" />
+                                        <button type="button" class="btn btn-sm text-white mt-2" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" id="uploadSellerCnicBtn">
+                                            <i class="fas fa-upload me-1"></i>Upload
+                                        </button>
+                                    </div>
+                                    <div id="sellerCnicAttachmentsList" class="transfer-att-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <div class="card h-100" style="border-color: rgb(104, 167, 226);">
+                                <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                    <h6 class="mb-0"><i class="fas fa-folder-open me-2"></i>Other Attachments</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Upload file</label>
+                                        <input type="file" id="otherAttachmentsFile" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" multiple />
+                                        <input type="text" id="otherAttachmentsTitle" class="form-control form-control-sm mt-1" placeholder="Title (required)" />
+                                        <button type="button" class="btn btn-sm text-white mt-2" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" id="uploadOtherAttachmentsBtn">
+                                            <i class="fas fa-upload me-1"></i>Upload
+                                        </button>
+                                    </div>
+                                    <div id="otherAttachmentsList" class="transfer-att-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <hr class="my-3" />
+                            <h6 class="mb-2"><i class="fas fa-fingerprint me-2"></i>Biometric (fingerprint)</h6>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label small">Seller biometric</label>
+                            <div class="input-group input-group-sm">
+                                <div class="form-control bg-light" id="sellerBiometricStatus">@(string.IsNullOrEmpty(Model.SellerBiometric) ? "Not captured" : "Stored")</div>
+                                <button type="button" class="btn btn-outline-primary" id="btnScanSellerBiometric" title="Scan seller fingerprint">
+                                    <i class="fas fa-fingerprint me-1"></i>Scan
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <label class="form-label small">Buyer biometric</label>
+                            <div class="input-group input-group-sm">
+                                <div class="form-control bg-light" id="buyerBiometricStatus">@(string.IsNullOrEmpty(Model.BuyerBiometric) ? "Not captured" : "Stored")</div>
+                                <button type="button" class="btn btn-outline-primary" id="btnScanBuyerBiometric" title="Scan buyer fingerprint">
+                                    <i class="fas fa-fingerprint me-1"></i>Scan
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" id="btnTestBiometric">
+                                <i class="fas fa-vial me-1"></i>Test (fill both with demo data)
+                            </button>
+                        </div>
+                        <div class="col-12">
+                            <div id="biometricDemoMessage" class="alert alert-info small py-2 mb-0" style="display:none;">Demo biometric data loaded. Click <strong>Save</strong> to persist.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save</button>
+                <a asp-action="Details" asp-route-id="@Model.TransferID" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Live camera for Buyer / Seller photo attachments (Transfer Edit) -->
+<div class="modal fade" id="transferPhotoCameraModal" tabindex="-1" aria-labelledby="transferPhotoCameraModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h5 class="modal-title" id="transferPhotoCameraModalLabel"><i class="fas fa-camera me-2"></i>Capture photo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-2">
+                <p class="text-muted small mb-2" id="transferPhotoCameraHint">Allow camera access when prompted. Optional description can be filled in the Buyer/Seller photo card before upload. Capture uploads immediately.</p>
+                <div class="ratio ratio-4x3 bg-dark rounded overflow-hidden position-relative">
+                    <video id="transferPhotoCameraVideo" class="w-100 h-100" style="object-fit:contain;" playsinline muted autoplay></video>
+                </div>
+                <canvas id="transferPhotoCameraCanvas" class="d-none"></canvas>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="transferPhotoCameraCaptureBtn">
+                    <i class="fas fa-camera me-1"></i>Capture &amp; upload
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .customer-tabs { border-bottom: 2px solid rgb(72, 123, 165); background: linear-gradient(135deg, #f8f9fa 0%, #e8eef5 100%); padding: 0.5rem 1rem 0; }
+    .customer-tabs .nav-link { border: none; color: var(--text-secondary); font-weight: 500; }
+    .customer-tabs .nav-link.active { color: rgb(72, 123, 165); border-bottom: 2px solid rgb(72, 123, 165); background: transparent; }
+    .transfer-att-list .att-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; }
+    .transfer-att-list .att-item:last-child { border-bottom: none; }
+</style>
+@section Scripts {
+<script>
+(function() {
+    var transferId = '@Model.TransferID';
+    var token = document.querySelector('input[name="__RequestVerificationToken"]');
+    function getToken() { return token ? token.value : ''; }
+
+    var transferPhotoCameraStream = null;
+    var transferPhotoCameraTarget = null;
+
+    function stopTransferPhotoCameraStream() {
+        if (transferPhotoCameraStream) {
+            transferPhotoCameraStream.getTracks().forEach(function(t) { t.stop(); });
+            transferPhotoCameraStream = null;
+        }
+        var v = document.getElementById('transferPhotoCameraVideo');
+        if (v) v.srcObject = null;
+    }
+
+    function startTransferPhotoCameraStream() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            alert('Camera is not supported in this browser.');
+            var el = document.getElementById('transferPhotoCameraModal');
+            if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).hide();
+            return;
+        }
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+            .then(function(stream) {
+                transferPhotoCameraStream = stream;
+                var v = document.getElementById('transferPhotoCameraVideo');
+                v.srcObject = stream;
+                return v.play();
+            })
+            .catch(function(err) {
+                alert('Could not access the camera: ' + (err && err.message ? err.message : String(err)));
+                var el = document.getElementById('transferPhotoCameraModal');
+                if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).hide();
+            });
+    }
+
+    function loadAttachments() {
+        $.ajax({
+            url: '@Url.Action("GetAttachments", "Transfer")',
+            method: 'GET',
+            data: { transferId: transferId },
+            success: function(res) {
+                if (res.success && res.attachments) {
+                    renderList('powerOfAttorneyAttachmentsList', res.attachments.filter(function(a) { return a.attachmentType === 'PowerOfAttorney'; }));
+                    renderList('paymentReceiptsAttachmentsList', res.attachments.filter(function(a) { return a.attachmentType === 'PaymentReceipts'; }));
+                    renderList('bookingFormAttachmentsList', res.attachments.filter(function(a) { return a.attachmentType === 'BookingForm'; }));
+                    renderList('buyerPhotoAttachmentsList', res.attachments.filter(function(a) { return a.attachmentType === 'BuyerPhoto'; }));
+                    renderList('sellerPhotoAttachmentsList', res.attachments.filter(function(a) { return a.attachmentType === 'SellerPhoto'; }));
+                    renderList('buyerCnicAttachmentsList', res.attachments.filter(function(a) { return a.attachmentType === 'BuyerCNIC'; }));
+                    renderList('sellerCnicAttachmentsList', res.attachments.filter(function(a) { return a.attachmentType === 'SellerCNIC'; }));
+                    renderList('otherAttachmentsList', res.attachments.filter(function(a) { return a.attachmentType === 'Other'; }));
+                }
+            }
+        });
+    }
+
+    function renderList(containerId, items) {
+        var $c = $('#' + containerId);
+        $c.empty();
+        if (!items || items.length === 0) {
+            $c.html('<p class="text-muted mb-0 small"><i class="fas fa-inbox me-1"></i>No attachments</p>');
+            return;
+        }
+        items.forEach(function(a) {
+            var isImg = a.fileType && a.fileType.indexOf('image') === 0;
+            var isPdf = a.fileType && a.fileType.indexOf('pdf') >= 0;
+            var icon = isImg ? 'fa-image' : (isPdf ? 'fa-file-pdf text-danger' : 'fa-file');
+            var row = '<div class="att-item">' +
+                '<span><i class="fas ' + icon + ' me-2"></i>' + (a.fileName || 'File') + '</span>' +
+                '<span>' +
+                '<a href="' + a.filePath + '" target="_blank" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></a>' +
+                '<button type="button" class="btn btn-sm btn-outline-danger delete-att" data-id="' + a.attachmentID + '"><i class="fas fa-trash"></i></button>' +
+                '</span></div>';
+            $c.append(row);
+        });
+        $c.find('.delete-att').on('click', function() {
+            var id = $(this).data('id');
+            if (!confirm('Delete this attachment?')) return;
+            $.post('@Url.Action("DeleteAttachment", "Transfer")', { __RequestVerificationToken: getToken(), attachmentId: id })
+                .done(function(r) { if (r.success) loadAttachments(); else alert(r.message); })
+                .fail(function() { alert('Error deleting'); });
+        });
+    }
+
+    function upload(type, fileInputId, descId, btnId, requireTitle, fileOverride) {
+        var fileInput = fileInputId ? document.getElementById(fileInputId) : null;
+        var descInput = descId ? document.getElementById(descId) : null;
+        var btn = document.getElementById(btnId);
+        var files = [];
+        if (fileOverride && fileOverride.length) {
+            files = Array.prototype.slice.call(fileOverride);
+        } else if (fileInput && fileInput.files && fileInput.files.length > 0) {
+            for (var fi = 0; fi < fileInput.files.length; fi++) {
+                files.push(fileInput.files[fi]);
+            }
+        }
+        if (!files.length) {
+            alert('Please select a file.');
+            return;
+        }
+        var descriptionValue = (descInput ? descInput.value : '') || '';
+        if (requireTitle && !descriptionValue.trim()) {
+            alert('Please enter title for Other Attachments.');
+            return;
+        }
+        var fd = new FormData();
+        fd.append('transferId', transferId);
+        for (var i = 0; i < files.length; i++) {
+            fd.append('file', files[i]);
+        }
+        fd.append('attachmentType', type);
+        fd.append('description', descriptionValue);
+        fd.append('__RequestVerificationToken', getToken());
+        $(btn).prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Uploading...');
+        $.ajax({
+            url: '@Url.Action("UploadAttachment", "Transfer")',
+            method: 'POST',
+            data: fd,
+            processData: false,
+            contentType: false,
+            success: function(r) {
+                if (r.success) {
+                    if (fileInput) fileInput.value = '';
+                    if (descInput) descInput.value = '';
+                    loadAttachments();
+                } else alert(r.message || 'Upload failed');
+                $(btn).prop('disabled', false).html('<i class="fas fa-upload me-1"></i>Upload');
+            },
+            error: function() {
+                alert('Upload failed.');
+                $(btn).prop('disabled', false).html('<i class="fas fa-upload me-1"></i>Upload');
+            }
+        });
+    }
+
+    $('#transferPhotoCameraModal').on('hidden.bs.modal', function() {
+        stopTransferPhotoCameraStream();
+        transferPhotoCameraTarget = null;
+        $('#transferPhotoCameraCaptureBtn').prop('disabled', false);
+    });
+    $('#transferPhotoCameraModal').on('shown.bs.modal', function() {
+        startTransferPhotoCameraStream();
+    });
+
+    $('#openBuyerPhotoCameraBtn').on('click', function() {
+        transferPhotoCameraTarget = { type: 'BuyerPhoto', fileInputId: 'buyerPhotoFile', descId: 'buyerPhotoDescription', btnId: 'uploadBuyerPhotoBtn' };
+        $('#transferPhotoCameraModalLabel').html('<i class="fas fa-camera me-2"></i>Buyer photo — live camera');
+        if (window.bootstrap) bootstrap.Modal.getOrCreateInstance(document.getElementById('transferPhotoCameraModal')).show();
+    });
+    $('#openSellerPhotoCameraBtn').on('click', function() {
+        transferPhotoCameraTarget = { type: 'SellerPhoto', fileInputId: 'sellerPhotoFile', descId: 'sellerPhotoDescription', btnId: 'uploadSellerPhotoBtn' };
+        $('#transferPhotoCameraModalLabel').html('<i class="fas fa-camera me-2"></i>Seller photo — live camera');
+        if (window.bootstrap) bootstrap.Modal.getOrCreateInstance(document.getElementById('transferPhotoCameraModal')).show();
+    });
+
+    $('#transferPhotoCameraCaptureBtn').on('click', function() {
+        if (!transferPhotoCameraTarget) return;
+        var video = document.getElementById('transferPhotoCameraVideo');
+        var canvas = document.getElementById('transferPhotoCameraCanvas');
+        var w = video ? video.videoWidth : 0;
+        var h = video ? video.videoHeight : 0;
+        if (!w || !h) {
+            alert('Camera preview is not ready yet. Wait a moment and try again.');
+            return;
+        }
+        var maxW = 1920;
+        var scale = w > maxW ? maxW / w : 1;
+        var outW = Math.round(w * scale);
+        var outH = Math.round(h * scale);
+        canvas.width = outW;
+        canvas.height = outH;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, w, h, 0, 0, outW, outH);
+        var $cap = $('#transferPhotoCameraCaptureBtn').prop('disabled', true);
+        canvas.toBlob(function(blob) {
+            $cap.prop('disabled', false);
+            if (!blob) {
+                alert('Could not capture image.');
+                return;
+            }
+            var prefix = transferPhotoCameraTarget.type === 'BuyerPhoto' ? 'buyer-photo-' : 'seller-photo-';
+            var file = new File([blob], prefix + Date.now() + '.jpg', { type: 'image/jpeg' });
+            var target = transferPhotoCameraTarget;
+            var modalEl = document.getElementById('transferPhotoCameraModal');
+            if (modalEl && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+            upload(target.type, target.fileInputId, target.descId, target.btnId, false, [file]);
+        }, 'image/jpeg', 0.88);
+    });
+
+    $('button[data-bs-target="#attachments"]').on('shown.bs.tab', function() { loadAttachments(); });
+    $('button[data-bs-target="#newJointOwners"]').on('shown.bs.tab', function() { loadTransferJointOwners(); });
+    $('#uploadPowerOfAttorneyBtn').on('click', function() { upload('PowerOfAttorney', 'powerOfAttorneyFile', 'powerOfAttorneyDescription', 'uploadPowerOfAttorneyBtn', false); });
+    $('#uploadPaymentReceiptsBtn').on('click', function() { upload('PaymentReceipts', 'paymentReceiptsFile', 'paymentReceiptsDescription', 'uploadPaymentReceiptsBtn', false); });
+    $('#uploadBookingFormBtn').on('click', function() { upload('BookingForm', 'bookingFormFile', 'bookingFormDescription', 'uploadBookingFormBtn', false); });
+    $('#uploadBuyerPhotoBtn').on('click', function() { upload('BuyerPhoto', 'buyerPhotoFile', 'buyerPhotoDescription', 'uploadBuyerPhotoBtn', false); });
+    $('#uploadSellerPhotoBtn').on('click', function() { upload('SellerPhoto', 'sellerPhotoFile', 'sellerPhotoDescription', 'uploadSellerPhotoBtn', false); });
+    $('#uploadBuyerCnicBtn').on('click', function() { upload('BuyerCNIC', 'buyerCnicFile', 'buyerCnicDescription', 'uploadBuyerCnicBtn', false); });
+    $('#uploadSellerCnicBtn').on('click', function() { upload('SellerCNIC', 'sellerCnicFile', 'sellerCnicDescription', 'uploadSellerCnicBtn', false); });
+    $('#uploadOtherAttachmentsBtn').on('click', function() { upload('Other', 'otherAttachmentsFile', 'otherAttachmentsTitle', 'uploadOtherAttachmentsBtn', true); });
+
+    function loadTransferJointOwners() {
+        $.ajax({
+            url: '@Url.Action("GetTransferJointOwners", "Transfer")',
+            method: 'GET',
+            data: { transferId: transferId, customerId: '@Model.CustomerID' },
+            success: function(res) {
+                var $tb = $('#transferJointOwnersTable tbody');
+                $tb.empty();
+                if (!res.success) {
+                    $tb.html('<tr><td colspan="7" class="text-danger text-center">' + (res.message || 'Failed to load transfer joint owners.') + '</td></tr>');
+                    return;
+                }
+                if (!res.transferJointOwners || res.transferJointOwners.length === 0) {
+                    $tb.html('<tr><td colspan="7" class="text-muted text-center">No new joint owners added yet.</td></tr>');
+                    return;
+                }
+                res.transferJointOwners.forEach(function(item) {
+                    $tb.append('<tr>'
+                        + '<td>' + (item.jointOwnerName || '—') + '</td>'
+                        + '<td>' + (item.fatherName || '—') + '</td>'
+                        + '<td>' + (item.cnic || '—') + '</td>'
+                        + '<td>' + (item.contact || '—') + '</td>'
+                        + '<td>' + (item.percentage != null ? item.percentage : '—') + '</td>'
+                        + '<td>' + (item.address || '—') + '</td>'
+                        + '<td>' + (item.createdAt || '—') + '</td>'
+                        + '</tr>');
+                });
+            },
+            error: function() {
+                $('#transferJointOwnersTable tbody').html('<tr><td colspan="7" class="text-danger text-center">Error loading transfer joint owners.</td></tr>');
+            }
+        });
+    }
+
+    function normalizeDigits(value) {
+        return (value || '').replace(/\D/g, '');
+    }
+    function formatCnicValue(value) {
+        var raw = normalizeDigits(value);
+        if (raw.length <= 5) return raw;
+        if (raw.length <= 12) return raw.slice(0, 5) + '-' + raw.slice(5);
+        return raw.slice(0, 5) + '-' + raw.slice(5, 12) + '-' + raw.slice(12, 13);
+    }
+    function validateTransferJointOwnerInputs() {
+        var name = ($('#transferJointOwnerName').val() || '').trim();
+        var cnic = ($('#transferJointOwnerCNIC').val() || '').trim();
+        var contact = ($('#transferJointOwnerContact').val() || '').trim();
+        var nameOk = /^[a-zA-Z\s\.\-]+$/.test(name);
+        var cnicOk = /^\d{5}-\d{7}-\d$/.test(cnic);
+        var contactDigits = normalizeDigits(contact);
+        var contactOk = contactDigits.length >= 11 && contactDigits.length <= 13;
+        $('#transferJointOwnerName, #transferJointOwnerCNIC, #transferJointOwnerContact').removeClass('is-invalid');
+        if (!name || !nameOk) {
+            $('#transferJointOwnerName').addClass('is-invalid');
+            return { isValid: false, message: 'Joint owner name is required and must contain letters only.' };
+        }
+        if (!cnicOk) {
+            $('#transferJointOwnerCNIC').addClass('is-invalid');
+            return { isValid: false, message: 'CNIC is required in XXXXX-XXXXXXX-X format.' };
+        }
+        if (!contactOk) {
+            $('#transferJointOwnerContact').addClass('is-invalid');
+            return { isValid: false, message: 'Contact number is required and must be between 11 and 13 digits.' };
+        }
+        return { isValid: true };
+    }
+
+    $('#addTransferJointOwnerBtn').on('click', function() {
+        var validation = validateTransferJointOwnerInputs();
+        if (!validation.isValid) {
+            alert(validation.message);
+            return;
+        }
+        $.ajax({
+            url: '@Url.Action("AddTransferJointOwner", "Transfer")',
+            method: 'POST',
+            data: {
+                __RequestVerificationToken: getToken(),
+                transferId: transferId,
+                customerId: '@Model.CustomerID',
+                jointOwnerName: $('#transferJointOwnerName').val(),
+                fatherName: $('#transferJointOwnerFatherName').val(),
+                cnic: $('#transferJointOwnerCNIC').val(),
+                contact: $('#transferJointOwnerContact').val(),
+                address: $('#transferJointOwnerAddress').val(),
+                percentage: $('#transferJointOwnerPercentage').val(),
+                details: $('#transferJointOwnerDetails').val()
+            },
+            success: function(res) {
+                if (!res.success) {
+                    alert(res.message || 'Unable to add transfer joint owner.');
+                    return;
+                }
+                $('#transferJointOwnerName,#transferJointOwnerFatherName,#transferJointOwnerCNIC,#transferJointOwnerContact,#transferJointOwnerPercentage,#transferJointOwnerAddress,#transferJointOwnerDetails').val('');
+                loadTransferJointOwners();
+            },
+            error: function() {
+                alert('Error adding transfer joint owner.');
+            }
+        });
+    });
+
+    $('#transferJointOwnerName').on('input', function() {
+        this.value = this.value.replace(/[^a-zA-Z\s\.\-]/g, '');
+    });
+    $('#transferJointOwnerFatherName').on('input', function() {
+        this.value = this.value.replace(/[^a-zA-Z\s\.\-]/g, '');
+    });
+    $('#transferJointOwnerContact').on('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+    $('#transferJointOwnerCNIC').on('input', function() {
+        this.value = formatCnicValue(this.value);
+    });
+
+    function setBiometricDemoMessage() {
+        $('#biometricDemoMessage').show();
+    }
+    $('#btnScanSellerBiometric').on('click', function() {
+        var demo = 'DEMO_BIOMETRIC_BASE64_' + Date.now() + '_seller_fingerprint';
+        $('#SellerBiometric').val(demo);
+        $('#sellerBiometricStatus').text('Stored');
+        setBiometricDemoMessage();
+    });
+    $('#btnScanBuyerBiometric').on('click', function() {
+        var demo = 'DEMO_BIOMETRIC_BASE64_' + Date.now() + '_buyer_fingerprint';
+        $('#BuyerBiometric').val(demo);
+        $('#buyerBiometricStatus').text('Stored');
+        setBiometricDemoMessage();
+    });
+    $('#btnTestBiometric').on('click', function() {
+        var demo = 'DEMO_BIOMETRIC_BASE64_' + Date.now() + '_fingerprint_template_placeholder';
+        $('#SellerBiometric').val(demo);
+        $('#BuyerBiometric').val(demo);
+        $('#sellerBiometricStatus').text('Stored');
+        $('#buyerBiometricStatus').text('Stored');
+        setBiometricDemoMessage();
+    });
+
+    // --- Name filters: letters, spaces, dots, hyphens only ---
+    ['SellerName','SellerFatherName','BuyerName','BuyerFatherName'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('input', function() { this.value = this.value.replace(/[^a-zA-Z\s\.\-]/g, ''); });
+    });
+
+    // --- Contact filters: digits and + only ---
+    ['SellerContact','BuyerPhone'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('input', function() { this.value = this.value.replace(/[^0-9\+]/g, ''); });
+    });
+    ['BuyerMobile','BuyerMobile2'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
+    });
+    function clearBuyerMobile2Error() {
+        var buyerMobile2El = document.getElementById('BuyerMobile2');
+        if (buyerMobile2El) {
+            buyerMobile2El.setCustomValidity('');
+        }
+    }
+    ['BuyerPhone', 'BuyerMobile', 'BuyerMobile2'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('input', clearBuyerMobile2Error);
+    });
+
+    // --- CNIC auto-hyphen: digits only, format XXXXX-XXXXXXX-X ---
+    function applyCnicFormat(el) {
+        var raw = el.value.replace(/[^0-9]/g, '');
+        var f = '';
+        if (raw.length <= 5)        f = raw;
+        else if (raw.length <= 12)  f = raw.slice(0,5) + '-' + raw.slice(5);
+        else                        f = raw.slice(0,5) + '-' + raw.slice(5,12) + '-' + raw.slice(12,13);
+        el.value = f;
+    }
+    ['SellerCNIC','BuyerCNIC'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        // Format existing value on load
+        (function(){ var raw = el.value.replace(/[^0-9]/g,''); if(raw.length===13) el.value=raw.slice(0,5)+'-'+raw.slice(5,12)+'-'+raw.slice(12); })();
+        el.addEventListener('input', function() { applyCnicFormat(this); });
+    });
+
+    // --- Passport: alphanumeric only ---
+    var buyerPassportEl = document.getElementById('BuyerPassportNo');
+    if (buyerPassportEl) {
+        buyerPassportEl.addEventListener('input', function() { this.value = this.value.replace(/[^a-zA-Z0-9]/g, ''); });
+    }
+
+    // --- CNIC / Passport "at least one" validation on submit ---
+    document.querySelector('form[asp-action="Edit"]') || document.querySelector('form[action*="Edit"]') || document.querySelector('form');
+    var editForm = document.querySelector('form');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            var cnic     = (document.getElementById('BuyerCNIC')      ? document.getElementById('BuyerCNIC').value.trim()      : '');
+            var passport = (document.getElementById('BuyerPassportNo') ? document.getElementById('BuyerPassportNo').value.trim() : '');
+            var cnicValid    = /^\d{5}-\d{7}-\d$/.test(cnic);
+            var passportValid = passport.length >= 5;
+            var ruleEl = document.getElementById('buyerCnicPassportRule');
+            if (ruleEl) ruleEl.classList.add('d-none');
+            var isValid = true;
+            if (cnic && !cnicValid) {
+                isValid = false;
+            }
+            if (!cnic && !passportValid) {
+                isValid = false;
+            }
+            if (!isValid) {
+                e.preventDefault();
+                if (ruleEl) ruleEl.classList.remove('d-none');
+                document.querySelector('[data-bs-target="#buyer"]').click();
+                setTimeout(function() { document.getElementById('BuyerCNIC').scrollIntoView({ behavior:'smooth', block:'center' }); }, 300);
+                return;
+            }
+
+            var buyerDobEl = document.getElementById('BuyerDOB');
+            if (buyerDobEl) {
+                buyerDobEl.classList.remove('is-invalid');
+            }
+
+            function normalizeDigits(value) {
+                return (value || '').replace(/\D/g, '');
+            }
+            var phoneNorm = normalizeDigits(document.getElementById('BuyerPhone') ? document.getElementById('BuyerPhone').value : '');
+            var mobileNorm = normalizeDigits(document.getElementById('BuyerMobile') ? document.getElementById('BuyerMobile').value : '');
+            var mobile2Norm = normalizeDigits(document.getElementById('BuyerMobile2') ? document.getElementById('BuyerMobile2').value : '');
+            if ((phoneNorm && mobileNorm && phoneNorm === mobileNorm) ||
+                (mobile2Norm && phoneNorm && mobile2Norm === phoneNorm) ||
+                (mobile2Norm && mobileNorm && mobile2Norm === mobileNorm)) {
+                e.preventDefault();
+                var buyerMobile2El = document.getElementById('BuyerMobile2');
+                if (buyerMobile2El) {
+                    buyerMobile2El.setCustomValidity('Mobile 2 must be different from Phone and Mobile.');
+                    buyerMobile2El.reportValidity();
+                }
+                document.querySelector('[data-bs-target="#buyer"]').click();
+                setTimeout(function() { document.getElementById('BuyerMobile2').scrollIntoView({ behavior:'smooth', block:'center' }); }, 300);
+                return;
+            }
+        });
+    }
+})();
+</script>
+}

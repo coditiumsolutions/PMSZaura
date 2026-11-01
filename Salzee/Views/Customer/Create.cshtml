@@ -1,0 +1,1148 @@
+@model Salzee.Models.Customer
+
+@{
+    ViewData["Title"] = "Add Customer";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <h5 class="mb-0">Add Customer</h5>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm py-0 px-2">
+        <i class="fas fa-arrow-left me-1"></i>Back to List
+    </a>
+</div>
+
+<div class="card border-0 shadow-sm pms-mp-header pms-customer-create mb-3">
+    <div class="card-header py-2 pms-mp-header-bar">
+        <h6 class="mb-0"><i class="fas fa-user-plus me-2"></i>Add Customer</h6>
+    </div>
+    <div class="card-body py-3 px-3">
+        <form asp-action="Create" method="post" id="customerWizardForm" enctype="multipart/form-data">
+            <input type="hidden" id="currentStepHidden" name="currentStep" value="3" />
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+            <div class="d-flex justify-content-between align-items-center mb-0 pms-customer-wizard-progress">
+                <span id="wizardStepIndicator" class="small text-muted">Step 1 of 3</span>
+            </div>
+            <div class="progress mb-3 pms-customer-wizard-progress">
+                <div class="progress-bar"
+                     role="progressbar"
+                     id="wizardProgress"
+                     style="width: 33.33%;">
+                </div>
+            </div>
+
+            <div id="wizardSteps">
+                <!-- Step 1: Personal Info -->
+                <div class="wizard-step pms-customer-wizard-step" id="step1" data-step="1">
+                    <h5 class="pms-customer-wizard-step-title">Step 1: Personal Information</h5>
+
+                    <div class="pms-customer-4col-form pms-registration-4col-form mb-3">
+                        <p class="pms-customer-wizard-section-title mb-2">Link to Registration (optional)</p>
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label for="registrationSearchInput" class="form-label pms-registration-4col-label">Registration ID</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="text" id="registrationSearchInput" class="form-control" placeholder="e.g. REG0000001" />
+                            </div>
+                            <div class="col-12 col-lg-2 d-none d-lg-block"></div>
+                            <div class="col-12 col-lg-4">
+                                <button type="button" id="btnSearchRegistration" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-search me-1"></i>Search Registration
+                                </button>
+                                <span id="registrationSearchMessage" class="text-muted small d-block mt-1"></span>
+                            </div>
+                        </div>
+                        <input type="hidden" asp-for="RegID" id="RegID" />
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="FullName" class="form-label pms-registration-4col-label">Full Name *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="FullName" class="form-control" id="FullName" required autocomplete="off" />
+                                <span asp-validation-for="FullName" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="FatherName" class="form-label pms-registration-4col-label">S/D/W/O</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="FatherName" id="FatherName" class="form-control" autocomplete="off" />
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="CNIC" class="form-label pms-registration-4col-label">National ID (CNIC)</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="CNIC" id="CNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+                                <span id="cnicValidationError" class="text-danger small d-none"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="PassportNo" class="form-label pms-registration-4col-label">Passport No</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="PassportNo" id="PassportNo" class="form-control" placeholder="Min 5 characters if no CNIC" />
+                                <span id="passportValidationError" class="text-danger small d-none"></span>
+                            </div>
+                        </div>
+
+                        <div id="cnicPassportRuleError" class="alert alert-warning small py-2 d-none mb-2" role="alert">
+                            <i class="fas fa-exclamation-triangle me-1"></i><span id="cnicPassportRuleErrorText"></span>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="DOB" class="form-label pms-registration-4col-label">Date of Birth</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="DOB" type="date" id="DOB" class="form-control" lang="en-GB" />
+                                <span id="dobValidationError" class="text-danger small d-none"></span>
+                                <span asp-validation-for="DOB" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="Gender" class="form-label pms-registration-4col-label">Gender</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="Gender" class="form-select">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="Nationality" class="form-label pms-registration-4col-label">Nationality</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="Nationality" class="form-control" list="nationalityList-customer-create" autocomplete="off" placeholder="Select from list or type a value" />
+                                <datalist id="nationalityList-customer-create">
+                                    @if (ViewBag.Nationalities != null)
+                                    {
+                                        foreach (var nationality in ViewBag.Nationalities)
+                                        {
+                                            <option value="@nationality"></option>
+                                        }
+                                    }
+                                </datalist>
+                                <span asp-validation-for="Nationality" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="FormNo" class="form-label pms-registration-4col-label">Form No</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="FormNo" id="FormNo" class="form-control" placeholder="Enter form number (optional)" />
+                                <span asp-validation-for="FormNo" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="Email" class="form-label pms-registration-4col-label">Email Address</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="Email" id="Email" type="email" class="form-control" />
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="Phone" class="form-label pms-registration-4col-label">Phone No</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="Phone" id="Phone" class="form-control" required />
+                                <span asp-validation-for="Phone" class="text-danger"></span>
+                                <span id="phoneValidationError" class="text-danger small d-none"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="MobileNo" class="form-label pms-registration-4col-label">Mobile *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="MobileNo" id="MobileNo" class="form-control" required />
+                                <span asp-validation-for="MobileNo" class="text-danger"></span>
+                                <span id="mobileValidationError" class="text-danger small d-none"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="MobileNo2" class="form-label pms-registration-4col-label">Mobile 2</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="MobileNo2" id="MobileNo2" class="form-control" />
+                                <span asp-validation-for="MobileNo2" class="text-danger"></span>
+                                <span id="mobile2ValidationError" class="text-danger small d-none"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="City" class="form-label pms-registration-4col-label">City *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="City" class="form-control" list="cityOptions" placeholder="Select or type city" required />
+                                <datalist id="cityOptions">
+                                    @if (ViewBag.Cities != null)
+                                    {
+                                        @foreach (var city in ViewBag.Cities)
+                                        {
+                                            <option value="@city"></option>
+                                        }
+                                    }
+                                </datalist>
+                                <span asp-validation-for="City" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="Country" class="form-label pms-registration-4col-label">Country *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="Country" class="form-control" list="countryOptions" placeholder="Select or type country" required />
+                                <datalist id="countryOptions">
+                                    @if (ViewBag.Countries != null)
+                                    {
+                                        @foreach (var country in ViewBag.Countries)
+                                        {
+                                            <option value="@country"></option>
+                                        }
+                                    }
+                                </datalist>
+                                <span asp-validation-for="Country" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="MailingAddress" class="form-label pms-registration-4col-label">Mailing Address *</label>
+                            </div>
+                            <div class="col-12 col-lg-10">
+                                <textarea asp-for="MailingAddress" class="form-control pms-customer-address-input" rows="1" required></textarea>
+                                <span asp-validation-for="MailingAddress" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="PermanentAddress" class="form-label pms-registration-4col-label">Permanent Address</label>
+                            </div>
+                            <div class="col-12 col-lg-10">
+                                <textarea asp-for="PermanentAddress" class="form-control pms-customer-address-input" rows="1"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Next of Kin Info -->
+                <div class="wizard-step pms-customer-wizard-step" id="step2" data-step="2" style="display: none;">
+                    <h5 class="pms-customer-wizard-step-title">Step 2: Next of Kin Information</h5>
+                    <div class="pms-customer-4col-form pms-registration-4col-form">
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="NomineeName" class="form-label pms-registration-4col-label">Next of Kin Name</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="NomineeName" class="form-control" />
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="NomineeID" class="form-label pms-registration-4col-label">Next of Kin ID / National ID</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="NomineeID" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="NomineeRelation" class="form-label pms-registration-4col-label">Relationship</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="NomineeRelation" class="form-select">
+                                    <option value="">Select Relationship</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Son">Son</option>
+                                    <option value="Daughter">Daughter</option>
+                                    <option value="Spouse">Spouse</option>
+                                    <option value="Brother">Brother</option>
+                                    <option value="Sister">Sister</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label class="form-label pms-registration-4col-label">Next of Kin NIC Document</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="file" name="nomineeNICUpload" class="form-control" accept="image/*,.pdf" />
+                                <small class="text-muted d-block">Accepted formats: JPG, PNG, GIF, BMP, PDF. Max size: 8MB.</small>
+                                <span asp-validation-for="NomineeNICDocumentPath" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label class="form-label pms-registration-4col-label">Next of Kin Picture</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="file" name="nomineePictureUpload" class="form-control" accept="image/*" />
+                                <small class="text-muted d-block">Accepted formats: JPG, PNG, GIF, BMP. Max size: 8MB.</small>
+                                <span asp-validation-for="NomineePicturePath" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info small mt-2 mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Next of Kin Information</strong>
+                            <p class="mb-0 mt-2">Please provide the details of the person who will be the next of kin for this customer. This person will have rights in case of any unforeseen circumstances.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Payment Plan Info -->
+                <div class="wizard-step pms-customer-wizard-step" id="step3" data-step="3" style="display: none;">
+                    <h5 class="pms-customer-wizard-step-title">Step 3: Payment Plan Information</h5>
+                    <div class="pms-customer-4col-form pms-registration-4col-form">
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="ProjectID" class="form-label pms-registration-4col-label">Project *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="ProjectID" id="projectIDSelect" class="form-select" required>
+                                    <option value="">Select Project</option>
+                                    @if (ViewBag.Projects != null)
+                                    {
+                                        @foreach (var project in ViewBag.Projects)
+                                        {
+                                            <option value="@project.ProjectID" data-project-prefix="@(project.Prefix ?? "")">@project.ProjectName</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="ProjectID" class="text-danger"></span>
+                                <small class="text-muted d-block">Customer ID is generated from the selected subproject prefix.</small>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="PlanID" class="form-label pms-registration-4col-label">Payment Plan *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="PlanID" id="planIDSelect" class="form-select" required>
+                                    <option value="">Select Payment Plan</option>
+                                    @if (ViewBag.PaymentPlans != null)
+                                    {
+                                        @foreach (var plan in ViewBag.PaymentPlans)
+                                        {
+                                            <option value="@plan.PlanID" data-project-prefix="@(plan.Project?.Prefix ?? "")">@plan.PlanName - PKR @plan.TotalAmount.ToString("N0")</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="PlanID" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="SubProject" class="form-label pms-registration-4col-label">Sub Project *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="SubProject" id="SubProject" class="form-select" required disabled>
+                                    @if (!string.IsNullOrWhiteSpace(Model?.SubProject))
+                                    {
+                                        <option value="@Model.SubProject" selected>@Model.SubProject</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="">Select Project first</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="SubProject" class="text-danger"></span>
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="RegisteredSize" class="form-label pms-registration-4col-label">Registered Size *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="RegisteredSize" id="RegisteredSize" class="form-control" type="number" step="0.01" inputmode="decimal" placeholder="Enter size" required disabled />
+                                <datalist id="RegisteredSizeOptions"></datalist>
+                                <small class="text-muted d-block">Sizes are suggested from selected project, or type your own value.</small>
+                                <span asp-validation-for="RegisteredSize" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label class="form-label pms-registration-4col-label">Is Dealer Registered?</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="d-flex gap-3 pt-lg-1">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="IsDealerRegistered" id="dealerRegYes" value="1" @(Model?.IsDealerRegistered != 0 ? "checked" : null)>
+                                        <label class="form-check-label" for="dealerRegYes">Yes</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="IsDealerRegistered" id="dealerRegNo" value="0" @(Model?.IsDealerRegistered == 0 ? "checked" : null)>
+                                        <label class="form-check-label" for="dealerRegNo">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start" id="dealerDropdownWrap">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="DealerID" class="form-label pms-registration-4col-label">Select Dealer</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <select asp-for="DealerID" id="DealerID" class="form-select">
+                                    <option value="">Select Dealer</option>
+                                    @if (ViewBag.Dealers != null)
+                                    {
+                                        @foreach (var dealer in ViewBag.Dealers)
+                                        {
+                                            <option value="@dealer.DealerID">@dealer.DealershipName</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="DealerID" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start" id="dealerNameWrap" style="display:none;">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="DealerName" class="form-label pms-registration-4col-label">Dealer Name</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input asp-for="DealerName" id="DealerName" class="form-control" placeholder="Enter dealer name manually" maxlength="200" />
+                                <span asp-validation-for="DealerName" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-2 pms-registration-4col-row align-items-start">
+                            <div class="col-12 col-lg-2">
+                                <label asp-for="AdditionalInfo" class="form-label pms-registration-4col-label">Additional Notes</label>
+                            </div>
+                            <div class="col-12 col-lg-10">
+                                <textarea asp-for="AdditionalInfo" class="form-control" rows="4" placeholder="Enter any additional information about the customer..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info small mt-2 mb-0">
+                            <h6 class="alert-heading mb-1"><i class="fas fa-id-badge me-2"></i>Customer ID Preview</h6>
+                            <p class="mb-0">
+                                <strong>Customer ID will be:</strong>
+                                <span id="customerIDPreview" class="badge bg-secondary ms-1">Select Project to preview</span>
+                            </p>
+                            <small class="text-muted d-block mt-1">Format: [Subproject Prefix][Sequential Number] (e.g., P100001)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="d-flex justify-content-between align-items-center gap-2 pms-customer-create-actions pms-registration-create-actions pms-customer-wizard-nav">
+                <button type="button" id="prevBtn" class="btn btn-sm btn-outline-secondary" style="display: none;" onclick="previousStep()">
+                    <i class="fas fa-arrow-left me-1"></i>Previous
+                </button>
+                <div class="d-flex gap-2 ms-auto">
+                    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Cancel</a>
+                    <button type="button" id="nextBtn" class="btn btn-sm btn-primary" onclick="nextStep()">
+                        Next<i class="fas fa-arrow-right ms-1"></i>
+                    </button>
+                    <button type="submit" id="createBtn" class="btn btn-sm fw-semibold pms-mp-btn-save" style="display: none;">
+                        <i class="fas fa-check me-1"></i>Create Customer
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        // FullName: letters, spaces, dots, hyphens only
+        document.getElementById('FullName').addEventListener('input', function () {
+            this.value = this.value.replace(/[^a-zA-Z\s\.\-]/g, '');
+        });
+        // Phone / Mobile: digits and + only
+        ['Phone', 'MobileNo', 'MobileNo2'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9\+]/g, '');
+            });
+        });
+
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        // Wizard Navigation Functions
+        function updateWizardUI() {
+            // Show/hide steps
+            $('.wizard-step').hide();
+            $('#step' + currentStep).show();
+
+            // Update progress bar
+            var progress = (currentStep / totalSteps) * 100;
+            $('#wizardProgress').css('width', progress + '%');
+            $('#wizardProgress').attr('aria-valuenow', progress);
+
+            var stepText = '';
+            if (currentStep === 1) {
+                stepText = 'Step 1: Personal Info';
+            } else if (currentStep === 2) {
+                stepText = 'Step 2: Next of Kin Info';
+            } else if (currentStep === 3) {
+                stepText = 'Step 3: Payment Plan Info';
+            }
+
+            // Update step indicator
+            $('#wizardStepIndicator').text('Step ' + currentStep + ' of ' + totalSteps + ' — ' + stepText);
+
+            // Show/hide navigation buttons
+            if (currentStep === 1) {
+                $('#prevBtn').hide();
+                $('#nextBtn').show();
+                $('#createBtn').hide();
+            } else if (currentStep === totalSteps) {
+                $('#prevBtn').show();
+                $('#nextBtn').hide();
+                $('#createBtn').show();
+            } else {
+                $('#prevBtn').show();
+                $('#nextBtn').show();
+                $('#createBtn').hide();
+            }
+        }
+
+        function nextStep() {
+            // Step 1: enforce identity/contact rules before allowing Next
+            if (currentStep === 1) {
+                if (!validateStep1IdentityAndMobile()) {
+                    $('html, body').animate({ scrollTop: $('#step1').offset().top - 20 }, 300);
+                    return;
+                }
+                if (!validateStep1Dob()) {
+                    $('html, body').animate({ scrollTop: $('#DOB').offset().top - 20 }, 300);
+                    return;
+                }
+                if (!validateStep1ContactRules()) {
+                    $('html, body').animate({ scrollTop: $('#Phone').offset().top - 20 }, 300);
+                    return;
+                }
+            }
+
+            // Validate current step
+            var currentStepElement = $('#step' + currentStep);
+            var form = currentStepElement.closest('form')[0];
+            
+            // Get all required fields in current step
+            var requiredFields = currentStepElement.find('[required]');
+            var isValid = true;
+            
+            requiredFields.each(function() {
+                if (!$(this).val()) {
+                    isValid = false;
+                    $(this).addClass('is-invalid');
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+
+            if (!isValid) {
+                alert('Please fill all required fields before proceeding.');
+                return;
+            }
+
+            if (currentStep === 1 || currentStep === 2) {
+                captureCustomerFormSnapshot();
+            }
+
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateWizardUI();
+                
+                // Scroll to top
+                $('html, body').animate({
+                    scrollTop: $('.pms-customer-create').offset().top - 100
+                }, 300);
+            }
+        }
+
+        function previousStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateWizardUI();
+                
+                // Scroll to top
+                $('html, body').animate({
+                    scrollTop: $('.pms-customer-create').offset().top - 100
+                }, 300);
+            }
+        }
+
+        function normalizeDropdownValue(value) {
+            return (value || '').toString().trim().toLowerCase();
+        }
+
+        function updateCustomerIdPreview() {
+            var selectedSubProject = $('#SubProject').find('option:selected');
+            var subPrefix = (selectedSubProject.data('prefix') || '').toString().trim();
+            if (subPrefix) {
+                $('#customerIDPreview').text(subPrefix + 'XXXXX').removeClass('bg-secondary').addClass('bg-primary');
+                return;
+            }
+
+            var selectedProject = $('#projectIDSelect').find('option:selected');
+            var projectPrefix = (selectedProject.data('project-prefix') || '').toString().trim();
+            if (projectPrefix) {
+                $('#customerIDPreview').text(projectPrefix + 'XXXXX (legacy fallback)').removeClass('bg-secondary').addClass('bg-warning text-dark');
+                return;
+            }
+
+            $('#customerIDPreview').text('Select Sub Project to preview').removeClass('bg-primary bg-warning text-dark').addClass('bg-secondary');
+        }
+
+        function loadSizes(projectId, selectedValue) {
+            var $sizeInput = $('#RegisteredSize');
+            var $sizeOptions = $('#RegisteredSizeOptions');
+            var desiredValue = (selectedValue || $sizeInput.val() || '').toString().trim();
+            $sizeInput.prop('disabled', !projectId);
+            $sizeOptions.empty();
+            if (!projectId) {
+                $sizeInput.val('');
+                return;
+            }
+
+            $.get('@Url.Action("GetProjectSizes", "Customer")', { projectId: projectId })
+                .done(function(arr) {
+                    $(arr).each(function() {
+                        var itemValue = (this || '').toString();
+                        $sizeOptions.append($('<option></option>').val(itemValue));
+                    });
+
+                    if (desiredValue) $sizeInput.val(desiredValue);
+                })
+                .fail(function() {
+                    $sizeOptions.empty();
+                });
+        }
+
+        function loadSubProjects(projectId, selectedValue) {
+            var $subProjectSelect = $('#SubProject');
+            var desiredValue = (selectedValue || $subProjectSelect.val() || '').toString().trim();
+            $subProjectSelect.html('<option value="">Select Sub Project</option>').prop('disabled', !projectId);
+            if (!projectId) {
+                updateCustomerIdPreview();
+                return;
+            }
+
+            $.get('@Url.Action("GetProjectSubProjects", "Customer")', { projectId: projectId })
+                .done(function(arr) {
+                    var desiredValueNormalized = normalizeDropdownValue(desiredValue);
+                    var matched = false;
+
+                    $(arr).each(function() {
+                        var itemValue = (this && this.name) ? this.name.toString() : (this || '').toString();
+                        var itemPrefix = (this && this.prefix) ? this.prefix.toString() : '';
+                        var opt = $('<option></option>').val(itemValue).text(itemPrefix ? (itemValue + ' (' + itemPrefix + ')') : itemValue);
+                        opt.attr('data-prefix', itemPrefix);
+                        if (!matched && normalizeDropdownValue(itemValue) === desiredValueNormalized) {
+                            opt.prop('selected', true);
+                            matched = true;
+                        }
+                        $subProjectSelect.append(opt);
+                    });
+
+                    // Keep the posted value visible if it isn't currently in project's subproject list.
+                    if (!matched && desiredValue) {
+                        $subProjectSelect.append(
+                            $('<option></option>')
+                                .val(desiredValue)
+                                .text(desiredValue + ' (current)')
+                                .attr('data-prefix', '')
+                                .prop('selected', true)
+                        );
+                    }
+                    updateCustomerIdPreview();
+                })
+                .fail(function() {
+                    $subProjectSelect.html('<option value="">Could not load sub projects</option>');
+                    updateCustomerIdPreview();
+                });
+        }
+
+        var currentProjectId = $('#projectIDSelect').val();
+        var currentRegisteredSize = '@(Model?.RegisteredSize ?? "")';
+        var currentSubProject = '@(Model?.SubProject ?? "")';
+        if (currentProjectId) {
+            loadSizes(currentProjectId, currentRegisteredSize);
+            loadSubProjects(currentProjectId, currentSubProject);
+        }
+
+        $('#projectIDSelect').on('change', function() {
+            var selectedProjectId = $(this).val();
+            loadSizes(selectedProjectId, '');
+            loadSubProjects(selectedProjectId, '');
+        });
+
+        // Update preview on project change
+        $('#projectIDSelect').on('change', function() {
+            updateCustomerIdPreview();
+        });
+        $('#SubProject').on('change', function() { updateCustomerIdPreview(); });
+
+        // Registration Search - pre-fill from registration (Step 1 only; save still uses current form values)
+        var registrationSearchSeq = 0;
+        var customerFormSnapshot = {};
+
+        function captureCustomerFormSnapshot() {
+            customerFormSnapshot = {
+                RegID: ($('#RegID').val() || '').trim(),
+                FullName: ($('#FullName').val() || '').trim(),
+                FatherName: ($('#FatherName').val() || '').trim(),
+                CNIC: ($('#CNIC').val() || '').trim(),
+                PassportNo: ($('#PassportNo').val() || '').trim(),
+                DOB: ($('#DOB').val() || '').trim(),
+                Gender: ($('#Gender').val() || '').trim(),
+                Nationality: ($('#Nationality').val() || '').trim(),
+                FormNo: ($('#FormNo').val() || '').trim(),
+                Email: ($('#Email').val() || '').trim(),
+                Phone: ($('#Phone').val() || '').trim(),
+                MobileNo: ($('#MobileNo').val() || '').trim(),
+                MobileNo2: ($('#MobileNo2').val() || '').trim(),
+                City: ($('#City').val() || '').trim(),
+                Country: ($('#Country').val() || '').trim(),
+                MailingAddress: ($('#MailingAddress').val() || '').trim(),
+                PermanentAddress: ($('#PermanentAddress').val() || '').trim(),
+                NomineeName: ($('#NomineeName').val() || '').trim(),
+                NomineeID: ($('#NomineeID').val() || '').trim(),
+                NomineeRelation: ($('#NomineeRelation').val() || '').trim()
+            };
+        }
+
+        function restoreCustomerFormSnapshot() {
+            if (!customerFormSnapshot || !customerFormSnapshot.FullName) return;
+            Object.keys(customerFormSnapshot).forEach(function (key) {
+                var $el = $('#' + key);
+                if ($el.length) {
+                    $el.val(customerFormSnapshot[key] || '');
+                }
+            });
+        }
+
+        $('#step1, #step2').on('input change', 'input, select, textarea', function () {
+            captureCustomerFormSnapshot();
+        });
+
+        $('#btnSearchRegistration').on('click', function() {
+            var regID = $('#registrationSearchInput').val().trim();
+            var $msg = $('#registrationSearchMessage');
+            var seq = ++registrationSearchSeq;
+            $msg.removeClass('text-success text-danger').text('');
+            if (!regID) {
+                $msg.addClass('text-danger').text('Please enter a Registration ID.');
+                return;
+            }
+            $.post('@Url.Action("SearchRegistration", "Customer")', { regID: regID, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() })
+                .done(function(data) {
+                    // Ignore stale responses from an older search.
+                    if (seq !== registrationSearchSeq) return;
+
+                    if (data.success && data.registration) {
+                        var r = data.registration;
+                        $('#RegID').val(r.regID || '');
+                        $('#FullName').val(r.fullName || '');
+                        $('#CNIC').val(r.cnic || '');
+                        $('#FormNo').val(r.formNo || '');
+                        $('#Phone').val(r.phone || '');
+                        $('#Email').val(r.email || '');
+
+                        if (r.projectID) {
+                            $('#projectIDSelect').val(r.projectID);
+                            loadSizes(r.projectID, r.size || '');
+                            loadSubProjects(r.projectID, r.subProject || '');
+                        }
+
+                        captureCustomerFormSnapshot();
+                        $msg.addClass('text-success').text('Registration ' + (r.regID || '') + ' loaded. Full Name: ' + (r.fullName || '(blank)') + '. Edit fields if needed before Create.');
+                    } else {
+                        $msg.addClass('text-danger').text(data.message || 'Registration not found.');
+                    }
+                })
+                .fail(function() {
+                    if (seq !== registrationSearchSeq) return;
+                    $msg.addClass('text-danger').text('Search failed. Please try again.');
+                });
+        });
+
+        // Also update preview when Payment Plan is selected (legacy fallback if Project not selected)
+        $('#planIDSelect').on('change', function() {
+            // Only update if ProjectID is not selected
+            if (!$('#projectIDSelect').val()) {
+                updateCustomerIdPreview();
+            }
+        });
+        updateCustomerIdPreview();
+
+        function toggleDealerFields() {
+            var isYes = $('#dealerRegYes').is(':checked');
+            $('#dealerDropdownWrap').toggle(isYes);
+            $('#dealerNameWrap').toggle(!isYes);
+            if (isYes) { $('#DealerName').val(''); } else { $('#DealerID').val(''); }
+        }
+        $('#dealerRegYes, #dealerRegNo').on('change', toggleDealerFields);
+        toggleDealerFields();
+
+        $('form').on('submit', function() {
+            if ($('#dealerRegYes').is(':checked')) {
+                $('#DealerName').val('');
+            } else {
+                $('#DealerID').val('');
+            }
+        });
+
+        // Step 1 identity + mobile rules:
+        // CNIC is required with XXXXX-XXXXXXX-X format.
+        // Mobile is required and must be 11-13 digits.
+        // Mobile 2 is optional but when provided must be 11-13 digits.
+        function validateStep1IdentityAndMobile(showAlert) {
+            if (showAlert === undefined) showAlert = true;
+            var cnic = ($('#CNIC').val() || '').trim();
+            var phoneRaw = ($('#Phone').val() || '').trim();
+            var mobileRaw = ($('#MobileNo').val() || '').trim();
+            var mobile2Raw = ($('#MobileNo2').val() || '').trim();
+            var cnicRegex = /^\d{5}-\d{7}-\d$/;
+            var phoneDigits = normalizePhoneDigits(phoneRaw);
+            var mobileDigits = normalizePhoneDigits(mobileRaw);
+            var mobile2Digits = normalizePhoneDigits(mobile2Raw);
+            var cnicValid = cnicRegex.test(cnic);
+            var phoneValid = !!phoneRaw;
+            var mobileValid = /^\d+$/.test(mobileRaw) && mobileDigits.length >= 11 && mobileDigits.length <= 13;
+            var mobile2Valid = !mobile2Raw || (/^\d+$/.test(mobile2Raw) && mobile2Digits.length >= 11 && mobile2Digits.length <= 13);
+            $('#CNIC').removeClass('is-invalid');
+            $('#Phone').removeClass('is-invalid');
+            $('#MobileNo').removeClass('is-invalid');
+            $('#MobileNo2').removeClass('is-invalid');
+            $('#cnicValidationError').addClass('d-none').text('');
+            $('#phoneValidationError').addClass('d-none').text('');
+            $('#mobileValidationError').addClass('d-none').text('');
+            $('#mobile2ValidationError').addClass('d-none').text('');
+            $('#cnicPassportRuleError').addClass('d-none');
+            if (!cnicValid) {
+                $('#CNIC').addClass('is-invalid');
+                $('#cnicValidationError').removeClass('d-none').text('CNIC is required in XXXXX-XXXXXXX-X format.');
+                $('#cnicPassportRuleError').removeClass('d-none');
+                $('#cnicPassportRuleErrorText').text('Please enter a valid CNIC in format XXXXX-XXXXXXX-X.');
+                return false;
+            }
+            if (!phoneValid) {
+                $('#Phone').addClass('is-invalid');
+                $('#phoneValidationError').removeClass('d-none').text('Phone is required.');
+                if (showAlert) alert('Phone is required.');
+                return false;
+            }
+            if (!mobileValid) {
+                $('#MobileNo').addClass('is-invalid');
+                $('#mobileValidationError').removeClass('d-none').text('Mobile must contain only digits (11 to 13 digits).');
+                if (showAlert) alert('Mobile is required and must contain only digits (11 to 13 digits).');
+                return false;
+            }
+            if (!mobile2Valid) {
+                $('#MobileNo2').addClass('is-invalid');
+                $('#mobile2ValidationError').removeClass('d-none').text('Mobile 2 must contain only digits (11 to 13 digits).');
+                if (showAlert) alert('Mobile 2 must contain only digits (11 to 13 digits).');
+                return false;
+            }
+            return true;
+        }
+
+        function normalizeDigits(value) {
+            return (value || '').toString().replace(/\D/g, '');
+        }
+
+        function formatCnicValue(value) {
+            var raw = normalizeDigits(value).slice(0, 13);
+            if (raw.length <= 5) return raw;
+            if (raw.length <= 12) return raw.slice(0, 5) + '-' + raw.slice(5);
+            return raw.slice(0, 5) + '-' + raw.slice(5, 12) + '-' + raw.slice(12, 13);
+        }
+
+        $('#CNIC').on('input blur', function() {
+            this.value = formatCnicValue(this.value);
+            var cnic = ($('#CNIC').val() || '').trim();
+            var cnicValid = /^\d{5}-\d{7}-\d$/.test(cnic);
+            if (cnicValid) {
+                $('#CNIC').removeClass('is-invalid');
+                $('#cnicValidationError, #cnicPassportRuleError').addClass('d-none').text('');
+            }
+        });
+
+        $('#MobileNo, #MobileNo2').on('input blur', function() {
+            var id = $(this).attr('id');
+            var raw = ($(this).val() || '').trim();
+            var digits = normalizePhoneDigits(raw);
+            var valid = !raw || (/^\d+$/.test(raw) && digits.length >= 11 && digits.length <= 13);
+            if (id === 'MobileNo') {
+                valid = /^\d+$/.test(raw) && digits.length >= 11 && digits.length <= 13;
+            }
+            if (valid) {
+                $(this).removeClass('is-invalid');
+            }
+        });
+
+        function normalizePhoneDigits(value) {
+            return (value || '').toString().replace(/\D/g, '');
+        }
+
+        function validateStep1ContactRules(showAlert) {
+            if (showAlert === undefined) showAlert = true;
+            var phone = normalizePhoneDigits($('#Phone').val());
+            var mobile = normalizePhoneDigits($('#MobileNo').val());
+            var mobile2 = normalizePhoneDigits($('#MobileNo2').val());
+            $('#Phone, #MobileNo, #MobileNo2').removeClass('is-invalid');
+            $('#phoneValidationError').addClass('d-none').text('');
+            $('#mobileValidationError').addClass('d-none').text('');
+            $('#mobile2ValidationError').addClass('d-none').text('');
+
+            if (phone && mobile && phone === mobile) {
+                $('#Phone, #MobileNo').addClass('is-invalid');
+                $('#phoneValidationError').removeClass('d-none').text('Phone must be different from Mobile.');
+                $('#mobileValidationError').removeClass('d-none').text('Mobile must be different from Phone.');
+                if (showAlert) alert('Phone and Mobile must be different numbers.');
+                return false;
+            }
+            if (mobile2) {
+                if (phone && mobile2 === phone) {
+                    $('#Phone, #MobileNo2').addClass('is-invalid');
+                    $('#phoneValidationError').removeClass('d-none').text('Phone must be different from Mobile 2.');
+                    $('#mobile2ValidationError').removeClass('d-none').text('Mobile 2 must be different from Phone.');
+                    if (showAlert) alert('Mobile 2 must be different from Phone.');
+                    return false;
+                }
+                if (mobile && mobile2 === mobile) {
+                    $('#MobileNo, #MobileNo2').addClass('is-invalid');
+                    $('#mobileValidationError').removeClass('d-none').text('Mobile must be different from Mobile 2.');
+                    $('#mobile2ValidationError').removeClass('d-none').text('Mobile 2 must be different from Mobile.');
+                    if (showAlert) alert('Mobile 2 must be different from Mobile.');
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function validateStep1Field(fieldId) {
+            var $field = $('#' + fieldId);
+            if (!$field.length) return true;
+            var value = ($field.val() || '').toString().trim();
+
+            if (fieldId === 'CNIC' || fieldId === 'Phone' || fieldId === 'MobileNo' || fieldId === 'MobileNo2') {
+                var identityOk = validateStep1IdentityAndMobile(false);
+                var contactOk = validateStep1ContactRules(false);
+                return identityOk && contactOk;
+            }
+
+            if (fieldId === 'DOB') {
+                return validateStep1Dob();
+            }
+
+            if (fieldId === 'PassportNo') {
+                return validateCnicPassportPair();
+            }
+
+            if (fieldId === 'Email') {
+                if (!value) {
+                    $field.removeClass('is-invalid');
+                    return true;
+                }
+                var emailValid = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(value);
+                $field.toggleClass('is-invalid', !emailValid);
+                return emailValid;
+            }
+
+            if ($field.prop('required')) {
+                var ok = !!value;
+                $field.toggleClass('is-invalid', !ok);
+                return ok;
+            }
+
+            return true;
+        }
+
+        function validateCnicPassportPair() {
+            var cnic = ($('#CNIC').val() || '').trim();
+            var passport = ($('#PassportNo').val() || '').trim();
+            var cnicValid = /^\d{5}-\d{7}-\d$/.test(cnic);
+            var passportValid = passport.length >= 3;
+
+            $('#PassportNo').removeClass('is-invalid');
+            $('#passportValidationError').addClass('d-none').text('');
+            if (passport && !/^[a-zA-Z0-9]+$/.test(passport)) {
+                $('#PassportNo').addClass('is-invalid');
+                $('#passportValidationError').removeClass('d-none').text('Passport must be alphanumeric only.');
+                return false;
+            }
+
+            if (!cnicValid && !passportValid) {
+                $('#CNIC, #PassportNo').addClass('is-invalid');
+                $('#cnicPassportRuleError').removeClass('d-none');
+                $('#cnicPassportRuleErrorText').text('Either valid CNIC or Passport Number (min 3 chars) is required.');
+                return false;
+            }
+
+            $('#cnicPassportRuleError').addClass('d-none');
+            return true;
+        }
+
+        function validateStep1Dob() {
+            var value = ($('#DOB').val() || '').toString().trim();
+            if (!value) {
+                $('#DOB').removeClass('is-invalid');
+                $('#dobValidationError').addClass('d-none').text('');
+                return true;
+            }
+            var dt = new Date(value + 'T00:00:00');
+            var isValidDate = !isNaN(dt.getTime());
+            $('#DOB').toggleClass('is-invalid', !isValidDate);
+            if (!isValidDate) {
+                $('#dobValidationError').text('Please select a valid date from calendar.').removeClass('d-none');
+                return false;
+            }
+            $('#dobValidationError').addClass('d-none').text('');
+            return true;
+        }
+
+        // Form submission handler
+        $('#customerWizardForm').on('submit', function(e) {
+            if (!validateStep1Dob()) {
+                e.preventDefault();
+                currentStep = 1;
+                updateWizardUI();
+                $('html, body').animate({ scrollTop: $('#DOB').offset().top - 20 }, 300);
+                return false;
+            }
+            // Only validate if we're on step 3 (final step)
+            if (currentStep !== 3) {
+                e.preventDefault();
+                alert('Please complete all steps before submitting.');
+                currentStep = 3;
+                updateWizardUI();
+                return false;
+            }
+            
+            // Validate required fields in final step only (Step 1/2 are validated on their own step transitions).
+            var step3Element = $('#step3');
+            var isValid = true;
+            var invalidFields = [];
+            var requiredFields = step3Element.find('[required]');
+
+            requiredFields.each(function() {
+                var field = $(this);
+                var value = field.val();
+                var fieldName = field.attr('name') || field.attr('id') || 'field';
+
+                if (field.is('select')) {
+                    if (!value || value === '' || value === null) {
+                        isValid = false;
+                        field.addClass('is-invalid');
+                        invalidFields.push(fieldName);
+                    } else {
+                        field.removeClass('is-invalid');
+                    }
+                } else {
+                    if (!value || value.trim() === '') {
+                        isValid = false;
+                        field.addClass('is-invalid');
+                        invalidFields.push(fieldName);
+                    } else {
+                        field.removeClass('is-invalid');
+                    }
+                }
+            });
+            
+            if (!isValid) {
+                e.preventDefault();
+                var message = 'Please fill all required fields before submitting.';
+                if (invalidFields.length > 0) {
+                    var maxFields = 5;
+                    var fieldsToShow = invalidFields.length > maxFields ? maxFields : invalidFields.length;
+                    var fieldsList = [];
+                    for (var i = 0; i < fieldsToShow; i++) {
+                        fieldsList.push(invalidFields[i]);
+                    }
+                    message += '\n\nMissing fields: ' + fieldsList.join(', ');
+                    if (invalidFields.length > maxFields) {
+                        message += ' and ' + (invalidFields.length - maxFields) + ' more...';
+                    }
+                }
+                alert(message);
+                $('html, body').animate({ scrollTop: $('#step3').offset().top - 100 }, 300);
+                return false;
+            }
+
+            // Disabled fields are not posted — re-enable required Step 3 fields before submit.
+            $('#SubProject, #RegisteredSize').prop('disabled', false);
+
+            // Ensure the values currently captured from Steps 1/2 are what get posted
+            // (prevents stale Registration AJAX / browser autofill overwriting FullName).
+            captureCustomerFormSnapshot();
+            restoreCustomerFormSnapshot();
+            
+            // If validation passes, allow form submission
+            // Show loading state
+            $('#createBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i>Creating...');
+            return true;
+        });
+
+        // Initialize wizard
+        $(document).ready(function() {
+            $('#DOB').on('change blur', function() { validateStep1Dob(); });
+            // Check if we're returning from a validation error (ModelState has errors)
+            var serverErrorKeys = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                ViewData.ModelState
+                    .Where(x => x.Value != null && x.Value.Errors.Count > 0)
+                    .Select(x => x.Key)
+                    .ToList()
+            ));
+            if (Array.isArray(serverErrorKeys) && serverErrorKeys.length > 0) {
+                var step1Fields = ['FullName', 'FatherName', 'CNIC', 'PassportNo', 'DOB', 'Gender', 'Nationality', 'Phone', 'MobileNo', 'MobileNo2', 'Email', 'City', 'Country', 'MailingAddress', 'PermanentAddress', 'RegID'];
+                var step2Fields = ['NomineeName', 'NomineeID', 'NomineeRelation', 'NomineeNICDocumentPath', 'NomineePicturePath'];
+                var step3Fields = ['ProjectID', 'PlanID', 'SubProject', 'RegisteredSize', 'DealerID', 'DealerName', 'AdditionalInfo'];
+
+                var targetStep = 3;
+                if (serverErrorKeys.some(function (k) { return step1Fields.indexOf(k) >= 0; })) {
+                    targetStep = 1;
+                } else if (serverErrorKeys.some(function (k) { return step2Fields.indexOf(k) >= 0; })) {
+                    targetStep = 2;
+                } else if (serverErrorKeys.some(function (k) { return step3Fields.indexOf(k) >= 0; })) {
+                    targetStep = 3;
+                }
+                currentStep = targetStep;
+            }
+            updateWizardUI();
+
+            // Live field-level validation on leave/change for Step 1 fields
+            var step1FieldIds = ['FullName', 'CNIC', 'PassportNo', 'DOB', 'Phone', 'MobileNo', 'MobileNo2', 'Email', 'City', 'Country', 'MailingAddress'];
+            step1FieldIds.forEach(function(fieldId) {
+                var $field = $('#' + fieldId);
+                if (!$field.length) return;
+
+                var eventName = $field.is('select') ? 'change' : 'blur';
+                $field.on(eventName, function() {
+                    validateStep1Field(fieldId);
+                });
+            });
+        });
+    </script>
+}

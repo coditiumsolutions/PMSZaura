@@ -1,0 +1,53 @@
+@model Salzee.Models.DuplicateFileTransfer
+@{
+    ViewData["Title"] = "Edit " + Model.Id;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fas fa-edit me-2"></i>Edit <code>@Model.Id</code></h2>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary btn-sm">Back</a>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+    @Html.AntiForgeryToken()
+    <div class="card mb-3">
+        <div class="card-header fw-semibold">Payment / notes (optional)</div>
+        <div class="card-body row g-3">
+            <div class="col-12">
+                <label class="form-label">Comments</label>
+                <textarea asp-for="Comments" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Fee paid (PKR)</label>
+                <input asp-for="FeePaid" class="form-control" type="number" step="0.01" min="0" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Challan ID</label>
+                <input asp-for="ChallanID" class="form-control" maxlength="100" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Bank name</label>
+                <input asp-for="BankName" class="form-control" maxlength="150" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Instrument no.</label>
+                <input asp-for="InstrumentNo" class="form-control" maxlength="100" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Deposit date</label>
+                <input asp-for="DepositDate" class="form-control" type="date"
+                       value="@(Model.DepositDate.HasValue ? Model.DepositDate.Value.ToString("yyyy-MM-dd") : "")" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Payment method</label>
+                <input asp-for="PaymentMethod" class="form-control" maxlength="100" />
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save</button>
+</form>

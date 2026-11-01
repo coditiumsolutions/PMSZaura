@@ -1,0 +1,320 @@
+@model Salzee.Models.Refund
+@{
+    ViewData["Title"] = "New Refund";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <h5 class="mb-0">New Refund</h5>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm py-0 px-2"><i class="fas fa-arrow-left me-1"></i>Back</a>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Customer Search -->
+<div class="card border-0 shadow-sm pms-mp-header mb-3">
+    <div class="card-header py-2 pms-mp-header-bar">
+        <h6 class="mb-0"><i class="fas fa-search me-2"></i>Customer Search</h6>
+    </div>
+    <div class="card-body py-3 px-3">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Customer ID <span class="text-danger">*</span></label>
+                <div class="input-group">
+                    <input type="text" id="customerIdInput" class="form-control" placeholder="Enter Customer ID" />
+                    <button type="button" class="btn btn-primary" id="searchCustomerBtn">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Customer Info Panel (hidden until found) -->
+        <div id="customerInfoPanel" class="mt-3" style="display:none;">
+            <div class="row g-2">
+                <div class="col-md-3"><span class="fw-semibold">Name:</span> <span id="custName"></span></div>
+                <div class="col-md-3"><span class="fw-semibold">CNIC:</span> <span id="custCnic"></span></div>
+                <div class="col-md-3"><span class="fw-semibold">Phone:</span> <span id="custPhone"></span></div>
+                <div class="col-md-3"><span class="fw-semibold">Project:</span> <span id="custProject"></span></div>
+            </div>
+        </div>
+        <div id="customerSearchError" class="text-danger mt-2" style="display:none;"></div>
+    </div>
+</div>
+
+<!-- Payment Selection -->
+<div id="paymentsSection" style="display:none;">
+    <div class="card border-0 shadow-sm pms-mp-header mb-3">
+        <div class="card-header py-2 pms-mp-header-bar">
+            <h6 class="mb-0"><i class="fas fa-money-check-alt me-2"></i>Select Payments to Refund</h6>
+        </div>
+        <div class="card-body py-3 px-3">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle" id="paymentsTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th><input type="checkbox" id="selectAll" title="Select All" /></th>
+                            <th>#</th>
+                            <th>Description</th>
+                            <th class="text-end">Amount (PKR)</th>
+                            <th>Method</th>
+                            <th>Date</th>
+                            <th>Ref #</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTableBody"></tbody>
+                    <tfoot>
+                        <tr class="table-secondary fw-bold">
+                            <td colspan="3" class="text-end">Selected Total:</td>
+                            <td class="text-end" id="selectedTotal">PKR 0</td>
+                            <td colspan="3"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refund Form -->
+    <form asp-action="Create" method="post" id="refundForm" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="CustomerID" id="hiddenCustomerId" />
+        <input type="hidden" name="PaidAmount" id="hiddenPaidAmount" value="0" />
+        <input type="hidden" name="selectedPaymentIdsJson" id="hiddenSelectedIds" />
+
+        <div class="card border-0 shadow-sm pms-mp-header pms-refund-create mb-3">
+            <div class="card-header py-2 pms-mp-header-bar">
+                <h6 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Refund Details</h6>
+            </div>
+            <div class="card-body py-2 px-3">
+                <div class="pms-registration-4col-form pms-refund-details-form">
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Refund Type <span class="text-danger">*</span></label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select name="RefundType" class="form-select form-select-sm" required>
+                                <option value="">-- Select --</option>
+                                <option value="Full">Full</option>
+                                <option value="Partial">Partial</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Paid Amount (PKR)</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="number" id="paidAmountDisplay" class="form-control form-control-sm" readonly />
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Deduction Amount (PKR)</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="number" name="DeductionAmount" id="deductionInput" class="form-control form-control-sm" value="0" min="0" step="0.01" />
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Refunded Amount (PKR)</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="number" name="RefundedAmount" id="refundedAmountDisplay" class="form-control form-control-sm" readonly />
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Reason <span class="text-danger">*</span></label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <input type="text" name="Reason" class="form-control form-control-sm" required maxlength="255" placeholder="Reason for refund" />
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Notes</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <textarea name="Notes" class="form-control form-control-sm" rows="2" maxlength="500" placeholder="Additional notes (optional)"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label for="refundAttachment" class="form-label pms-registration-4col-label">Attachment</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="file" name="refundAttachment" id="refundAttachment" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label for="refundAttachmentDescription" class="form-label pms-registration-4col-label">Attachment Title</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="text" name="refundAttachmentDescription" id="refundAttachmentDescription" class="form-control form-control-sm" maxlength="500" placeholder="e.g. Approval Note, Bank Slip" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-sm fw-semibold pms-mp-btn-save" id="submitBtn">
+                <i class="fas fa-check me-1"></i>Submit Refund
+            </button>
+            <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    /* Refund Details: title | field | title | field — black titles, blue fields, compact rows */
+    .pms-refund-create .pms-refund-details-form .pms-registration-4col-row {
+        margin-bottom: 0.35rem !important;
+        padding-bottom: 0.35rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-refund-create .pms-refund-details-form .pms-registration-4col-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0 !important;
+        padding-bottom: 0;
+    }
+
+    .pms-refund-create .pms-refund-details-form .form-label,
+    .pms-refund-create .pms-refund-details-form .pms-registration-4col-label {
+        color: #111827 !important;
+        font-weight: 600 !important;
+        font-size: 0.75rem;
+        margin-bottom: 0;
+        padding-top: 0.2rem;
+        line-height: 1.2;
+    }
+
+    .pms-refund-create .pms-refund-details-form .form-control,
+    .pms-refund-create .pms-refund-details-form .form-select,
+    .pms-refund-create .pms-refund-details-form .form-control-sm,
+    .pms-refund-create .pms-refund-details-form .form-select-sm {
+        color: #1e40af !important;
+        font-size: 0.8125rem;
+        min-height: 28px;
+        height: 28px;
+        padding-top: 0.15rem;
+        padding-bottom: 0.15rem;
+    }
+
+    .pms-refund-create .pms-refund-details-form textarea.form-control,
+    .pms-refund-create .pms-refund-details-form textarea.form-control-sm {
+        height: auto;
+        min-height: 48px;
+        color: #1e40af !important;
+    }
+
+    .pms-refund-create .pms-refund-details-form input[type="file"].form-control,
+    .pms-refund-create .pms-refund-details-form input[type="file"].form-control-sm {
+        height: auto;
+        min-height: 28px;
+        color: #1e40af !important;
+    }
+
+    .pms-refund-create .pms-refund-details-form #paidAmountDisplay {
+        background: #f8fafc;
+    }
+
+    .pms-refund-create .pms-refund-details-form #refundedAmountDisplay {
+        background: #eff6ff;
+        font-weight: 600;
+    }
+</style>
+
+@section Scripts {
+<script>
+(function () {
+    let payments = [];
+
+    function formatPKR(n) {
+        return 'PKR ' + Number(n).toLocaleString('en-PK', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    }
+
+    $('#searchCustomerBtn').on('click', searchCustomer);
+    $('#customerIdInput').on('keypress', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); searchCustomer(); }
+    });
+
+    function searchCustomer() {
+        var id = $('#customerIdInput').val().trim();
+        if (!id) return;
+        $('#customerSearchError').hide();
+        $.post('@Url.Action("SearchCustomerForRefund")', { customerId: id }, function (res) {
+            if (!res.success) {
+                $('#customerSearchError').text(res.message).show();
+                $('#customerInfoPanel').hide();
+                $('#paymentsSection').hide();
+                return;
+            }
+            $('#custName').text(res.fullName);
+            $('#custCnic').text(res.cnic);
+            $('#custPhone').text(res.phone);
+            $('#custProject').text(res.project);
+            $('#customerInfoPanel').show();
+            $('#hiddenCustomerId').val(res.customerID);
+            payments = res.payments;
+            renderPayments();
+            $('#paymentsSection').show();
+        }).fail(function () {
+            $('#customerSearchError').text('Error searching customer. Try again.').show();
+        });
+    }
+
+    function renderPayments() {
+        var tbody = $('#paymentsTableBody').empty();
+        if (!payments || payments.length === 0) {
+            tbody.append('<tr><td colspan="7" class="text-center text-muted py-3">No payments found for this customer.</td></tr>');
+            recalc();
+            return;
+        }
+        payments.forEach(function (p) {
+            var row = `<tr>
+                <td><input type="checkbox" class="pay-check" data-amount="${p.amount}" data-id="${p.paymentId}" /></td>
+                <td>${p.installmentNo ?? '—'}</td>
+                <td>${p.description}</td>
+                <td class="text-end">${formatPKR(p.amount)}</td>
+                <td>${p.method}</td>
+                <td>${p.date}</td>
+                <td>${p.referenceNo}</td>
+            </tr>`;
+            tbody.append(row);
+        });
+        recalc();
+    }
+
+    $(document).on('change', '.pay-check', recalc);
+    $('#selectAll').on('change', function () {
+        $('.pay-check').prop('checked', $(this).is(':checked'));
+        recalc();
+    });
+    $('#deductionInput').on('input', recalc);
+
+    function recalc() {
+        var total = 0;
+        var ids = [];
+        $('.pay-check:checked').each(function () {
+            total += parseFloat($(this).data('amount')) || 0;
+            ids.push($(this).data('id'));
+        });
+        var deduction = parseFloat($('#deductionInput').val()) || 0;
+        var refunded = total - deduction;
+        if (refunded < 0) refunded = 0;
+        $('#paidAmountDisplay').val(total.toFixed(2));
+        $('#hiddenPaidAmount').val(total.toFixed(2));
+        $('#refundedAmountDisplay').val(refunded.toFixed(2));
+        $('#selectedTotal').text(formatPKR(total));
+        $('#hiddenSelectedIds').val(JSON.stringify(ids));
+    }
+})();
+</script>
+}

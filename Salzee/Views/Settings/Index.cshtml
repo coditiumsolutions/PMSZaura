@@ -1,0 +1,290 @@
+@model IEnumerable<Salzee.Models.Configuration>
+@using System.Linq
+@{
+    ViewData["Title"] = "Configuration Settings";
+    ViewData["HidePageBanner"] = true;
+    var allConfigs = Model?
+        .Select(c => new
+        {
+            Config = c,
+            Category = string.IsNullOrWhiteSpace(c.Category) ? "General" : c.Category!.Trim()
+        })
+        .OrderBy(x => x.Config.ConfigKey)
+        .ThenBy(x => x.Category)
+        .ToList() ?? new();
+    var categories = allConfigs.GroupBy(x => x.Category).OrderBy(g => g.Key).ToList();
+    var totalCount = allConfigs.Count;
+    var canEdit = ViewBag.CanEdit == true;
+}
+
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+    <div>
+        <h5 class="mb-0">Configuration Settings</h5>
+        <small class="text-muted">All records from the Configuration table (@totalCount)</small>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        @if (canEdit)
+        {
+            <button type="button" id="btnEditConfig" class="btn btn-outline-primary btn-sm" disabled title="Select a configuration first">
+                <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Edit Configuration
+            </button>
+        }
+        <a asp-action="Create" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Add Configuration
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show py-2 small" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show py-2 small" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row g-2 mb-3 settings-stats-compact">
+    <div class="col-6 col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">@totalCount</div>
+            <div class="stats-label">Total Configs</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">@categories.Count</div>
+            <div class="stats-label">Categories</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">@allConfigs.Count(c => c.Category == "Cities")</div>
+            <div class="stats-label">Cities</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stats-card">
+            <div class="stats-number">@allConfigs.Count(c => c.Category == "Countries")</div>
+            <div class="stats-label">Countries</div>
+        </div>
+    </div>
+</div>
+
+@if (allConfigs.Any())
+{
+    <div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page pms-settings-listing mb-3">
+        <div class="card-body py-2">
+            <div class="table-responsive pms-saas-table-wrap">
+                <table class="table pms-saas-table mb-0" id="settingsConfigTable">
+                    <thead>
+                        <tr>
+                            <th class="pms-settings-select-col text-center" aria-label="Select"></th>
+                            <th>Key</th>
+                            <th>Category</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in allConfigs)
+                        {
+                            var config = item.Config;
+                            <tr class="pms-settings-selectable-row"
+                                data-config-key="@config.ConfigKey">
+                                <td data-label="Select" class="text-center pms-settings-select-col">
+                                    <input type="radio"
+                                           name="selectedConfig"
+                                           class="form-check-input settings-select-radio m-0"
+                                           value="@config.ConfigKey"
+                                           aria-label="Select @config.ConfigKey" />
+                                </td>
+                                <td data-label="Key"><code class="pms-config-key">@config.ConfigKey</code></td>
+                                <td data-label="Category">@item.Category</td>
+                                <td data-label="Value"><span class="pms-config-value">@(config.ConfigValue ?? "")</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-cogs fa-4x mb-3 text-muted"></i>
+            <h5 class="text-muted">No Configurations Found</h5>
+            <p class="text-muted">Add system configuration settings to get started.</p>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Add First Configuration
+            </a>
+        </div>
+    </div>
+}
+
+<style>
+    .settings-stats-compact .stats-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 0.65rem 0.75rem;
+        text-align: center;
+        min-height: 0;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+
+    .settings-stats-compact .stats-number {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #000;
+        margin-bottom: 0.15rem;
+        line-height: 1.2;
+    }
+
+    .settings-stats-compact .stats-label {
+        font-size: 10px;
+        color: #000;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.35px;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    #settingsConfigTable,
+    #settingsConfigTable thead th,
+    #settingsConfigTable tbody td,
+    #settingsConfigTable tbody td span,
+    #settingsConfigTable tbody td strong,
+    #settingsConfigTable .pms-config-value {
+        color: #000 !important;
+    }
+
+    #settingsConfigTable .pms-config-key,
+    #settingsConfigTable td[data-label="Key"] code {
+        color: #0d6efd !important;
+        background: transparent;
+        padding: 0;
+        font-weight: 600;
+    }
+
+    #settingsConfigTable .pms-config-value {
+        display: inline-block;
+        max-width: 480px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: bottom;
+        font-weight: 600;
+    }
+
+    /* Always show Edit/Delete (override hover-only grid actions) */
+    .pms-settings-select-col {
+        width: 2.75rem;
+        min-width: 2.75rem;
+    }
+
+    .pms-settings-listing .pms-settings-selectable-row {
+        cursor: pointer;
+    }
+
+    .pms-settings-listing .pms-settings-selectable-row.pms-row-selected,
+    .pms-settings-listing .pms-settings-selectable-row.pms-row-selected > td {
+        background-color: #e7f1ff !important;
+    }
+
+    .pms-settings-listing .pms-saas-table-wrap {
+        max-height: none;
+        min-height: calc(64px * 20 + 3.5rem);
+        overflow-y: auto;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var canEdit = @canEdit.ToString().ToLowerInvariant();
+            var editConfigBaseUrl = '@Url.Action("Edit", "Settings")';
+            var selectedConfigKey = null;
+            var $editBtn = $('#btnEditConfig');
+
+            function clearSelection() {
+                selectedConfigKey = null;
+                $('#settingsConfigTable tbody tr.pms-settings-selectable-row').removeClass('pms-row-selected');
+                $('.settings-select-radio').prop('checked', false);
+                if ($editBtn.length) {
+                    $editBtn.prop('disabled', true).attr('title', 'Select a configuration first');
+                }
+            }
+
+            function setSelectedConfig($row) {
+                if (!$row || !$row.length) {
+                    clearSelection();
+                    return;
+                }
+
+                selectedConfigKey = String($row.data('config-key') || '');
+                $('#settingsConfigTable tbody tr.pms-settings-selectable-row').removeClass('pms-row-selected');
+                $row.addClass('pms-row-selected');
+                $row.find('.settings-select-radio').prop('checked', true);
+
+                if ($editBtn.length) {
+                    $editBtn.prop('disabled', false).attr('title', 'Edit selected configuration');
+                }
+            }
+
+            if ($('#settingsConfigTable').length && $.fn.DataTable) {
+                $('#settingsConfigTable').DataTable({
+                    pageLength: 20,
+                    order: [[1, 'asc']],
+                    lengthMenu: [[20, 25, 50, 100, -1], [20, 25, 50, 100, 'All']],
+                    columnDefs: [
+                        { orderable: false, targets: 0 }
+                    ],
+                    language: {
+                        search: 'Search:',
+                        lengthMenu: 'Show _MENU_ records',
+                        info: 'Showing _START_ to _END_ of _TOTAL_ configurations',
+                        infoEmpty: 'No configurations',
+                        paginate: {
+                            first: 'First',
+                            last: 'Last',
+                            next: 'Next',
+                            previous: 'Previous'
+                        }
+                    }
+                });
+
+                $('#settingsConfigTable tbody').on('change', '.settings-select-radio', function () {
+                    setSelectedConfig($(this).closest('tr'));
+                });
+
+                $('#settingsConfigTable tbody').on('click', 'tr.pms-settings-selectable-row', function (e) {
+                    if ($(e.target).closest('a, button, form, select, textarea, input').length) {
+                        return;
+                    }
+                    var $row = $(this);
+                    if (selectedConfigKey === String($row.data('config-key') || '')) {
+                        clearSelection();
+                    } else {
+                        setSelectedConfig($row);
+                    }
+                });
+            }
+
+            if (canEdit) {
+                $editBtn.on('click', function () {
+                    if (!selectedConfigKey) return;
+                    window.location.href = editConfigBaseUrl + '/' + encodeURIComponent(selectedConfigKey);
+                });
+            }
+        });
+    </script>
+}

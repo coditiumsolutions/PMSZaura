@@ -1,0 +1,148 @@
+@model Salzee.Models.UserMacWhitelistViewModel
+
+@{
+    ViewData["Title"] = "mTLS Certificate Whitelisting";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">User mTLS Certificate Whitelist Management</h5>
+    <a asp-controller="Account" asp-action="Users" class="btn btn-outline-secondary btn-sm">Back to Users</a>
+</div>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-6">
+        <label class="form-label">Select User</label>
+        <select class="form-select form-select-sm" name="userId" onchange="this.form.submit()">
+            @foreach (var user in Model.Users)
+            {
+                if (Model.SelectedUserId == user.UserID)
+                {
+                    <option value="@user.UserID" selected>@user.FullName (@user.UserID)</option>
+                }
+                else
+                {
+                    <option value="@user.UserID">@user.FullName (@user.UserID)</option>
+                }
+            }
+        </select>
+    </div>
+</form>
+
+@if (Model.SelectedUser != null)
+{
+    <div class="card pms-search-card mb-3">
+        <div class="card-header">Add Certificate Thumbprint for @Model.SelectedUser.FullName (@Model.SelectedUser.UserID)</div>
+        <div class="card-body">
+            <form asp-action="AddWhitelist" method="post" class="row g-2">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="userId" value="@Model.SelectedUser.UserID" />
+                <div class="col-md-4">
+                    <input class="form-control form-control-sm" name="macAddress" placeholder="Paste certificate thumbprint" required />
+                </div>
+                <div class="col-md-4">
+                    <input class="form-control form-control-sm" name="deviceName" placeholder="Optional device label" />
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-primary btn-sm" type="submit">Whitelist</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card pms-search-card mb-3">
+                <div class="card-header">Whitelisted Certificates</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Thumbprint</th>
+                                    <th>Device</th>
+                                    <th>Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.WhitelistedMacs.Any())
+                                {
+                                    @foreach (var row in Model.WhitelistedMacs)
+                                    {
+                                        <tr>
+                                            <td><code>@row.MacAddress</code></td>
+                                            <td>@(row.DeviceName ?? "—")</td>
+                                            <td>@(row.IsActive ? "Active" : "Inactive")</td>
+                                            <td>
+                                                @if (row.IsActive)
+                                                {
+                                                    <form asp-action="Deactivate" method="post" class="d-inline">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="id" value="@row.Id" />
+                                                        <input type="hidden" name="userId" value="@Model.SelectedUser.UserID" />
+                                                        <button type="submit" class="btn btn-outline-danger btn-sm">Deactivate</button>
+                                                    </form>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr><td colspan="4" class="text-muted">No certificate whitelisted yet.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card pms-search-card mb-3">
+                <div class="card-header">Blocked Login Attempts (Not Yet Whitelisted)</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>When</th>
+                                    <th>Thumbprint</th>
+                                    <th>Device</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.BlockedAttempts.Any())
+                                {
+                                    @foreach (var attempt in Model.BlockedAttempts)
+                                    {
+                                        <tr>
+                                            <td>@attempt.AttemptedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                                            <td><code>@attempt.MacAddress</code></td>
+                                            <td>@(attempt.DeviceName ?? "—")</td>
+                                            <td>
+                                                <form asp-action="AddWhitelist" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="userId" value="@Model.SelectedUser.UserID" />
+                                                    <input type="hidden" name="macAddress" value="@attempt.MacAddress" />
+                                                    <input type="hidden" name="deviceName" value="@attempt.DeviceName" />
+                                                    <input type="hidden" name="attemptId" value="@attempt.Id" />
+                                                    <button type="submit" class="btn btn-success btn-sm">Whitelist</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr><td colspan="4" class="text-muted">No blocked certificate attempts for this user.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}

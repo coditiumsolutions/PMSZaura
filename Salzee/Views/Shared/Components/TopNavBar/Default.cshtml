@@ -1,0 +1,79 @@
+@model Salzee.ViewComponents.TopNavBarViewModel
+
+@{
+    var showModules = Model.NavigationShell?.ShowModuleNavigation == true;
+}
+
+<div class="pms-topbar-stack pms-topbar-stack--dual-row@(showModules ? " pms-topbar-stack--with-modules" : "")">
+    <header class="pms-topbar" role="banner">
+        <div class="pms-topbar-row pms-topbar-row--modules">
+            @if (showModules)
+            {
+                <nav class="pms-topbar-modules" aria-label="Main modules">
+                    @{
+                        var topNavOrder = new[]
+                        {
+                            Salzee.ViewModels.NavigationModuleKeys.Customer,
+                            Salzee.ViewModels.NavigationModuleKeys.Payments,
+                            Salzee.ViewModels.NavigationModuleKeys.Property
+                        };
+                        var modulesByKey = Model.NavigationShell!.Modules
+                            .ToDictionary(m => m.Key, StringComparer.OrdinalIgnoreCase);
+                        var isWorkspaceActive = string.Equals(
+                                Model.NavigationShell.ActiveModuleKey,
+                                Salzee.ViewModels.NavigationModuleKeys.OtherLinks,
+                                StringComparison.OrdinalIgnoreCase)
+                            || (string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), "Home", StringComparison.OrdinalIgnoreCase)
+                                && string.Equals(ViewContext.RouteData.Values["action"]?.ToString(), "Workspace", StringComparison.OrdinalIgnoreCase));
+                    }
+                    @foreach (var moduleKey in topNavOrder)
+                    {
+                        if (!modulesByKey.TryGetValue(moduleKey, out var module))
+                        {
+                            continue;
+                        }
+
+                        var isActive = string.Equals(module.Key, Model.NavigationShell.ActiveModuleKey, StringComparison.OrdinalIgnoreCase);
+                        <a class="pms-topbar-module-link@(isActive ? " active" : "")"
+                           asp-controller="Navigation"
+                           asp-action="SelectModule"
+                           asp-route-module="@module.Key"
+                           aria-current="@(isActive ? "page" : null)">
+                            @module.Label
+                        </a>
+                    }
+                    <a class="pms-topbar-module-link@(isWorkspaceActive ? " active" : "")"
+                       asp-controller="Home"
+                       asp-action="Workspace"
+                       aria-current="@(isWorkspaceActive ? "page" : null)">
+                        Workspace
+                    </a>
+                </nav>
+            }
+            else
+            {
+                <div class="pms-topbar-modules-spacer" aria-hidden="true"></div>
+            }
+            <a class="pms-topbar-link pms-topbar-logout" asp-controller="Account" asp-action="Logout">
+                <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+        <div class="pms-topbar-row pms-topbar-row--account">
+            <nav class="pms-topbar-nav" aria-label="Account">
+                <span class="pms-topbar-item">
+                    <i class="bi bi-person-circle" aria-hidden="true"></i>
+                    <span>Logged in As: <strong>@Model.UserDisplayName</strong></span>
+                </span>
+                <span class="pms-topbar-divider" aria-hidden="true"></span>
+                <span class="pms-topbar-item">
+                    <i class="bi bi-clock" aria-hidden="true"></i>
+                    <span>Login Time:
+                        <strong>@(Model.LoginTime?.ToString("MMM dd, yyyy hh:mm tt") ?? "—")</strong>
+                    </span>
+                </span>
+            </nav>
+        </div>
+    </header>
+    <div class="pms-topbar-separator" aria-hidden="true"></div>
+</div>

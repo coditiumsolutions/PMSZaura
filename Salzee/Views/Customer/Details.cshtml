@@ -1,0 +1,1905 @@
+@model Salzee.Models.Customer
+
+@{
+    ViewData["Title"] = "Customer Details";
+    var canEdit = ViewBag.CanEdit as bool? == true;
+    var canDelete = ViewBag.CanDelete as bool? == true;
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show py-2 mb-3 small" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show py-2 mb-3 small" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-end align-items-center mb-3">
+    <div class="d-flex flex-wrap align-items-stretch gap-2 pms-customer-details-actions">
+        <div class="dropdown">
+            <button class="btn btn-sm dropdown-toggle pms-customer-details-main-btn pms-customer-details-main-btn--reports"
+                    type="button"
+                    id="customerDetailsReportsBtn"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                <i class="fas fa-file-alt me-1"></i>Reports
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="customerDetailsReportsBtn">
+                <li>
+                    <a class="dropdown-item" asp-action="AccountStatement" asp-route-id="@Model.CustomerID" target="_blank" rel="noopener">
+                        <i class="fas fa-file-invoice-dollar me-2"></i>Account Statement
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item"
+                       asp-controller="Report"
+                       asp-action="AccountStatement"
+                       asp-route-accountNo="@Model.CustomerID"
+                       target="_blank"
+                       rel="noopener">
+                        <i class="fas fa-file-pdf me-2"></i>Account Report
+                    </a>
+                </li>
+                @if (Model.Allotments != null && Model.Allotments.Any())
+                {
+                    <li><hr class="dropdown-divider" /></li>
+                    <li>
+                        <a class="dropdown-item" asp-action="AllotmentLetter" asp-route-id="@Model.CustomerID" target="_blank" rel="noopener">
+                            <i class="fas fa-file-signature me-2"></i>Allotment Letter
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+
+        @if (canEdit || canDelete)
+        {
+            <div class="dropdown">
+                <button class="btn btn-sm dropdown-toggle pms-customer-details-main-btn pms-customer-details-main-btn--operations"
+                        type="button"
+                        id="customerDetailsOperationsBtn"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false">
+                    <i class="fas fa-cog me-1"></i>Operations
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="customerDetailsOperationsBtn">
+                    @if (canEdit)
+                    {
+                        <li>
+                            <a class="dropdown-item" asp-action="Edit" asp-route-id="@Model.CustomerID">
+                                <i class="fas fa-edit me-2"></i>Edit
+                            </a>
+                        </li>
+                    }
+                    @if (canDelete)
+                    {
+                        <li>
+                            <a class="dropdown-item text-danger" asp-action="Delete" asp-route-id="@Model.CustomerID">
+                                <i class="fas fa-trash me-2"></i>Delete
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <a asp-action="Index" class="btn btn-sm pms-customer-details-main-btn pms-customer-details-main-btn--back">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Main Content with Tabs -->
+    <div class="col-12">
+        <div class="card pms-listing-flat pms-customer-details">
+            <div class="card-header p-0">
+                <ul class="nav nav-tabs customer-tabs" id="customerTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" aria-controls="personal" aria-selected="true">
+                            <i class="fas fa-user-circle me-2"></i>Personal Info
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">
+                            <i class="fas fa-address-book me-2"></i>Contact Info
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="nominee-tab" data-bs-toggle="tab" data-bs-target="#nominee" type="button" role="tab" aria-controls="nominee" aria-selected="false">
+                            <i class="fas fa-user-shield me-2"></i>Next of Kin
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="registration-tab" data-bs-toggle="tab" data-bs-target="#registration" type="button" role="tab" aria-controls="registration" aria-selected="false">
+                            <i class="fas fa-file-contract me-2"></i>Registration & Plan
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="allotments-tab" data-bs-toggle="tab" data-bs-target="#allotments" type="button" role="tab" aria-controls="allotments" aria-selected="false">
+                            <i class="fas fa-building me-2"></i>Allotments
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="transfers-tab" data-bs-toggle="tab" data-bs-target="#transfers" type="button" role="tab" aria-controls="transfers" aria-selected="false">
+                            <i class="fas fa-exchange-alt me-2"></i>Transfers
+                            @if (Model.Transfers != null && Model.Transfers.Any())
+                            {
+                                <span class="badge bg-warning rounded-pill ms-1">@Model.Transfers.Count</span>
+                            }
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="jointowners-tab" data-bs-toggle="tab" data-bs-target="#jointowners" type="button" role="tab" aria-controls="jointowners" aria-selected="false">
+                            <i class="fas fa-users me-2"></i>JointOwners
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="attachments-tab" data-bs-toggle="tab" data-bs-target="#attachments" type="button" role="tab" aria-controls="attachments" aria-selected="false">
+                            <i class="fas fa-paperclip me-2"></i>Attachments
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" id="customerTabContent">
+                    <!-- Personal Information Tab -->
+                    <div class="tab-pane fade show active" id="personal" role="tabpanel" aria-labelledby="personal-tab">
+                        <div class="row g-3">
+                            <div class="col-lg-8 col-xl-9">
+                        <div class="pms-registration-4col-form">
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Customer ID</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><code>@Model.CustomerID</code></div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Status</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-warning")">@Model.Status</span></div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Full Name</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.FullName</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">S/D/W/O</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.FatherName</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">National ID</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.CNIC</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Passport No</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.PassportNo ?? "N/A")</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Date of Birth</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.DOB?.ToString("dd-MM-yyyy") ?? "N/A")</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Gender</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.Gender</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Nationality</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.Nationality ?? "N/A")</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Form No</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.FormNo ?? "N/A")</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Project</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.Project?.ProjectName ?? Model.PaymentPlan?.Project?.ProjectName ?? "N/A")</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">SubProject</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(string.IsNullOrWhiteSpace(Model.SubProject) ? "N/A" : Model.SubProject)</div></div>
+                            </div>
+                        </div>
+                            </div>
+                            <div class="col-lg-4 col-xl-3">
+                                <div class="card h-100" style="border-color: rgb(104, 167, 226);">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                        <h6 class="mb-0"><i class="fas fa-user-circle me-2"></i>Customer Picture</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="text-center mb-3">
+                                            <img class="js-customer-picture-img img-thumbnail" src="" alt="Customer Picture" style="max-width: 180px; max-height: 180px; display: none;" />
+                                            <div class="js-customer-picture-placeholder text-muted">
+                                                <i class="fas fa-user-circle fa-5x"></i>
+                                                <p class="mt-2 mb-0">No picture uploaded</p>
+                                            </div>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label" for="customerPictureFilePersonal">Upload picture</label>
+                                            <input type="file" id="customerPictureFilePersonal" class="form-control form-control-sm" accept="image/*" />
+                                            <small class="text-muted">JPG, PNG, GIF, BMP. Max 8MB.</small>
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <button type="button" class="btn btn-sm text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" onclick="uploadAttachment('CustomerPicture', 'customerPictureFilePersonal')">
+                                                <i class="fas fa-upload me-1"></i>Upload
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary js-open-customer-picture-camera" title="Capture with webcam">
+                                                <i class="fas fa-camera me-1"></i>Webcam
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Information Tab -->
+                    <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">
+                        <div class="pms-registration-4col-form">
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Phone</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.Phone</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Mobile</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.MobileNo</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Mobile 2</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(string.IsNullOrWhiteSpace(Model.MobileNo2) ? "—" : Model.MobileNo2)</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Email</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.Email</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">City</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.City</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Country</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.Country</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Mailing Address</div></div>
+                                <div class="col-12 col-lg-10"><div class="pms-registration-details-value">@Model.MailingAddress</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Permanent Address</div></div>
+                                <div class="col-12 col-lg-10"><div class="pms-registration-details-value">@Model.PermanentAddress</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Next of Kin Information Tab -->
+                    <div class="tab-pane fade" id="nominee" role="tabpanel" aria-labelledby="nominee-tab">
+                        <div class="pms-registration-4col-form">
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Next of Kin Name</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.NomineeName ?? "N/A")</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Next of Kin ID</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.NomineeID ?? "N/A")</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Relationship</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.NomineeRelation ?? "N/A")</div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Registration & Plan Tab -->
+                    <div class="tab-pane fade" id="registration" role="tabpanel" aria-labelledby="registration-tab">
+                        @if (Model.Registration != null)
+                        {
+                            <h6 class="mb-3"><i class="fas fa-file-alt me-2"></i>Registration Information</h6>
+                            <div class="pms-registration-4col-form mb-4">
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Registration ID</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><code>@Model.Registration.RegID</code></div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Registered On</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.Registration.CreatedAt.ToString("MMM dd, yyyy")</div></div>
+                                </div>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Status</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><span class="badge bg-success">@Model.Registration.Status</span></div></div>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.PaymentPlan != null)
+                        {
+                            <h6 class="mb-3 pms-customer-section-title"><i class="fas fa-credit-card me-2"></i>Payment Plan</h6>
+                            <div class="pms-registration-4col-form mb-4">
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Plan Name</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.PaymentPlan.PlanName</div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Total Amount</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.PaymentPlan.TotalAmount.ToString("N2") PKR</div></div>
+                                </div>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Duration</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.PaymentPlan.DurationMonths?.ToString() ?? "N/A") Months</div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Frequency</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@Model.PaymentPlan.Frequency</div></div>
+                                </div>
+                                @if (Model.PaymentPlan.PaymentSchedules != null && Model.PaymentPlan.PaymentSchedules.Any())
+                                {
+                                    var totalPaid = Model.PaymentPlan.PaymentSchedules
+                                        .SelectMany(ps => ps.Payments ?? new List<Salzee.Models.Payment>())
+                                        .Where(p => p.Status == "Completed")
+                                        .Sum(p => p.Amount);
+                                    var totalDue = Model.PaymentPlan.TotalAmount;
+                                    var percentage = totalDue > 0 ? (totalPaid / totalDue) * 100 : 0;
+
+                                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                                        <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Payment Progress</div></div>
+                                        <div class="col-12 col-lg-10">
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar" role="progressbar"
+                                                     style="width: @percentage%; background: linear-gradient(135deg, var(--primary-green) 0%, var(--accent-gold) 100%);"
+                                                     aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
+                                                    @percentage.ToString("N1")%
+                                                </div>
+                                            </div>
+                                            <small class="pms-registration-details-value mt-1 d-block">
+                                                @totalPaid.ToString("N2") / @totalDue.ToString("N2") PKR
+                                            </small>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <h6 class="mb-3 pms-customer-section-title"><i class="fas fa-project-diagram me-2"></i>Project Details</h6>
+                        <div class="pms-registration-4col-form @(!string.IsNullOrEmpty(Model.AdditionalInfo) ? "mb-4" : "")">
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Sub Project</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.SubProject ?? "N/A")</div></div>
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Registered Size</div></div>
+                                <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(Model.RegisteredSize ?? "N/A")</div></div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Dealer</div></div>
+                                <div class="col-12 col-lg-10">
+                                    <div class="pms-registration-details-value">
+                                        @if (Model.IsDealerRegistered == 0 && !string.IsNullOrWhiteSpace(Model.DealerName))
+                                        {
+                                            @Model.DealerName <span class="badge bg-secondary ms-1">Not Registered</span>
+                                        }
+                                        else if (Model.Dealer != null)
+                                        {
+                                            @Model.Dealer.DealershipName <span class="badge bg-success ms-1">Registered</span>
+                                        }
+                                        else
+                                        {
+                                            <span>N/A</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.AdditionalInfo))
+                        {
+                            <h6 class="mb-3 pms-customer-section-title"><i class="fas fa-sticky-note me-2"></i>Additional Notes</h6>
+                            <div class="pms-registration-details-value">@Model.AdditionalInfo</div>
+                        }
+                    </div>
+
+                    <!-- Property Allotments Tab -->
+                    <div class="tab-pane fade" id="allotments" role="tabpanel" aria-labelledby="allotments-tab">
+                @if (Model.Allotments != null && Model.Allotments.Any())
+                {
+                    @foreach (var allotment in Model.Allotments)
+                    {
+                        <div class="mb-4">
+                            <h6 class="mb-3 pms-customer-section-title">
+                                <i class="fas fa-building me-2"></i>Allotment
+                                <code class="ms-1">@allotment.AllotmentID</code>
+                            </h6>
+                            <div class="pms-registration-4col-form">
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Allotment ID</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><code>@allotment.AllotmentID</code></div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Status</div></div>
+                                    <div class="col-12 col-lg-4">
+                                        <div class="pms-registration-details-value">
+                                            @if (allotment.WorkFlowStatus == "Approved")
+                                            {
+                                                <span class="badge bg-success">@allotment.WorkFlowStatus</span>
+                                            }
+                                            else if (allotment.WorkFlowStatus == "Pending" || allotment.WorkFlowStatus == "Pending Approval")
+                                            {
+                                                <span class="badge bg-warning">@allotment.WorkFlowStatus</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-primary">@(allotment.WorkFlowStatus ?? "N/A")</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Plot No</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(allotment.Property?.PlotNo ?? "N/A")</div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Block</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(allotment.Property?.Block ?? "N/A")</div></div>
+                                </div>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Size</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(allotment.Property?.Size ?? "N/A")</div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Type</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(allotment.AllottmentType ?? "N/A")</div></div>
+                                </div>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Allotment Date</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@allotment.AllotmentDate.ToString("MMM dd, yyyy")</div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Property ID</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value"><code>@(allotment.PropertyID ?? "N/A")</code></div></div>
+                                </div>
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Project</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(allotment.Property?.Project?.ProjectName ?? Model.PaymentPlan?.Project?.ProjectName ?? "N/A")</div></div>
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Street</div></div>
+                                    <div class="col-12 col-lg-4"><div class="pms-registration-details-value">@(string.IsNullOrWhiteSpace(allotment.Property?.Street) ? "N/A" : allotment.Property.Street)</div></div>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(allotment.Comments))
+                                {
+                                    <div class="row g-2 pms-registration-4col-row align-items-start">
+                                        <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Comments</div></div>
+                                        <div class="col-12 col-lg-10"><div class="pms-registration-details-value">@allotment.Comments</div></div>
+                                    </div>
+                                }
+                                <div class="row g-2 pms-registration-4col-row align-items-start">
+                                    <div class="col-12 col-lg-2"><div class="pms-registration-4col-label">Actions</div></div>
+                                    <div class="col-12 col-lg-10">
+                                        <div class="pms-registration-details-value">
+                                            <div class="btn-group" role="group">
+                                                <a asp-controller="Allotment" asp-action="Details" asp-route-id="@allotment.AllotmentID"
+                                                   class="btn btn-sm btn-outline-info" title="View Allotment">
+                                                    <i class="fas fa-eye me-1"></i>View
+                                                </a>
+                                                @if (allotment.WorkFlowStatus == "Pending" || allotment.WorkFlowStatus == "Pending Approval")
+                                                {
+                                                    <a asp-controller="Allotment" asp-action="Details" asp-route-id="@allotment.AllotmentID"
+                                                       class="btn btn-sm btn-outline-primary" title="Edit Allotment">
+                                                        <i class="fas fa-edit me-1"></i>Edit
+                                                    </a>
+                                                }
+                                                else
+                                                {
+                                                    var unallotModalId = "customerUnallotModal" + new string((allotment.AllotmentID ?? "").Where(char.IsLetterOrDigit).ToArray());
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#@unallotModalId"
+                                                            title="Un-Allot Property">
+                                                        <i class="fas fa-undo me-1"></i>Un-Allot
+                                                    </button>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @if (allotment.WorkFlowStatus != "Pending" && allotment.WorkFlowStatus != "Pending Approval")
+                        {
+                            var unallotModalId = "customerUnallotModal" + new string((allotment.AllotmentID ?? "").Where(char.IsLetterOrDigit).ToArray());
+                            <div class="modal fade pms-unallot-modal" id="@unallotModalId" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>Confirm Un-Allotment
+                                            </h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="alert alert-warning">
+                                                <strong>Warning:</strong> This action cannot be undone!
+                                            </div>
+                                            <h6>Allotment Details:</h6>
+                                            <ul>
+                                                <li><strong>Allotment ID:</strong> @allotment.AllotmentID</li>
+                                                <li><strong>Property:</strong> @(allotment.Property?.PlotNo ?? "N/A") (Block @(allotment.Property?.Block ?? "N/A"))</li>
+                                                <li><strong>Customer:</strong> @Model.FullName (@Model.CustomerID)</li>
+                                                <li><strong>Date:</strong> @allotment.AllotmentDate.ToString("MMMM dd, yyyy")</li>
+                                            </ul>
+                                            <form asp-controller="Allotment" asp-action="ProcessUnAllot" method="post">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="allotmentID" value="@allotment.AllotmentID" />
+                                                <input type="hidden" name="returnUrl" value="@Url.Action("Details", "Customer", new { id = Model.CustomerID, tab = "allotments" })" />
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-bold">Reason for Un-Allotment *</label>
+                                                    <textarea name="reason" class="form-control" rows="3" required placeholder="Enter the reason for cancelling this allotment..."></textarea>
+                                                    <small class="text-muted">This will be recorded in the activity log</small>
+                                                </div>
+                                                <div class="d-flex justify-content-end gap-2 pms-unallot-actions">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                                        <i class="fas fa-times me-2"></i>Cancel
+                                                    </button>
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="fas fa-undo me-2"></i>Confirm Un-Allot
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+                else
+                {
+                    <div id="noAllotmentSection">
+                        <div class="pms-no-allotment-note mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>No Allotment Found</strong><br>
+                            This customer does not have a property allotted yet. You can start the allotment process below.
+                        </div>
+
+                        @if (Model.PaymentPlan == null || string.IsNullOrEmpty(Model.PaymentPlan.ProjectID) || string.IsNullOrEmpty(Model.RegisteredSize))
+                        {
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Cannot Create Allotment:</strong>
+                                @if (Model.PaymentPlan == null || string.IsNullOrEmpty(Model.PaymentPlan.ProjectID))
+                                {
+                                    <p>Customer must have a Payment Plan with an assigned Project.</p>
+                                }
+                                @if (string.IsNullOrEmpty(Model.RegisteredSize))
+                                {
+                                    <p>Customer must have a Registered Size set.</p>
+                                }
+                                <a asp-action="Edit" asp-route-id="@Model.CustomerID" class="btn btn-sm btn-primary mt-2">
+                                    <i class="fas fa-edit me-2"></i>Edit Customer to Set Required Information
+                                </a>
+                            </div>
+                        }
+                        else
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.CustomerID" asp-route-tab="allotments" class="btn btn-success btn-sm">
+                                <i class="fas fa-check me-1"></i>Allot Plot
+                            </a>
+                            <button type="button"
+                                    class="btn btn-primary btn-sm ms-2"
+                                    id="allotPlotToCustomerBtn"
+                                    data-customer-id="@Model.CustomerID"
+                                    data-project-id="@(string.IsNullOrWhiteSpace(Model.ProjectID) ? Model.PaymentPlan?.ProjectID : Model.ProjectID)"
+                                    data-registered-size="@Model.RegisteredSize">
+                                <i class="fas fa-building me-1"></i>Allot Plot to Customer
+                            </button>
+                            <div class="modal fade" id="allotPlotToCustomerModal" tabindex="-1" aria-labelledby="allotPlotToCustomerTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="allotPlotToCustomerTitle">Allot Plot to Customer</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p class="mb-3" id="allotPlotMatchNote">Plots matching this customer's project and size.</p>
+                                            <div id="allotPlotListStatus" class="text-muted">Loading plots...</div>
+                                            <div class="list-group" id="allotPlotList"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                    </div>
+
+                    <!-- Transfers Tab -->
+                    <div class="tab-pane fade" id="transfers" role="tabpanel" aria-labelledby="transfers-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0"><i class="fas fa-exchange-alt me-2"></i>Ownership Transfers</h6>
+                            <a asp-controller="Transfer" asp-action="Create" asp-route-customerId="@Model.CustomerID" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus me-1"></i>New Transfer
+                            </a>
+                        </div>
+                        @if (Model.Transfers != null && Model.Transfers.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Transfer ID</th>
+                                            <th>Seller</th>
+                                            <th>Buyer</th>
+                                            <th>Workflow</th>
+                                            <th>Created</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var t in Model.Transfers.OrderByDescending(t => t.CreatedAt))
+                                        {
+                                            <tr>
+                                                <td><code>@t.TransferID</code></td>
+                                                <td>@(t.SellerName ?? "—")</td>
+                                                <td>@(t.BuyerName ?? "—")</td>
+                                                <td>
+                                                    @if (t.WorkFlowStatus == "Approved")
+                                                    { <span class="badge bg-success">@t.WorkFlowStatus</span> }
+                                                    else
+                                                    { <span class="badge bg-warning">@(t.WorkFlowStatus ?? "—")</span> }
+                                                </td>
+                                                <td>@t.CreatedAt.ToString("MMM dd, yyyy")</td>
+                                                <td>
+                                                    <a asp-controller="Transfer" asp-action="Details" asp-route-id="@t.TransferID" class="btn btn-sm btn-outline-info">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    @if (t.WorkFlowStatus != "Approved")
+                                                    {
+                                                        <a asp-controller="Transfer" asp-action="Edit" asp-route-id="@t.TransferID" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-info-circle me-2"></i>No transfers for this customer file. <a asp-controller="Transfer" asp-action="Create" asp-route-customerId="@Model.CustomerID">Start a transfer</a>.
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Joint Owners Tab -->
+                    <div class="tab-pane fade" id="jointowners" role="tabpanel" aria-labelledby="jointowners-tab">
+                        @Html.AntiForgeryToken()
+                        <div class="pms-registration-4col-form mb-3">
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerName" class="form-label pms-registration-4col-label">Joint Owner Name *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" id="jointOwnerName" class="form-control" placeholder="Enter joint owner name" />
+                                    <small class="text-muted">Letters, spaces, dots and hyphens only.</small>
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerFatherName" class="form-label pms-registration-4col-label">Son /D/W/o</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" id="jointOwnerFatherName" class="form-control" placeholder="Enter father name" />
+                                </div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerCNIC" class="form-label pms-registration-4col-label">CNIC *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" id="jointOwnerCNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerContact" class="form-label pms-registration-4col-label">Contact *</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" id="jointOwnerContact" class="form-control" placeholder="03XXXXXXXXX" />
+                                    <small class="text-muted">Must be 11 to 13 digits.</small>
+                                </div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerAddress" class="form-label pms-registration-4col-label">Address</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="text" id="jointOwnerAddress" class="form-control" placeholder="Address" />
+                                </div>
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerPercentage" class="form-label pms-registration-4col-label">Percentage</label>
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <input type="number" id="jointOwnerPercentage" class="form-control" min="0" max="100" step="0.01" placeholder="e.g. 50" />
+                                </div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-start">
+                                <div class="col-12 col-lg-2">
+                                    <label for="jointOwnerDetails" class="form-label pms-registration-4col-label">Details</label>
+                                </div>
+                                <div class="col-12 col-lg-10">
+                                    <textarea id="jointOwnerDetails" class="form-control" rows="2" placeholder="Any additional details"></textarea>
+                                </div>
+                            </div>
+                            <div class="row g-2 pms-registration-4col-row align-items-center">
+                                <div class="col-12 col-lg-2 d-none d-lg-block"></div>
+                                <div class="col-12 col-lg-10">
+                                    <button type="button" class="btn btn-primary btn-sm" onclick="addJointOwnerFromDetails()">
+                                        <i class="fas fa-plus me-1"></i>Add Joint Owner
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover" id="jointOwnersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Son /D/W/o</th>
+                                        <th>CNIC</th>
+                                        <th>Contact</th>
+                                        <th>Percentage</th>
+                                        <th>Address</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="7" class="text-muted text-center">Loading joint owners...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Attachments Tab -->
+                    <div class="tab-pane fade" id="attachments" role="tabpanel" aria-labelledby="attachments-tab">
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="mb-3"><i class="fas fa-paperclip me-2"></i>Customer Attachments</h6>
+
+                                <!-- Customer Picture Section -->
+                                <div class="card mb-4" style="border-color: rgb(104, 167, 226);">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                        <h6 class="mb-0"><i class="fas fa-user-circle me-2"></i>Customer Picture</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="text-center mb-3" id="customerPicturePreview">
+                                                    <img id="customerPictureImg" class="js-customer-picture-img img-thumbnail" src="" alt="Customer Picture" style="max-width: 200px; max-height: 200px; display: none;" />
+                                                    <div id="customerPicturePlaceholder" class="js-customer-picture-placeholder text-muted">
+                                                        <i class="fas fa-user-circle fa-5x"></i>
+                                                        <p class="mt-2">No picture uploaded</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="customerPictureFile">Upload Customer Picture</label>
+                                                    <input type="file" id="customerPictureFile" class="form-control" accept="image/*" />
+                                                    <small class="text-muted">Only image files (JPG, PNG, GIF, BMP). Max size: 8MB. A new upload replaces the current picture.</small>
+                                                </div>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <button type="button" class="btn text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" onclick="uploadAttachment('CustomerPicture', 'customerPictureFile')">
+                                                        <i class="fas fa-upload me-2"></i>Upload Picture
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-secondary js-open-customer-picture-camera" title="Capture with webcam">
+                                                        <i class="fas fa-camera me-2"></i>Use Webcam
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ID Card Section -->
+                                <div class="card mb-4" style="border-color: rgb(104, 167, 226);">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                        <h6 class="mb-0"><i class="fas fa-id-card me-2"></i>Customer ID Card</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="text-center mb-3" id="idCardPreview">
+                                                    <img id="idCardImg" src="" alt="ID Card" class="img-thumbnail" style="max-width: 200px; max-height: 200px; display: none;" />
+                                                    <div id="idCardPlaceholder" class="text-muted">
+                                                        <i class="fas fa-id-card fa-5x"></i>
+                                                        <p class="mt-2">No ID card uploaded</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-8">
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="idCardFile">Upload ID Card</label>
+                                                    <input type="file" id="idCardFile" class="form-control" accept="image/*,.pdf" multiple />
+                                                    <small class="text-muted">Image files (JPG, PNG, GIF, BMP) or PDF. Max size: 8MB each. You can upload multiple files (e.g., front and back).</small>
+                                                </div>
+                                                <button type="button" class="btn text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" onclick="uploadAttachment('IDCard', 'idCardFile')">
+                                                    <i class="fas fa-upload me-2"></i>Upload ID Card
+                                                </button>
+                                                <div id="idCardFilesContainer" class="row mt-3"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Other Attachments Section -->
+                                <div class="card mb-4" style="border-color: rgb(104, 167, 226);">
+                                    <div class="card-header text-white" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);">
+                                        <h6 class="mb-0"><i class="fas fa-folder-open me-2"></i>Other Attachments</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Upload Additional Attachment</label>
+                                            <div class="row g-2">
+                                                <div class="col-md-6">
+                                                    <input type="file" id="otherAttachmentFile" class="form-control" accept="image/*,.pdf" />
+                                                    <small class="text-muted">Image files or PDF. Max size: 8MB</small>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <input type="text" id="otherAttachmentDescription" class="form-control" placeholder="Description (optional)" />
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <button type="button" class="btn text-white w-100" style="background: linear-gradient(135deg, rgb(104, 167, 226) 0%, rgb(72, 123, 165) 100%);" onclick="uploadAttachment('Other', 'otherAttachmentFile', 'otherAttachmentDescription')">
+                                                        <i class="fas fa-upload me-2"></i>Upload
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div id="attachmentsList" class="mt-4">
+                                            <h6 class="mb-3">Uploaded Attachments</h6>
+                                            <div id="attachmentsContainer" class="row">
+                                                <div class="col-12 text-center text-muted py-3">
+                                                    <i class="fas fa-spinner fa-spin fa-2x mb-2"></i>
+                                                    <p>Loading attachments...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer pms-customer-details-member-footer bg-transparent border-0 px-0 pt-2 pb-0">
+                <div class="badge bg-light text-dark px-3 py-2" style="font-size: 15px;">
+                    <i class="fas fa-calendar-check me-2" style="color: #6f42c1;"></i>
+                    <strong>Member Since:</strong> @Model.CreatedAt.ToString("MMMM yyyy")
+                    <span class="text-muted ms-2">(@((DateTime.Now - Model.CreatedAt).Days) days)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="customerPictureCameraModal" tabindex="-1" aria-labelledby="customerPictureCameraModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h5 class="modal-title" id="customerPictureCameraModalLabel"><i class="fas fa-camera me-2"></i>Customer picture — webcam</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-2">
+                <p class="text-muted small mb-2">Allow camera access when prompted. Capture uploads immediately and replaces the current customer picture.</p>
+                <div class="ratio ratio-4x3 bg-dark rounded overflow-hidden position-relative">
+                    <video id="customerPictureCameraVideo" class="w-100 h-100" style="object-fit:contain;" playsinline muted autoplay></video>
+                </div>
+                <canvas id="customerPictureCameraCanvas" class="d-none"></canvas>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-sm" id="customerPictureCameraCaptureBtn">
+                    <i class="fas fa-camera me-1"></i>Capture &amp; upload
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Details toolbar — three equal main buttons */
+    .pms-customer-details-actions {
+        align-items: stretch;
+    }
+
+    .pms-customer-details-actions > .dropdown,
+    .pms-customer-details-actions > .pms-customer-details-main-btn {
+        display: flex;
+    }
+
+    .pms-customer-details-main-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        height: 38px;
+        min-height: 38px;
+        min-width: 8.5rem;
+        padding: 0.4rem 1rem;
+        border-radius: 0 !important;
+        font-weight: 600;
+        font-size: 0.9375rem;
+        line-height: 1.2;
+        border: 1px solid transparent;
+        box-shadow: none;
+    }
+
+    /* Palette: navy / periwinkle / gold */
+    .pms-customer-details-main-btn--reports {
+        background-color: #3E348D !important;
+        border-color: #342c78 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-details-main-btn--reports:hover,
+    .pms-customer-details-main-btn--reports:focus,
+    .pms-customer-details-main-btn--reports.show {
+        background-color: #342c78 !important;
+        border-color: #2c2566 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-details-main-btn--operations {
+        background-color: #7679EE !important;
+        border-color: #6366e0 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-details-main-btn--operations:hover,
+    .pms-customer-details-main-btn--operations:focus,
+    .pms-customer-details-main-btn--operations.show {
+        background-color: #6366e0 !important;
+        border-color: #5558d4 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-details-main-btn--back {
+        background-color: #F6B801 !important;
+        border-color: #dda500 !important;
+        color: #1f1700 !important;
+    }
+
+    .pms-customer-details-main-btn--back:hover,
+    .pms-customer-details-main-btn--back:focus {
+        background-color: #dda500 !important;
+        border-color: #c79400 !important;
+        color: #140f00 !important;
+    }
+
+    .pms-customer-details-actions .dropdown-menu {
+        min-width: 12.5rem;
+        border-radius: 0;
+        background: #ffffff !important;
+        border: 1px solid #1d3557 !important;
+        box-shadow: 0 8px 22px rgba(29, 53, 87, 0.22) !important;
+    }
+
+    .pms-customer-details-actions .dropdown-item {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        padding: 0.5rem 0.9rem;
+        background: #ffffff !important;
+        color: #0f172a !important;
+    }
+
+    .pms-customer-details-actions .dropdown-item:hover,
+    .pms-customer-details-actions .dropdown-item:focus {
+        background: #1d3557 !important;
+        color: #ffffff !important;
+    }
+
+    .pms-customer-details-actions .dropdown-item.text-danger {
+        color: #dc3545 !important;
+    }
+
+    .pms-customer-details-actions .dropdown-item.text-danger:hover,
+    .pms-customer-details-actions .dropdown-item.text-danger:focus {
+        background: #dc3545 !important;
+        color: #ffffff !important;
+    }
+
+    .pms-customer-details-actions .dropdown-divider {
+        border-top-color: #c5d0e0;
+        opacity: 1;
+    }
+
+    /* Card / form — no background */
+    .pms-customer-details.card {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+
+    .pms-customer-details > .card-header {
+        background-color: #6059A6 !important;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+    }
+
+    .pms-customer-details .card-body {
+        background: transparent;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    /* Tab Styling — keep all tabs on one row */
+    .pms-customer-details .customer-tabs {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        white-space: nowrap;
+        border-bottom: none;
+        background-color: #6059A6;
+        padding: 0.35rem 0.5rem 0;
+        gap: 0;
+        scrollbar-width: thin;
+    }
+
+    .pms-customer-details .customer-tabs .nav-item {
+        flex: 0 0 auto;
+    }
+
+    .pms-customer-details .customer-tabs .nav-link {
+        color: rgba(255, 255, 255, 0.82);
+        font-weight: 600;
+        border: none;
+        border-bottom: 2px solid transparent;
+        padding: 0.45rem 0.55rem;
+        transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+        font-size: 0.875rem;
+        background: transparent;
+        white-space: nowrap;
+        line-height: 1.2;
+    }
+
+    .pms-customer-details .customer-tabs .nav-link:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
+        border-bottom-color: rgba(255, 255, 255, 0.55);
+    }
+
+    .pms-customer-details .customer-tabs .nav-link.active {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.12);
+        border-bottom-color: #fff;
+        font-weight: 700;
+    }
+
+    .pms-customer-details .customer-tabs .nav-link i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.35rem;
+        height: 1.35rem;
+        margin-right: 0.35rem !important;
+        border-radius: 4px;
+        background: #fff;
+        font-size: 0.75rem;
+        line-height: 1;
+        vertical-align: -0.2em;
+    }
+
+    .pms-customer-details .customer-tabs #personal-tab i { color: #2563eb !important; }
+    .pms-customer-details .customer-tabs #contact-tab i { color: #059669 !important; }
+    .pms-customer-details .customer-tabs #nominee-tab i { color: #d97706 !important; }
+    .pms-customer-details .customer-tabs #registration-tab i { color: #7c3aed !important; }
+    .pms-customer-details .customer-tabs #allotments-tab i { color: #0284c7 !important; }
+    .pms-customer-details .customer-tabs #transfers-tab i { color: #db2777 !important; }
+    .pms-customer-details .customer-tabs #jointowners-tab i { color: #0f766e !important; }
+    .pms-customer-details .customer-tabs #attachments-tab i { color: #ea580c !important; }
+
+    .pms-customer-details .customer-tabs .nav-link .badge {
+        font-size: 0.72rem;
+        vertical-align: middle;
+    }
+
+    /* Tab Content — compact */
+    .pms-customer-details .tab-content {
+        padding-top: 0.5rem;
+    }
+
+    .pms-customer-details > .card-body {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+
+    /* Compact field / title rows across all tabs */
+    .pms-customer-details .pms-registration-4col-form .pms-registration-4col-row,
+    .pms-customer-details .pms-mp-header .pms-registration-4col-form .pms-registration-4col-row {
+        --bs-gutter-y: 0.15rem;
+        --bs-gutter-x: 0.5rem;
+        margin-bottom: 0.2rem !important;
+        padding-top: 0.15rem !important;
+        padding-bottom: 0.2rem !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        align-items: center !important;
+    }
+
+    .pms-customer-details .pms-registration-4col-form .pms-registration-4col-row:last-child {
+        margin-bottom: 0 !important;
+        border-bottom: none;
+        padding-bottom: 0 !important;
+    }
+
+    .pms-customer-details .pms-registration-4col-label,
+    html:not([data-theme="dark"]) .pms-customer-details .pms-registration-4col-label,
+    html:not([data-theme="dark"]) .pms-customer-details label.form-label {
+        font-size: 0.8125rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 0 !important;
+        color: #000 !important;
+    }
+
+    .pms-customer-details .pms-registration-details-value,
+    .pms-customer-details .pms-registration-details-value code {
+        display: block;
+        font-family: inherit !important;
+        font-size: 0.9rem !important;
+        font-weight: 400 !important;
+        line-height: 1.4 !important;
+        margin-bottom: 0 !important;
+        min-height: 0 !important;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        color: #2563eb !important;
+    }
+
+    .pms-customer-details .form-control,
+    .pms-customer-details .form-select,
+    .pms-customer-details textarea.form-control {
+        border-radius: 0 !important;
+    }
+
+    .pms-unallot-modal .modal-header {
+        background-color: #dc3545 !important;
+        color: #fff !important;
+        border-bottom: none;
+    }
+
+    .pms-unallot-modal .modal-title,
+    .pms-unallot-modal .modal-title i {
+        color: #fff !important;
+        background: transparent !important;
+    }
+
+    .pms-unallot-modal .pms-unallot-actions .btn {
+        height: 30px !important;
+        min-height: 30px !important;
+        max-height: 30px !important;
+        padding: 0 0.7rem !important;
+        font-size: 0.8125rem !important;
+        line-height: 1 !important;
+    }
+
+    .pms-customer-details .pms-no-allotment-note {
+        background: transparent !important;
+        background-color: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        color: #2563eb !important;
+        padding: 0;
+    }
+
+    .pms-customer-details .pms-no-allotment-note strong,
+    .pms-customer-details .pms-no-allotment-note i {
+        color: #2563eb !important;
+    }
+
+    .pms-customer-details .pms-registration-details-value .badge {
+        font-size: 0.78rem;
+        padding: 0.2em 0.45em;
+    }
+
+    .pms-customer-details .pms-registration-4col-form.mb-4 {
+        margin-bottom: 0.75rem !important;
+    }
+
+    .pms-customer-details .tab-pane h6,
+    .pms-customer-details .tab-pane h6.pms-customer-section-title {
+        margin-top: 0.35rem !important;
+        margin-bottom: 0.4rem !important;
+        padding-bottom: 0.3rem !important;
+    }
+
+    .pms-customer-details .tab-pane h6.pms-customer-section-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #000 !important;
+    }
+
+    .pms-customer-details .tab-pane h6.pms-customer-section-title i {
+        color: #000 !important;
+    }
+
+    .pms-customer-details .tab-pane .alert {
+        margin-bottom: 0.75rem !important;
+        padding: 0.55rem 0.75rem;
+    }
+
+    .pms-customer-details .tab-pane .table {
+        margin-bottom: 0.5rem;
+    }
+
+    .pms-customer-details .tab-pane .table > :not(caption) > * > * {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .pms-customer-details .tab-pane .mb-3 {
+        margin-bottom: 0.5rem !important;
+    }
+
+    .pms-customer-details .tab-pane .mb-4 {
+        margin-bottom: 0.75rem !important;
+    }
+
+    .pms-customer-details .form-label {
+        margin-bottom: 0.2rem !important;
+        font-size: 0.8125rem !important;
+        line-height: 1.2;
+    }
+
+    .pms-customer-details .form-control,
+    .pms-customer-details .form-select {
+        min-height: 30px;
+        padding-top: 0.2rem;
+        padding-bottom: 0.2rem;
+        font-size: 0.9rem;
+    }
+
+    /* Field titles — black like Customer ID / Full Name labels */
+    .pms-customer-details .pms-registration-4col-label,
+    .pms-customer-details .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label,
+    .pms-customer-details .detail-field label,
+    .pms-customer-details .form-label,
+    .pms-customer-details .tab-pane .table thead th {
+        color: #000 !important;
+        font-weight: 600;
+    }
+
+    .pms-customer-details .detail-field label i,
+    .pms-customer-details .form-label i {
+        color: #334155 !important;
+        opacity: 1;
+    }
+
+    /* Detail fields — compact */
+    .pms-customer-details .tab-pane .row > [class*="col-"]:has(.detail-field) {
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+        margin-bottom: 0 !important;
+        border-bottom: 1px solid #e2e8f0;
+        background: transparent !important;
+    }
+
+    .pms-customer-details .tab-pane .row > [class*="col-"]:has(.detail-field):last-child {
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-customer-details .detail-field {
+        padding: 0;
+        margin: 0;
+        background: transparent !important;
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .pms-customer-details .detail-field:hover {
+        transform: none;
+        box-shadow: none;
+        background: transparent !important;
+    }
+
+    .pms-customer-details .detail-field label {
+        display: block;
+        margin-bottom: 0.15rem;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-weight: 600;
+        line-height: 1.2;
+    }
+
+    .pms-customer-details .detail-field p {
+        font-size: 0.9rem;
+        color: #0f172a;
+        margin-bottom: 0;
+        font-weight: 500;
+        line-height: 1.25;
+        word-break: break-word;
+    }
+
+    .pms-customer-details .col-12:has(.detail-field) .detail-field {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    code {
+        background: transparent;
+        color: #0f172a;
+        padding: 0;
+        border-radius: 0;
+        font-size: inherit;
+        font-weight: 600;
+    }
+
+    /* Section Headers within Tabs */
+    .pms-customer-details .tab-pane h6 {
+        color: #0f172a;
+        font-weight: 700;
+        padding-bottom: 0.3rem;
+        margin-top: 0.35rem;
+        border-bottom: 1px solid #e5e7eb;
+        background: transparent;
+    }
+
+    /* Tables / inner cards keep their own surfaces */
+    .pms-customer-details .tab-pane .table {
+        background: #fff;
+    }
+
+    .pms-customer-details .tab-pane > .card,
+    .pms-customer-details .tab-pane .card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+    }
+
+    .pms-customer-details .tab-pane .card.pms-mp-header {
+        border: 1px solid var(--pms-slate-500, #64748b) !important;
+    }
+
+    .pms-customer-details .tab-pane .card .card-body {
+        padding: 0.65rem 0.75rem !important;
+    }
+
+    /* Responsive Tabs — still one row; allow horizontal scroll */
+    @@media (max-width: 992px) {
+        .pms-customer-details .customer-tabs .nav-link {
+            padding: 0.4rem 0.45rem;
+            font-size: 0.8125rem;
+        }
+
+        .pms-customer-details .customer-tabs .nav-link i {
+            width: 1.15rem;
+            height: 1.15rem;
+            font-size: 0.68rem;
+            margin-right: 0.25rem !important;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            if (new URLSearchParams(window.location.search).get('tab') === 'allotments') {
+                var allotmentsTab = document.getElementById('allotments-tab');
+                if (allotmentsTab && window.bootstrap) {
+                    bootstrap.Tab.getOrCreateInstance(allotmentsTab).show();
+                }
+            }
+
+            // Load attachments when attachments tab is shown
+            $('#attachments-tab').on('shown.bs.tab', function() {
+                loadAttachments();
+            });
+            loadAttachments();
+            $('#jointowners-tab').on('shown.bs.tab', function() {
+                loadJointOwners();
+            });
+
+            // Load attachments on page load if tab is active
+            if ($('#attachments-tab').hasClass('active')) {
+                loadAttachments();
+            }
+            if ($('#jointowners-tab').hasClass('active')) {
+                loadJointOwners();
+            }
+
+            $('#allotPlotToCustomerBtn').on('click', function () {
+                var modalEl = document.getElementById('allotPlotToCustomerModal');
+                if (!modalEl || !window.bootstrap) return;
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                loadPlotsForCustomer($(this));
+            });
+
+            $('#allotPlotList').on('click', '.allot-plot-choice', function () {
+                var choice = $(this);
+                if (choice.prop('disabled')) return;
+                var customerID = $('#allotPlotToCustomerBtn').attr('data-customer-id');
+                var propertyID = choice.attr('data-property-id');
+                var plotNo = choice.data('plot-no');
+                choice.prop('disabled', true).text('Allotting...');
+                $.ajax({
+                    url: '@Url.Action("CreateAllotmentFromCustomer", "Allotment")',
+                    method: 'POST',
+                    data: {
+                        customerID: customerID,
+                        propertyID: propertyID,
+                        allotmentType: 'Regular',
+                        comments: ''
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            window.location.href = '@Url.Action("Details", "Customer", new { id = Model.CustomerID, tab = "allotments" })';
+                        } else {
+                            alert(response.message || 'The plot could not be allotted.');
+                            choice.prop('disabled', false).text('Allot');
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while allotting the plot.');
+                        choice.prop('disabled', false).text('Allot');
+                    }
+                });
+            });
+        });
+
+        function loadPlotsForCustomer($button) {
+            var $status = $('#allotPlotListStatus');
+            var $list = $('#allotPlotList');
+            $list.empty();
+            $status.removeClass('d-none').text('Loading plots...');
+            $.ajax({
+                url: '@Url.Action("GetAvailablePropertiesForCustomer", "Customer")',
+                method: 'POST',
+                data: {
+                    customerID: $button.attr('data-customer-id'),
+                    projectID: $button.attr('data-project-id'),
+                    registeredSize: $button.attr('data-registered-size'),
+                    projectAndSizeOnly: true
+                },
+                success: function (response) {
+                    if (!response.success) {
+                        $status.text(response.message || 'No matching plots found.');
+                        return;
+                    }
+                    var note = 'Vacant plots matching';
+                    if (response.projectName) note += ' project ' + response.projectName;
+                    if (response.registeredSize) note += ' and size ' + response.registeredSize;
+                    $('#allotPlotMatchNote').text(note + '. Select a plot to allot it to this customer.');
+                    var plots = response.properties || [];
+                    if (!plots.length) {
+                        $status.text('No vacant plots match this customer\'s project and size.');
+                        return;
+                    }
+                    $status.addClass('d-none').text('');
+                    $.each(plots, function (_, plot) {
+                        var label = 'Plot ' + (plot.plotNo || 'N/A');
+                        if (plot.block) label += ' · Block ' + plot.block;
+                        if (plot.size) label += ' · Size ' + plot.size;
+                        if (plot.street && String(plot.street).trim() && String(plot.street).trim() !== '-') label += ' · ' + plot.street;
+                        var row = $('<div class="list-group-item d-flex justify-content-between align-items-center gap-2"></div>');
+                        row.append($('<span></span>').text(label));
+                        row.append(
+                            $('<button type="button" class="btn btn-sm btn-primary allot-plot-choice">Allot</button>')
+                                .attr('data-property-id', plot.propertyID)
+                                .attr('data-plot-no', plot.plotNo || '')
+                        );
+                        $list.append(row);
+                    });
+                },
+                error: function () {
+                    $status.text('The plot list could not be loaded.');
+                }
+            });
+        }
+
+        var customerId = '@Model.CustomerID';
+        function normalizeDigits(value) {
+            return (value || '').replace(/\D/g, '');
+        }
+        function formatCnicValue(value) {
+            var raw = normalizeDigits(value);
+            if (raw.length <= 5) return raw;
+            if (raw.length <= 12) return raw.slice(0, 5) + '-' + raw.slice(5);
+            return raw.slice(0, 5) + '-' + raw.slice(5, 12) + '-' + raw.slice(12, 13);
+        }
+        function validateJointOwnerInputs() {
+            var name = ($('#jointOwnerName').val() || '').trim();
+            var cnic = ($('#jointOwnerCNIC').val() || '').trim();
+            var contact = ($('#jointOwnerContact').val() || '').trim();
+            var nameOk = /^[a-zA-Z\s\.\-]+$/.test(name);
+            var cnicOk = /^\d{5}-\d{7}-\d$/.test(cnic);
+            var contactDigits = normalizeDigits(contact);
+            var contactOk = contactDigits.length >= 11 && contactDigits.length <= 13;
+            $('#jointOwnerName, #jointOwnerCNIC, #jointOwnerContact').removeClass('is-invalid');
+            if (!name || !nameOk) {
+                $('#jointOwnerName').addClass('is-invalid');
+                return { isValid: false, message: 'Joint owner name is required and must contain letters only.' };
+            }
+            if (!cnicOk) {
+                $('#jointOwnerCNIC').addClass('is-invalid');
+                return { isValid: false, message: 'CNIC is required in XXXXX-XXXXXXX-X format.' };
+            }
+            if (!contactOk) {
+                $('#jointOwnerContact').addClass('is-invalid');
+                return { isValid: false, message: 'Contact number is required and must be between 11 and 13 digits.' };
+            }
+            return { isValid: true };
+        }
+
+        function loadJointOwners() {
+            $.ajax({
+                url: '@Url.Action("GetJointOwners", "Customer")',
+                method: 'GET',
+                data: { customerId: customerId },
+                success: function(response) {
+                    var tbody = $('#jointOwnersTable tbody');
+                    tbody.empty();
+                    if (!response.success) {
+                        tbody.html('<tr><td colspan="7" class="text-danger text-center">' + (response.message || 'Failed to load joint owners.') + '</td></tr>');
+                        return;
+                    }
+                    if (!response.jointOwners || response.jointOwners.length === 0) {
+                        tbody.html('<tr><td colspan="7" class="text-muted text-center">No joint owners added yet.</td></tr>');
+                        return;
+                    }
+                    response.jointOwners.forEach(function(item) {
+                        tbody.append('<tr>' +
+                            '<td>' + (item.jointOwnerName || '—') + '</td>' +
+                            '<td>' + (item.fatherName || '—') + '</td>' +
+                            '<td>' + (item.cnic || '—') + '</td>' +
+                            '<td>' + (item.contact || '—') + '</td>' +
+                            '<td>' + (item.percentage != null ? item.percentage : '—') + '</td>' +
+                            '<td>' + (item.address || '—') + '</td>' +
+                            '<td>' + (item.createdAt || '—') + '</td>' +
+                        '</tr>');
+                    });
+                },
+                error: function() {
+                    $('#jointOwnersTable tbody').html('<tr><td colspan="7" class="text-danger text-center">Error loading joint owners.</td></tr>');
+                }
+            });
+        }
+
+        function addJointOwnerFromDetails() {
+            var jointOwnerValidation = validateJointOwnerInputs();
+            if (!jointOwnerValidation.isValid) {
+                alert(jointOwnerValidation.message);
+                return;
+            }
+            var token = $('#jointowners input[name="__RequestVerificationToken"]').val();
+            $.ajax({
+                url: '@Url.Action("AddJointOwner", "Customer")',
+                method: 'POST',
+                data: {
+                    __RequestVerificationToken: token,
+                    customerId: customerId,
+                    jointOwnerName: $('#jointOwnerName').val(),
+                    fatherName: $('#jointOwnerFatherName').val(),
+                    cnic: $('#jointOwnerCNIC').val(),
+                    contact: $('#jointOwnerContact').val(),
+                    address: $('#jointOwnerAddress').val(),
+                    percentage: $('#jointOwnerPercentage').val(),
+                    details: $('#jointOwnerDetails').val()
+                },
+                success: function(response) {
+                    if (!response.success) {
+                        alert(response.message || 'Unable to add joint owner.');
+                        return;
+                    }
+                    $('#jointOwnerName, #jointOwnerFatherName, #jointOwnerCNIC, #jointOwnerContact, #jointOwnerAddress, #jointOwnerPercentage, #jointOwnerDetails').val('');
+                    loadJointOwners();
+                },
+                error: function() {
+                    alert('Error while adding joint owner.');
+                }
+            });
+        }
+        $('#jointOwnerName').on('input', function() {
+            this.value = this.value.replace(/[^a-zA-Z\s\.\-]/g, '');
+        });
+        $('#jointOwnerFatherName').on('input', function() {
+            this.value = this.value.replace(/[^a-zA-Z\s\.\-]/g, '');
+        });
+        $('#jointOwnerContact').on('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+        $('#jointOwnerCNIC').on('input', function() {
+            this.value = formatCnicValue(this.value);
+        });
+
+        // Load attachments
+        function loadAttachments() {
+            $.ajax({
+                url: '@Url.Action("GetAttachments", "Customer")',
+                method: 'GET',
+                data: { customerId: customerId },
+                success: function(response) {
+                    if (response.success) {
+                        displayAttachments(response.attachments);
+                    } else {
+                        $('#attachmentsContainer').html('<div class="col-12 text-center text-muted py-3"><p>' + (response.message || 'Error loading attachments') + '</p></div>');
+                    }
+                },
+                error: function() {
+                    $('#attachmentsContainer').html('<div class="col-12 text-center text-muted py-3"><p>Error loading attachments</p></div>');
+                }
+            });
+        }
+
+        // Display attachments
+        function displayAttachments(attachments) {
+            var container = $('#attachmentsContainer');
+            container.empty();
+
+            attachments = attachments || [];
+
+            // Separate attachments by type
+            var customerPicture = attachments.find(a => a.attachmentType === 'CustomerPicture');
+            var idCards = attachments.filter(a => a.attachmentType === 'IDCard');
+            var otherAttachments = attachments.filter(a => a.attachmentType === 'Other');
+
+            // Display Customer Picture
+            if (customerPicture) {
+                $('.js-customer-picture-img').attr('src', customerPicture.filePath).show();
+                $('.js-customer-picture-placeholder').hide();
+            } else {
+                $('.js-customer-picture-img').hide().attr('src', '');
+                $('.js-customer-picture-placeholder').show();
+            }
+
+            // Display ID Cards (multiple supported)
+            var idCardContainer = $('#idCardFilesContainer');
+            idCardContainer.empty();
+            var primaryIdCard = idCards.length > 0 ? idCards[0] : null;
+            if (primaryIdCard) {
+                if (primaryIdCard.fileType && primaryIdCard.fileType.includes('pdf')) {
+                    $('#idCardImg').hide();
+                    $('#idCardPlaceholder').html('<i class="fas fa-file-pdf fa-5x"></i><p class="mt-2">PDF Document</p>').show();
+                } else {
+                    $('#idCardImg').attr('src', primaryIdCard.filePath).show();
+                    $('#idCardPlaceholder').hide();
+                }
+
+                idCards.forEach(function(idCard) {
+                    var isImage = idCard.fileType && idCard.fileType.startsWith('image/');
+                    var isPdf = idCard.fileType && idCard.fileType.includes('pdf');
+                    var idCardHtml = '<div class="col-md-6 mb-3">' +
+                        '<div class="card h-100">' +
+                        '<div class="card-body text-center">';
+
+                    if (isImage) {
+                        idCardHtml += '<img src="' + idCard.filePath + '" class="img-thumbnail mb-2" style="max-width: 100%; max-height: 180px;" />';
+                    } else if (isPdf) {
+                        idCardHtml += '<i class="fas fa-file-pdf fa-4x text-danger mb-2"></i>';
+                    } else {
+                        idCardHtml += '<i class="fas fa-file fa-4x text-muted mb-2"></i>';
+                    }
+
+                    idCardHtml += '<h6 class="card-title">' + (idCard.fileName || 'ID Card') + '</h6>' +
+                        '<p class="card-text small text-muted">' +
+                        (idCard.fileSize ? formatFileSize(idCard.fileSize) : '') +
+                        ' • ' + idCard.uploadedAt + '</p>' +
+                        '<div class="btn-group" role="group">' +
+                        '<a href="' + idCard.filePath + '" target="_blank" class="btn btn-sm btn-outline-primary">' +
+                        '<i class="fas fa-eye me-1"></i>View</a>' +
+                        '<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteAttachment(\'' + idCard.attachmentID + '\')">' +
+                        '<i class="fas fa-trash me-1"></i>Delete</button>' +
+                        '</div>' +
+                        '</div></div></div>';
+                    idCardContainer.append(idCardHtml);
+                });
+            } else {
+                $('#idCardImg').hide();
+                $('#idCardPlaceholder').html('<i class="fas fa-id-card fa-5x"></i><p class="mt-2">No ID card uploaded</p>').show();
+                idCardContainer.append('<div class="col-12 text-center text-muted py-2"><p class="mb-0">No ID card files uploaded yet</p></div>');
+            }
+
+            // Display Other Attachments
+            if (otherAttachments.length > 0) {
+                otherAttachments.forEach(function(attachment) {
+                    var isImage = attachment.fileType && attachment.fileType.startsWith('image/');
+                    var isPdf = attachment.fileType && attachment.fileType.includes('pdf');
+
+                    var cardHtml = '<div class="col-md-4 mb-3">' +
+                        '<div class="card h-100">' +
+                        '<div class="card-body text-center">';
+
+                    if (isImage) {
+                        cardHtml += '<img src="' + attachment.filePath + '" class="img-thumbnail mb-2" style="max-width: 100%; max-height: 200px;" />';
+                    } else if (isPdf) {
+                        cardHtml += '<i class="fas fa-file-pdf fa-4x text-danger mb-2"></i>';
+                    } else {
+                        cardHtml += '<i class="fas fa-file fa-4x text-muted mb-2"></i>';
+                    }
+
+                    cardHtml += '<h6 class="card-title">' + (attachment.fileName || 'Attachment') + '</h6>';
+
+                    if (attachment.description) {
+                        cardHtml += '<p class="card-text text-muted small">' + attachment.description + '</p>';
+                    }
+
+                    cardHtml += '<p class="card-text small text-muted">' +
+                        (attachment.fileSize ? formatFileSize(attachment.fileSize) : '') +
+                        ' • ' + attachment.uploadedAt + '</p>' +
+                        '<div class="btn-group" role="group">' +
+                        '<a href="' + attachment.filePath + '" target="_blank" class="btn btn-sm btn-outline-primary">' +
+                        '<i class="fas fa-eye me-1"></i>View</a>' +
+                        '<button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteAttachment(\'' + attachment.attachmentID + '\')">' +
+                        '<i class="fas fa-trash me-1"></i>Delete</button>' +
+                        '</div>' +
+                        '</div></div></div>';
+
+                    container.append(cardHtml);
+                });
+            } else {
+                container.html('<div class="col-12 text-center text-muted py-3"><i class="fas fa-inbox fa-2x mb-2"></i><p>No other attachments uploaded yet</p></div>');
+            }
+        }
+
+        // Upload attachment
+        function uploadSingleAttachment(file, attachmentType, description) {
+            var formData = new FormData();
+            formData.append('customerId', customerId);
+            formData.append('file', file);
+            formData.append('attachmentType', attachmentType);
+            formData.append('description', description || '');
+
+            return new Promise(function(resolve, reject) {
+                $.ajax({
+                    url: '@Url.Action("UploadAttachment", "Customer")',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        resolve(response);
+                    },
+                    error: function(xhr) {
+                        reject(xhr);
+                    }
+                });
+            });
+        }
+
+        function uploadAttachment(attachmentType, fileInputId, descriptionInputId) {
+            var fileInput = $('#' + fileInputId)[0];
+            var selectedFiles = Array.from(fileInput.files || []);
+            if (selectedFiles.length === 0) {
+                alert('Please select a file to upload');
+                return;
+            }
+            if (attachmentType !== 'IDCard' && selectedFiles.length > 1) {
+                alert('Please select only one file for this attachment type.');
+                return;
+            }
+            var description = descriptionInputId ? $('#' + descriptionInputId).val() : '';
+            var filesToUpload = attachmentType === 'IDCard' ? selectedFiles : [selectedFiles[0]];
+            var uploadRequests = filesToUpload.map(function(file) {
+                return uploadSingleAttachment(file, attachmentType, description);
+            });
+
+            Promise.all(uploadRequests)
+                .then(function(results) {
+                    var failed = results.filter(function(r) { return !r.success; });
+                    if (failed.length > 0) {
+                        var firstError = failed[0] && failed[0].message ? failed[0].message : 'Some files could not be uploaded.';
+                        alert('Error: ' + firstError);
+                        return;
+                    }
+
+                    if (attachmentType === 'IDCard' && filesToUpload.length > 1) {
+                        alert(filesToUpload.length + ' ID card files uploaded successfully.');
+                    } else {
+                        alert((results[0] && results[0].message) ? results[0].message : 'File uploaded successfully.');
+                    }
+
+                    fileInput.value = '';
+                    if (descriptionInputId) {
+                        $('#' + descriptionInputId).val('');
+                    }
+                    loadAttachments();
+                })
+                .catch(function(xhr) {
+                    var err = xhr && xhr.responseJSON && xhr.responseJSON.message
+                        ? xhr.responseJSON.message
+                        : 'An error occurred while uploading the file';
+                    alert('Error: ' + err);
+                });
+        }
+
+        // Delete attachment
+        function deleteAttachment(attachmentId) {
+            if (!confirm('Are you sure you want to delete this attachment?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("DeleteAttachment", "Customer")',
+                method: 'POST',
+                data: { attachmentId: attachmentId },
+                success: function(response) {
+                    if (response.success) {
+                        alert(response.message);
+                        loadAttachments();
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while deleting the attachment');
+                }
+            });
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            var k = 1024;
+            var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            var i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        var customerPictureCameraStream = null;
+
+        function stopCustomerPictureCamera() {
+            if (customerPictureCameraStream) {
+                customerPictureCameraStream.getTracks().forEach(function(t) { t.stop(); });
+                customerPictureCameraStream = null;
+            }
+            var video = document.getElementById('customerPictureCameraVideo');
+            if (video) video.srcObject = null;
+        }
+
+        function startCustomerPictureCamera() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('Camera is not supported in this browser.');
+                var el = document.getElementById('customerPictureCameraModal');
+                if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).hide();
+                return;
+            }
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+                .then(function(stream) {
+                    customerPictureCameraStream = stream;
+                    var video = document.getElementById('customerPictureCameraVideo');
+                    video.srcObject = stream;
+                    return video.play();
+                })
+                .catch(function(err) {
+                    alert('Could not access the camera: ' + (err && err.message ? err.message : String(err)));
+                    var el = document.getElementById('customerPictureCameraModal');
+                    if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).hide();
+                });
+        }
+
+        $(document).on('click', '.js-open-customer-picture-camera', function() {
+            var el = document.getElementById('customerPictureCameraModal');
+            if (el && window.bootstrap) bootstrap.Modal.getOrCreateInstance(el).show();
+        });
+
+        $('#customerPictureCameraModal').on('shown.bs.modal', function() {
+            startCustomerPictureCamera();
+        });
+        $('#customerPictureCameraModal').on('hidden.bs.modal', function() {
+            stopCustomerPictureCamera();
+            $('#customerPictureCameraCaptureBtn').prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+        });
+
+        $('#customerPictureCameraCaptureBtn').on('click', function() {
+            var video = document.getElementById('customerPictureCameraVideo');
+            var canvas = document.getElementById('customerPictureCameraCanvas');
+            var width = video ? video.videoWidth : 0;
+            var height = video ? video.videoHeight : 0;
+            if (!width || !height) {
+                alert('Camera preview is not ready yet. Wait a moment and try again.');
+                return;
+            }
+            var maxWidth = 1920;
+            var scale = width > maxWidth ? maxWidth / width : 1;
+            var outWidth = Math.round(width * scale);
+            var outHeight = Math.round(height * scale);
+            canvas.width = outWidth;
+            canvas.height = outHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0, width, height, 0, 0, outWidth, outHeight);
+            var $capture = $('#customerPictureCameraCaptureBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i>Uploading...');
+            canvas.toBlob(function(blob) {
+                if (!blob) {
+                    $capture.prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+                    alert('Could not capture image.');
+                    return;
+                }
+                var file = new File([blob], 'customer-picture-' + Date.now() + '.jpg', { type: 'image/jpeg' });
+                var modalEl = document.getElementById('customerPictureCameraModal');
+                if (modalEl && window.bootstrap) bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                uploadSingleAttachment(file, 'CustomerPicture', 'Webcam capture')
+                    .then(function(response) {
+                        $capture.prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+                        if (response.success) {
+                            loadAttachments();
+                        } else {
+                            alert('Error: ' + (response.message || 'Upload failed'));
+                        }
+                    })
+                    .catch(function(xhr) {
+                        $capture.prop('disabled', false).html('<i class="fas fa-camera me-1"></i>Capture &amp; upload');
+                        var err = xhr && xhr.responseJSON && xhr.responseJSON.message
+                            ? xhr.responseJSON.message
+                            : 'An error occurred while uploading the picture';
+                        alert('Error: ' + err);
+                    });
+            }, 'image/jpeg', 0.88);
+        });
+    </script>
+}
+

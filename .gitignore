@@ -363,23 +363,26 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # Local publish output and app runtime data (do not commit)
-PMS/publish-out/
+Salzee/publish-out/
 publish/
 Salzee_Live/
 salze_live.rar
 PMS-publish.zip
-PMS/App_Data/
-PMS/wwwroot/uploads/
+Salzee/App_Data/
+Salzee/wwwroot/uploads/
 # Local SSH keys (never commit)
 .ssh/
 *.pem
 
 # App configuration containing connection strings and credentials.
 # Use appsettings.Example.json as the template for a new environment.
-PMS/appsettings.json
-PMS/appsettings.Development.json
-PMS/appsettings.Production.json
-!PMS/appsettings.Example.json
+Salzee/appsettings.json
+Salzee/appsettings.Development.json
+Salzee/appsettings.Production.json
+!Salzee/appsettings.Example.json
+Salzee/Scripts/**/appsettings.json
+Salzee/Scripts/**/appsettings.*.json
+!Salzee/Scripts/**/appsettings.Example.json
 
 # Secrets and local config
 .env

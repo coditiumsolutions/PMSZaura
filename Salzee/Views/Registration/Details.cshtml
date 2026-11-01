@@ -1,0 +1,321 @@
+@model Salzee.Models.Registration
+
+@{
+    ViewData["Title"] = "Registration Details";
+    var canEdit = ViewBag.CanEdit as bool? == true;
+    var canDelete = ViewBag.CanDelete as bool? == true;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+        <h5 class="mb-0">Registration Details</h5>
+        <div class="badge bg-light text-dark px-3 py-2" style="font-size: 13px;">
+            <i class="fas fa-calendar-check me-2" style="color: #6f42c1;"></i>
+            <strong>Registered:</strong> @Model.CreatedAt.ToString("MMMM dd, yyyy")
+            <span class="text-muted ms-2">(@((DateTime.Now - Model.CreatedAt).Days) days ago)</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm py-0 px-2">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm pms-mp-header pms-registration-details pms-registration-details-compact mb-3">
+            <div class="card-header py-2 pms-mp-header-bar d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Registration Information</h6>
+                <div class="d-flex gap-2">
+                    @if (canEdit)
+                    {
+                        <a asp-action="Edit" asp-route-id="@Model.RegID" class="btn btn-sm btn-outline-primary py-0 px-2">
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </a>
+                    }
+                    @if (canDelete)
+                    {
+                        <a asp-action="Delete" asp-route-id="@Model.RegID" class="btn btn-sm btn-outline-danger py-0 px-2">
+                            <i class="fas fa-trash me-1"></i>Delete
+                        </a>
+                    }
+                </div>
+            </div>
+            <div class="card-body py-2 px-3">
+                <div class="pms-registration-4col-form">
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Registration ID</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value"><code>@Model.RegID</code></div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Status</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">
+                                @if (Model.Status == "Pending")
+                                {
+                                    <span class="badge bg-warning"><i class="fas fa-clock me-1"></i>Pending</span>
+                                }
+                                else if (Model.Status == "Approved")
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Approved</span>
+                                }
+                                else if (Model.Status == "Rejected")
+                                {
+                                    <span class="badge bg-danger"><i class="fas fa-times-circle me-1"></i>Rejected</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@Model.Status</span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Full Name</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@Model.FullName</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">CNIC</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.CNIC ?? "N/A")</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Passport Number</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.PassportNo ?? "N/A")</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Phone</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@Model.Phone</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Email</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.Email ?? "N/A")</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Form No</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.FormNo ?? "N/A")</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Project</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.Project?.ProjectName ?? "N/A")</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Size</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.Size ?? "N/A")</div>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">SubProject</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(Model.SubProject ?? "N/A")</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Registration Date</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@Model.CreatedAt.ToString("MMMM dd, yyyy hh:mm tt")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 pms-registration-details-sidebar">
+        <!-- Status Update Card -->
+        <div class="card border-0 shadow-sm pms-mp-header mb-3">
+            <div class="card-header py-2 pms-mp-header-bar">
+                <h6 class="mb-0">
+                    <i class="fas fa-tasks me-2"></i>Update Status
+                </h6>
+            </div>
+            <div class="card-body py-3 px-3">
+                <form asp-action="UpdateStatus" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="regID" value="@Model.RegID" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Current Status</label>
+                        <p>
+                            @if (Model.Status == "Pending")
+                            {
+                                <span class="badge bg-warning">Pending</span>
+                            }
+                            else if (Model.Status == "Approved")
+                            {
+                                <span class="badge bg-success">Approved</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Rejected</span>
+                            }
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Change Status To</label>
+                        <select name="status" class="form-select" required>
+                            <option value="">Select Status...</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-check me-2"></i>Update Status
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Customer Link Card -->
+        @if (Model.Customers != null && Model.Customers.Any())
+        {
+            var customer = Model.Customers.FirstOrDefault();
+            @if (customer != null)
+            {
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-user-check me-2"></i>Customer Created
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <i class="fas fa-user-circle fa-3x" style="color: #6f42c1;"></i>
+                        </div>
+                        <div class="detail-field mb-2">
+                            <label>Customer ID</label>
+                            <p><code>@(customer.CustomerID ?? "")</code></p>
+                        </div>
+                        <div class="detail-field mb-3">
+                            <label>Full Name</label>
+                            <p><strong>@(customer.FullName ?? "")</strong></p>
+                        </div>
+                        <a asp-controller="Customer" asp-action="Details" asp-route-id="@(customer.CustomerID ?? "")" 
+                           class="btn btn-success w-100">
+                            <i class="fas fa-eye me-2"></i>View Customer Details
+                        </a>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-plus fa-3x mb-3 text-muted"></i>
+                    <p class="text-muted mb-0">Not converted to customer yet</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .pms-registration-details-compact .card-body {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+
+    .pms-registration-details-compact .pms-registration-4col-form .pms-registration-4col-row {
+        margin-bottom: 0.25rem !important;
+        padding-top: 0.2rem;
+        padding-bottom: 0.25rem !important;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-registration-details-compact .pms-registration-4col-form .pms-registration-4col-row:last-child {
+        margin-bottom: 0 !important;
+        border-bottom: none;
+        padding-bottom: 0 !important;
+    }
+
+    .pms-registration-details-compact .pms-registration-4col-label {
+        font-size: 0.72rem !important;
+        line-height: 1.2 !important;
+        margin-bottom: 0 !important;
+        color: #1e3a8a !important;
+        font-weight: 600 !important;
+    }
+
+    .pms-registration-details-compact .pms-registration-details-value {
+        font-size: 0.8125rem !important;
+        padding-top: 0 !important;
+        line-height: 1.25 !important;
+        min-height: auto !important;
+    }
+
+    .pms-registration-details-compact .pms-registration-details-value .badge {
+        font-size: 0.7rem;
+        padding: 0.25em 0.5em;
+    }
+
+    .pms-registration-details-sidebar .detail-field {
+        padding: 4px 0;
+        background: transparent;
+        border-radius: 0;
+    }
+
+    .pms-registration-details-sidebar .detail-field label {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #666;
+        font-weight: 600;
+    }
+
+    .pms-registration-details-sidebar .detail-field p {
+        font-size: 14px;
+        color: var(--text-dark);
+        margin-bottom: 0;
+        font-weight: 500;
+    }
+
+    .pms-registration-details-sidebar code {
+        background: rgba(156, 106, 222, 0.1);
+        color: #9C6ADE;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+</style>
+

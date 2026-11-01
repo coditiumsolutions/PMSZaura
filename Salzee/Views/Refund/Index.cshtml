@@ -1,0 +1,162 @@
+@model IEnumerable<Salzee.Models.Refund>
+@{
+    ViewData["Title"] = "Refunds";
+    ViewData["ListingTitle"] = "Refunds";
+    ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
+    ViewData["ListingAddText"] = "New Refund";
+    ViewData["ListingHideToolbarActions"] = true;
+    ViewData["ListingHideTitle"] = true;
+    var initiatedStatus = (string?)ViewBag.InitiatedStatus ?? "Initiated";
+    var approvedStatus = (string?)ViewBag.ApprovedStatus ?? "Approved";
+    var declinedStatus = (string?)ViewBag.DeclinedStatus ?? "Declined";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show py-2 mb-2 small">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show py-2 mb-2 small">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Summary Cards -->
+<div class="pms-refund-listing">
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+    <h5 class="pms-grid-title mb-0">Refunds</h5>
+    @if (Model != null)
+    {
+        <span class="badge rounded-pill pms-record-badge">@Model.Count() record@(Model.Count() == 1 ? "" : "s")</span>
+    }
+</div>
+<div class="row g-2 mb-2">
+    <div class="col-6 col-md-4">
+        <a href="@Url.Action("Index", new { workflowFilter = initiatedStatus })" class="text-decoration-none">
+            <div class="card border-0 h-100" style="background:#fff3cd;">
+                <div class="card-body text-center py-2 px-2">
+                    <div class="small text-muted text-uppercase fw-semibold mb-0">@initiatedStatus</div>
+                    <div class="fs-5 fw-bold text-warning mb-0">@(ViewBag.InitiatedCount ?? 0)</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4">
+        <a href="@Url.Action("Index", new { workflowFilter = approvedStatus })" class="text-decoration-none">
+            <div class="card border-0 h-100" style="background:#d4edda;">
+                <div class="card-body text-center py-2 px-2">
+                    <div class="small text-muted text-uppercase fw-semibold mb-0">@approvedStatus</div>
+                    <div class="fs-5 fw-bold text-success mb-0">@(ViewBag.ApprovedCount ?? 0)</div>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4">
+        <a href="@Url.Action("Index", new { workflowFilter = declinedStatus })" class="text-decoration-none">
+            <div class="card border-0 h-100" style="background:#f8d7da;">
+                <div class="card-body text-center py-2 px-2">
+                    <div class="small text-muted text-uppercase fw-semibold mb-0">@declinedStatus</div>
+                    <div class="fs-5 fw-bold text-danger mb-0">@(ViewBag.DeclinedCount ?? 0)</div>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<form method="get" asp-action="Index" class="mb-2 pms-listing-page">
+    <div class="pms-listing-search-wrap">
+        <div class="row g-1 align-items-end flex-lg-nowrap">
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="pms-compact-field pms-select-dropdown">
+                    <label for="workflowFilter" class="form-label">Status</label>
+                    <select name="workflowFilter" id="workflowFilter" class="form-select" onchange="this.form.submit()">
+                        <option value="">All</option>
+                        @foreach (var s in (ViewBag.WorkflowStatuses as List<string> ?? new List<string>()))
+                        {
+                            <option value="@s" selected="@(ViewBag.WorkflowFilter == s)">@s</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 col-lg-5">
+                <div class="pms-compact-field">
+                    <label for="customerFilter" class="form-label">Customer ID</label>
+                    <input type="text" name="customerFilter" id="customerFilter" class="form-control" placeholder="Filter by customer" value="@ViewBag.CustomerFilter" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="d-flex flex-nowrap gap-2 pms-listing-search-actions">
+                    <button type="submit" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">
+                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                    </button>
+                    <partial name="_OperationsDropdown" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card pms-grid-card pms-listing-flat pms-saas-grid pms-listing-page mb-2">
+    <div class="card-body py-2">
+        <div class="table-responsive pms-saas-table-wrap">
+            <table class="table pms-saas-table" id="refundTable">
+                <thead>
+                    <tr>
+                        <th>Refund ID</th>
+                        <th>Customer</th>
+                        <th>Type</th>
+                        <th class="text-end">Paid (PKR)</th>
+                        <th class="text-end">Deduction</th>
+                        <th class="text-end">Refunded</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model)
+                    {
+                        var wf = r.WorkflowStatus ?? initiatedStatus;
+                        var isApproved = string.Equals(wf, approvedStatus, StringComparison.OrdinalIgnoreCase);
+                        var pillClass = string.Equals(wf, approvedStatus, StringComparison.OrdinalIgnoreCase)
+                            ? "pms-pill--success"
+                            : string.Equals(wf, declinedStatus, StringComparison.OrdinalIgnoreCase)
+                                ? "pms-pill--danger"
+                                : "pms-pill--warning";
+                        <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = r.RefundID })">
+                            <td data-label="Refund ID">
+                                <a asp-action="Details" asp-route-id="@r.RefundID" class="text-decoration-none">
+                                    <code>@r.RefundID</code>
+                                </a>
+                            </td>
+                            <td data-label="Customer">
+                                <div><code>@r.CustomerID</code></div>
+                                <div class="small text-muted">@(r.Customer?.FullName ?? "—")</div>
+                            </td>
+                            <td data-label="Type"><span class="pms-pill pms-pill--neutral">@(r.RefundType ?? "—")</span></td>
+                            <td class="text-end" data-label="Paid (PKR)">@r.PaidAmount.ToString("N0")</td>
+                            <td class="text-end text-danger" data-label="Deduction">@r.DeductionAmount.ToString("N0")</td>
+                            <td class="text-end fw-bold text-success" data-label="Refunded">@r.RefundedAmount.ToString("N0")</td>
+                            <td data-label="Status"><span class="pms-pill @pillClass">@wf</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</div>
+
+@section Scripts {
+<script>
+    $(document).ready(function () {
+        PmsListingDataTable.init('#refundTable', {
+            order: [[0, 'desc']]
+        });
+        PmsListingDataTable.bindRowNavigation('#refundTable');
+    });
+</script>
+}

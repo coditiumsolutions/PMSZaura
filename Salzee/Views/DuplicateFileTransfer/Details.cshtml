@@ -1,0 +1,204 @@
+@model Salzee.Models.DuplicateFileTransfer
+@{
+    ViewData["Title"] = "Duplicate File – " + Model.Id;
+    const string Initiated = "Initiated";
+    const string Approved = "Approved";
+    const string Declined = "Declined";
+    var wf = Model.Status ?? Initiated;
+    var isInitiated = string.Equals(wf, Initiated, StringComparison.OrdinalIgnoreCase);
+    var badge = string.Equals(wf, Approved, StringComparison.OrdinalIgnoreCase) ? "bg-success"
+        : string.Equals(wf, Declined, StringComparison.OrdinalIgnoreCase) ? "bg-danger" : "bg-warning text-dark";
+}
+
+<div style="display:none;">@Html.AntiForgeryToken()</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="mb-0"><i class="fas fa-copy me-2"></i><code>@Model.Id</code></h2>
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-action="Index" class="btn btn-secondary btn-sm">Back</a>
+        @if (string.Equals(wf, Approved, StringComparison.OrdinalIgnoreCase))
+        {
+            <a asp-action="DuplicateFileLetter" asp-route-id="@Model.Id" target="_blank" class="btn btn-sm btn-success" title="Print letter">
+                <i class="fas fa-file-alt me-1"></i>Letter
+            </a>
+        }
+        @if (ViewBag.CanEdit == true && isInitiated)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm"><i class="fas fa-edit me-1"></i>Edit</a>
+        }
+        @if (ViewBag.CanDelete == true && isInitiated)
+        {
+            <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this request?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i></button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<div class="alert @(string.Equals(wf, Approved, StringComparison.OrdinalIgnoreCase) ? "alert-success" : string.Equals(wf, Declined, StringComparison.OrdinalIgnoreCase) ? "alert-danger" : "alert-warning") d-flex align-items-center gap-2 mb-4">
+    <strong>Status: @wf</strong>
+    <span class="ms-auto badge @badge fs-6">@wf</span>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white fw-semibold">Request</div>
+            <div class="card-body">
+                <table class="table table-sm table-borderless">
+                    <tr><th style="width:42%">Customer ID</th><td><code>@Model.CustomerID</code></td></tr>
+                    <tr><th>Name (snapshot)</th><td>@(Model.CustomerName ?? "—")</td></tr>
+                    <tr><th>CNIC (snapshot)</th><td>@(Model.CustomerCNIC ?? "—")</td></tr>
+                    <tr><th>Fee due</th><td>@(Model.FeeDue.HasValue ? $"PKR {Model.FeeDue:N2}" : "—")</td></tr>
+                    <tr><th>Fee paid</th><td>@(Model.FeePaid.HasValue ? $"PKR {Model.FeePaid:N2}" : "—")</td></tr>
+                    <tr><th>Challan</th><td>@(Model.ChallanID ?? "—")</td></tr>
+                    <tr><th>Bank / Instrument</th><td>@(Model.BankName ?? "—") / @(Model.InstrumentNo ?? "—")</td></tr>
+                    <tr><th>Deposit date</th><td>@(Model.DepositDate.HasValue ? Model.DepositDate.Value.ToString("yyyy-MM-dd") : "—")</td></tr>
+                    <tr><th>Payment method</th><td>@(Model.PaymentMethod ?? "—")</td></tr>
+                    <tr><th>Comments</th><td>@(Model.Comments ?? "—")</td></tr>
+                    <tr><th>Created</th><td>@Model.CreatedAt.ToString("MMM dd, yyyy HH:mm")</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header fw-semibold">Live customer (read-only)</div>
+            <div class="card-body">
+                @if (Model.Customer != null)
+                {
+                    <p class="small text-muted mb-2">Approving or declining does not change customer or payment records.</p>
+                    <table class="table table-sm table-borderless">
+                        <tr><th style="width:42%">Name</th><td>@(Model.Customer.FullName ?? "—")</td></tr>
+                        <tr><th>CNIC</th><td>@(Model.Customer.CNIC ?? "—")</td></tr>
+                        <tr><th>Status</th><td>@(Model.Customer.Status ?? "—")</td></tr>
+                        <tr><th>Project</th><td>@(Model.Customer.PaymentPlan?.Project?.ProjectName ?? "—")</td></tr>
+                    </table>
+                    <a asp-controller="Customer" asp-action="Details" asp-route-id="@Model.CustomerID" class="btn btn-sm btn-outline-info">Open customer</a>
+                }
+                else
+                {
+                    <p class="text-muted">Customer not loaded.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.CanEdit == true && isInitiated)
+{
+    <div class="card mt-4 border-info">
+        <div class="card-header fw-semibold bg-info bg-opacity-10">Decision</div>
+        <div class="card-body row g-3">
+            <div class="col-md-6">
+                <form asp-action="Approve" method="post" class="border rounded p-3 h-100">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <label class="form-label small">Notes (optional)</label>
+                    <textarea name="decisionNotes" class="form-control form-control-sm mb-2" rows="2" maxlength="2000"></textarea>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-check me-1"></i>Approve</button>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <form asp-action="Decline" method="post" class="border rounded p-3 h-100">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <label class="form-label small">Notes (optional)</label>
+                    <textarea name="decisionNotes" class="form-control form-control-sm mb-2" rows="2" maxlength="2000"></textarea>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-times me-1"></i>Decline</button>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+
+<div class="card mt-4">
+    <div class="card-header fw-semibold"><i class="fas fa-paperclip me-2"></i>Attachments (optional)</div>
+    <div class="card-body">
+        <p class="text-muted small mb-3">JPG, PNG, GIF, BMP, PDF. Max 8MB. @(isInitiated ? "Upload while status is Initiated." : "Read-only after decision.")</p>
+        @if (ViewBag.CanEdit == true && isInitiated)
+        {
+            <div class="row g-2 mb-3">
+                <div class="col-md-6">
+                    <input type="file" id="attFile" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
+                </div>
+                <div class="col-md-4">
+                    <input type="text" id="attDesc" class="form-control form-control-sm" placeholder="Description" />
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button type="button" class="btn btn-sm btn-primary" id="uploadBtn"><i class="fas fa-upload"></i></button>
+                </div>
+            </div>
+        }
+        <div id="attList"></div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    var id = '@Model.Id';
+    var canDelete = @((ViewBag.CanDelete == true).ToString().ToLowerInvariant());
+    var canEdit = @((ViewBag.CanEdit == true).ToString().ToLowerInvariant());
+    var initiated = @isInitiated.ToString().ToLowerInvariant();
+    var token = document.querySelector('input[name="__RequestVerificationToken"]');
+    function getToken() { return token ? token.value : ''; }
+
+    function loadAtt() {
+        $.get('@Url.Action("GetAttachments", "DuplicateFileTransfer")', { id: id }, function (res) {
+            var $c = $('#attList');
+            $c.empty();
+            if (!res.success || !res.attachments || !res.attachments.length) {
+                $c.html('<p class="text-muted small mb-0">No attachments.</p>');
+                return;
+            }
+            res.attachments.forEach(function (a) {
+                var del = (canDelete && initiated)
+                    ? '<button type="button" class="btn btn-sm btn-outline-danger ms-1 del-att" data-aid="' + a.attachmentID + '"><i class="fas fa-trash"></i></button>'
+                    : '';
+                $c.append('<div class="d-flex justify-content-between align-items-center border-bottom py-2">' +
+                    '<span><i class="fas fa-file me-2"></i>' + (a.fileName || '') + ' <span class="text-muted small">' + (a.uploadedAt || '') + '</span></span>' +
+                    '<span><a href="' + a.filePath + '" target="_blank" class="btn btn-sm btn-outline-primary">View</a>' + del + '</span></div>');
+            });
+            $c.find('.del-att').on('click', function () {
+                if (!confirm('Delete?')) return;
+                var aid = $(this).data('aid');
+                $.post('@Url.Action("DeleteAttachment", "DuplicateFileTransfer")', { __RequestVerificationToken: getToken(), attachmentId: aid })
+                    .done(function (r) { if (r.success) loadAtt(); else alert(r.message); });
+            });
+        });
+    }
+
+    $('#uploadBtn').on('click', function () {
+        var f = document.getElementById('attFile');
+        if (!f || !f.files || !f.files[0]) { alert('Select a file.'); return; }
+        var fd = new FormData();
+        fd.append('id', id);
+        fd.append('file', f.files[0]);
+        fd.append('description', ($('#attDesc').val() || ''));
+        $.ajax({
+            url: '@Url.Action("UploadAttachment", "DuplicateFileTransfer")',
+            type: 'POST',
+            data: fd,
+            processData: false,
+            contentType: false
+        }).done(function (r) {
+            if (r.success) { f.value = ''; $('#attDesc').val(''); loadAtt(); }
+            else alert(r.message || 'Upload failed');
+        }).fail(function () { alert('Upload failed'); });
+    });
+
+    loadAtt();
+})();
+</script>
+}

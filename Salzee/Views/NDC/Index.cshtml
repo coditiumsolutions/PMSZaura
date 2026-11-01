@@ -1,0 +1,214 @@
+@model IEnumerable<Salzee.Models.NDC>
+
+@{
+    ViewData["Title"] = "NDC";
+    ViewData["ListingHideToolbarActions"] = true;
+    var ndcCount = Model?.Count() ?? 0;
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show py-2 mb-2 small" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show py-2 mb-2 small" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="pms-listing-page pms-ndc-listing">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h5 class="pms-grid-title pms-ndc-page-heading mb-0">NDC</h5>
+        <span class="badge rounded-pill pms-record-badge">@ndcCount record@(ndcCount == 1 ? "" : "s")</span>
+    </div>
+
+<form method="get" asp-action="Index" class="mb-2">
+    <div class="pms-listing-search-wrap">
+        <div class="row g-1 align-items-end flex-lg-nowrap">
+            <div class="col-12 col-md-5 col-lg-3">
+                <div class="pms-compact-field">
+                    <label for="customerIdFilter" class="form-label">Customer ID</label>
+                    <input type="text" name="customerIdFilter" id="customerIdFilter" class="form-control" placeholder="Customer ID" value="@ViewBag.CustomerIdFilter" />
+                </div>
+            </div>
+            <div class="col-12 col-md-4 col-lg-3">
+                <div class="pms-compact-field pms-select-dropdown">
+                    <label for="workflowFilter" class="form-label">Workflow</label>
+                    <select name="workflowFilter" id="workflowFilter" class="form-select" onchange="this.form.submit()">
+                        <option value="">All</option>
+                        @if (ViewBag.WorkflowStatuses != null)
+                        {
+                            foreach (var s in (IEnumerable<string>)ViewBag.WorkflowStatuses)
+                            {
+                                <option value="@s" selected="@(ViewBag.WorkflowFilter == s)">@s</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="col-12 col-lg-auto">
+                <div class="d-flex flex-nowrap gap-2 align-items-center pms-listing-search-actions pms-ndc-search-actions">
+                    <button type="submit" class="btn btn-sm pms-pair-action-btn pms-pair-action-btn--search">
+                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                    </button>
+                    <partial name="_OperationsDropdown" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card pms-grid-card pms-listing-flat pms-saas-grid mb-2">
+    <div class="card-body py-2">
+        @if (Model != null && Model.Any())
+        {
+            <div class="table-responsive pms-saas-table-wrap">
+                <table class="table pms-saas-table" id="ndcTable">
+                    <thead>
+                        <tr>
+                            <th>Customer ID</th>
+                            <th>Customer / Project</th>
+                            <th>Type / Title</th>
+                            <th>Total Due</th>
+                            <th>Total Paid</th>
+                            <th>Remaining Dues</th>
+                            <th>Expiry</th>
+                            <th>Workflow</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var n in Model)
+                        {
+                            <tr class="pms-listing-row" data-href="@Url.Action("Details", new { id = n.NDCID })">
+                                <td data-label="Customer ID">
+                                    <a asp-action="Details" asp-route-id="@n.NDCID" class="text-decoration-none">
+                                        <code>@n.CustomerID</code>
+                                    </a>
+                                </td>
+                                <td data-label="Customer / Project">
+                                    @if (n.Customer != null)
+                                    {
+                                        <span>@(n.Customer.FullName ?? "—")</span>
+                                        @if (n.Customer.PaymentPlan?.Project != null)
+                                        {
+                                            <br /><span class="pms-pill pms-pill--info">@n.Customer.PaymentPlan.Project.ProjectName</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td data-label="Type / Title">
+                                    <span class="text-muted small">@(n.NDCType ?? "—")</span>
+                                    @if (!string.IsNullOrWhiteSpace(n.Title))
+                                    {
+                                        <br /><span class="small">@(n.Title.Length > 40 ? n.Title.Substring(0, 40) + "…" : n.Title)</span>
+                                    }
+                                </td>
+                                <td data-label="Total Due">@(n.TotalDueAmount?.ToString("N0") ?? "—")</td>
+                                <td data-label="Total Paid">@(n.TotalDueInstallments?.ToString("N0") ?? "—")</td>
+                                <td data-label="Remaining Dues">@(n.RemainingDues?.ToString("N0") ?? "—")</td>
+                                <td data-label="Expiry">@(n.NDCExpiryDate?.ToString("MMM dd, yyyy") ?? "—")</td>
+                                <td data-label="Workflow"><span class="pms-pill pms-pill--info">@(n.WorkFlowStatus ?? "—")</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-file-earmark-check fs-1 mb-3 d-block" aria-hidden="true"></i>
+                <h5>No NDC records</h5>
+                <p>Create an NDC before a transfer when the customer has cleared all dues.</p>
+                @if (ViewBag.CanCreate == true)
+                {
+                    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-lg me-2" aria-hidden="true"></i>New NDC</a>
+                }
+            </div>
+        }
+    </div>
+</div>
+</div>
+
+<style>
+    .pms-ndc-listing .pms-ndc-page-heading {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .pms-ndc-listing .pms-saas-table thead th {
+        font-size: 11.5px !important;
+    }
+
+    /* Equal-width rectangle buttons — #D0875A / #7A6A6D */
+    .pms-ndc-listing .pms-ndc-action-btn,
+    .pms-ndc-listing .pms-listing-operations-btn.pms-ndc-action-btn {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 7.5rem !important;
+        min-width: 7.5rem !important;
+        max-width: 7.5rem !important;
+        flex: 0 0 7.5rem !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 0.35rem 0.5rem !important;
+        border-radius: 0 !important;
+        font-weight: 600;
+        font-size: 0.8125rem;
+        line-height: 1.2;
+        border: 1px solid transparent;
+        color: #fff !important;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+
+    .pms-ndc-listing .pms-ndc-action-btn--search {
+        background-color: #D0875A !important;
+        border-color: #c0784e !important;
+    }
+
+    .pms-ndc-listing .pms-ndc-action-btn--search:hover,
+    .pms-ndc-listing .pms-ndc-action-btn--search:focus {
+        background-color: #c0784e !important;
+        border-color: #ad6b45 !important;
+        color: #fff !important;
+    }
+
+    .pms-ndc-listing .pms-ndc-action-btn--operations {
+        background-color: #7A6A6D !important;
+        border-color: #6b5c5f !important;
+    }
+
+    .pms-ndc-listing .pms-ndc-action-btn--operations:hover,
+    .pms-ndc-listing .pms-ndc-action-btn--operations:focus,
+    .pms-ndc-listing .pms-ndc-action-btn--operations.show {
+        background-color: #6b5c5f !important;
+        border-color: #5c4f52 !important;
+        color: #fff !important;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            if ($('#ndcTable').length) {
+                PmsListingDataTable.init('#ndcTable', {
+                    pageLength: 20,
+                    order: [[0, 'desc']],
+                    dom: 'rt<"pms-ndc-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>'
+                });
+                PmsListingDataTable.bindRowNavigation('#ndcTable');
+            }
+        });
+    </script>
+}

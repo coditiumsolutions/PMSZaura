@@ -1,0 +1,153 @@
+@model Salzee.Models.Dealer
+
+@{
+    ViewData["Title"] = "Create Dealer";
+}
+
+<div class="row">
+    <div class="col-12">
+        <!-- <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-plus-circle me-2"></i>Create New Dealer</h2>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to List
+            </a>
+        </div> -->
+
+        <div class="card">
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-store me-2"></i>Dealership Information
+                            </h5>
+
+                            <div class="mb-3">
+                                <label asp-for="DealershipName" class="form-label">Dealership Name *</label>
+                                <input asp-for="DealershipName" class="form-control" placeholder="Enter dealership name" required />
+                                <span asp-validation-for="DealershipName" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="RegisterationDate" class="form-label">Registration Date *</label>
+                                <input asp-for="RegisterationDate" type="date" class="form-control" required />
+                                <span asp-validation-for="RegisterationDate" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Status" class="form-label">Status *</label>
+                                <select asp-for="Status" class="form-select" required>
+                                    <option value="">Select Status</option>
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                    <option value="Suspended">Suspended</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="MembershipType" class="form-label">Membership Type *</label>
+                                <select asp-for="MembershipType" class="form-select" required>
+                                    <option value="">Select Membership Type</option>
+                                    <option value="Gold">Gold</option>
+                                    <option value="Silver">Silver</option>
+                                    <option value="Bronze">Bronze</option>
+                                    <option value="Standard">Standard</option>
+                                </select>
+                                <span asp-validation-for="MembershipType" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-user me-2"></i>Owner Information
+                            </h5>
+
+                            <div class="mb-3">
+                                <label asp-for="OwnerName" class="form-label">Owner Name *</label>
+                                <input asp-for="OwnerName" class="form-control" placeholder="Enter owner name" required />
+                                <span asp-validation-for="OwnerName" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="OwnerCNIC" class="form-label">Owner National Id Card *</label>
+                                <input asp-for="OwnerCNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" required />
+                                <span asp-validation-for="OwnerCNIC" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="MobileNo" class="form-label">Mobile Number *</label>
+                                <input asp-for="MobileNo" class="form-control" placeholder="Enter mobile number" required />
+                                <span asp-validation-for="MobileNo" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="PhoneNumber" class="form-label">Phone Number *</label>
+                                <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" required />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label">Email *</label>
+                                <input asp-for="Email" type="email" class="form-control" placeholder="Enter email address" required />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Address" class="form-label">Address *</label>
+                                <input asp-for="Address" class="form-control" placeholder="Enter address" required />
+                                <span asp-validation-for="Address" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="text-primary mb-3">
+                                <i class="fas fa-info-circle me-2"></i>Additional Information
+                            </h5>
+
+                            <div class="mb-3">
+                                <label asp-for="OwnerDetails" class="form-label">Owner Details *</label>
+                                <textarea asp-for="OwnerDetails" class="form-control" rows="4" placeholder="Enter owner details" required></textarea>
+                                <span asp-validation-for="OwnerDetails" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Details" class="form-label">Details</label>
+                                <textarea asp-for="Details" class="form-control" rows="3" placeholder="Enter any additional details"></textarea>
+                                <span asp-validation-for="Details" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="IncentivePercentage" class="form-label">Incentive Percentage (%)</label>
+                                <input asp-for="IncentivePercentage" type="number" step="0.01" min="0" max="100" class="form-control" placeholder="5.0" />
+                                <small class="text-muted">Default: 5%</small>
+                                <span asp-validation-for="IncentivePercentage" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <hr>
+                            <div class="d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary me-2">
+                                    <i class="fas fa-save me-2"></i>Create Dealer
+                                </button>
+                                <a asp-action="Index" class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

@@ -1,0 +1,354 @@
+@model List<Salzee.Controllers.PropertyReportViewModel>
+
+@{
+    ViewData["Title"] = "Property Report";
+    var projects = ViewBag.Projects as List<Salzee.Models.Project>;
+    var selectedProjectId = ViewBag.SelectedProjectId as string;
+}
+
+<!-- Banner with purple gradient -->
+<div class="custom-banner mb-4" style="margin-top: 20px;">
+    <div style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); padding: 25px 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-white mb-1" style="font-weight: 600; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+                    <i class="fas fa-building me-2"></i>Property Allotment Report
+                </h2>
+                <p class="text-white mb-0" style="opacity: 0.95; font-size: 0.95rem;">
+                    Allotted vs Not Allotted properties by project, size, and block
+                </p>
+            </div>
+            <div>
+                <button onclick="window.print()" class="btn btn-light">
+                    <i class="fas fa-print me-2"></i>Print Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Filter -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form asp-action="PropertyReport" method="get" class="row g-3">
+            <div class="col-md-10">
+                <label class="form-label fw-semibold">Filter by Project</label>
+                <select name="projectId" class="form-select" onchange="this.form.submit()">
+                    <option value="">All Projects</option>
+                    @if (projects != null)
+                    {
+                        foreach (var project in projects)
+                        {
+                            if (project.ProjectID == selectedProjectId)
+                            {
+                                <option value="@project.ProjectID" selected>
+                                    @project.ProjectName
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@project.ProjectID">
+                                    @project.ProjectName
+                                </option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-1"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-sm rounded-circle bg-primary bg-soft text-primary">
+                            <i class="fas fa-building font-size-24"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Total Properties</h6>
+                        <h4 class="mb-0">@ViewBag.TotalProperties</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-sm rounded-circle bg-success bg-soft text-success">
+                            <i class="fas fa-check-circle font-size-24"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Allotted</h6>
+                        <h4 class="mb-0">@ViewBag.AllottedCount</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-sm rounded-circle bg-warning bg-soft text-warning">
+                            <i class="fas fa-clock font-size-24"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Not Allotted</h6>
+                        <h4 class="mb-0">@ViewBag.NotAllottedCount</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <div class="avatar-sm rounded-circle bg-info bg-soft text-info">
+                            <i class="fas fa-percentage font-size-24"></i>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="mb-1 text-muted">Allotment Rate</h6>
+                        <h4 class="mb-0">@((ViewBag.TotalProperties > 0 ? (ViewBag.AllottedCount * 100.0 / ViewBag.TotalProperties) : 0).ToString("N1"))%</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Property By Block Summary -->
+@if (Model.Any())
+{
+    var blockGroups = Model.GroupBy(p => p.Block ?? "No Block");
+    
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);">
+            <h6 class="mb-0 text-white">
+                <i class="fas fa-th me-2"></i>Summary by Block
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                @foreach (var blockGroup in blockGroups.OrderBy(g => g.Key))
+                {
+                    var allotted = blockGroup.Count(p => p.IsAllotted);
+                    var notAllotted = blockGroup.Count(p => !p.IsAllotted);
+                    
+                    <div class="col-md-3 mb-3">
+                        <div class="card border">
+                            <div class="card-body">
+                                <h6 class="mb-2">Block @blockGroup.Key</h6>
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-success"><i class="fas fa-check-circle me-1"></i>@allotted</span>
+                                    <span class="text-warning"><i class="fas fa-clock me-1"></i>@notAllotted</span>
+                                </div>
+                                <div class="progress mt-2" style="height: 6px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: @((allotted * 100.0 / blockGroup.Count()).ToString("N0"))%">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Properties Table -->
+<div class="card border-0 shadow-sm">
+    <div class="card-header" style="background: linear-gradient(135deg, #9C6ADE 0%, #C9B3FF 100%);">
+        <h5 class="mb-0 text-white">
+            <i class="fas fa-list me-2"></i>Property Details
+        </h5>
+    </div>
+    <div class="card-body">
+        @if (Model.Any())
+        {
+            <div class="table-responsive">
+                <table id="propertyTable" class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Property ID</th>
+                            <th>Project</th>
+                            <th>Plot No</th>
+                            <th>Block</th>
+                            <th>Street</th>
+                            <th>Size</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Allotment Status</th>
+                            <th>Allotted To</th>
+                            <th>Allotted Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var property in Model)
+                        {
+                            <tr>
+                                <td><code>@property.PropertyID</code></td>
+                                <td>@property.ProjectName</td>
+                                <td><strong>@property.PlotNo</strong></td>
+                                <td>
+                                    <span class="badge bg-secondary">@(property.Block ?? "N/A")</span>
+                                </td>
+                                <td>@property.Street</td>
+                                <td>@property.Size</td>
+                                <td>@property.PropertyType</td>
+                                <td>
+                                    @if (property.Status == "Available")
+                                    {
+                                        <span class="badge bg-success">@property.Status</span>
+                                    }
+                                    else if (property.Status == "Allotted")
+                                    {
+                                        <span class="badge bg-primary">@property.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">@property.Status</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (property.IsAllotted)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Allotted
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock me-1"></i>Not Allotted
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(property.AllottedTo))
+                                    {
+                                        <strong>@property.AllottedTo</strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (property.AllottedDate.HasValue)
+                                    {
+                                        <i class="fas fa-calendar-alt text-muted me-1"></i>
+                                        @property.AllottedDate.Value.ToString("MMM dd, yyyy")
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-building fa-4x mb-3 text-muted"></i>
+                <h5 class="text-muted">No Properties Found!</h5>
+                <p class="text-muted">Add properties to start tracking allotments.</p>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .avatar-sm {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bg-soft {
+        background-color: rgba(var(--bs-primary-rgb), 0.1) !important;
+    }
+
+    .bg-success.bg-soft {
+        background-color: rgba(25, 135, 84, 0.1) !important;
+    }
+
+    .bg-warning.bg-soft {
+        background-color: rgba(255, 193, 7, 0.1) !important;
+    }
+
+    .bg-info.bg-soft {
+        background-color: rgba(13, 202, 240, 0.1) !important;
+    }
+
+    .font-size-24 {
+        font-size: 24px;
+    }
+
+    code {
+        background: rgba(156, 106, 222, 0.1);
+        color: #9C6ADE;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    @@media print {
+        .custom-banner button,
+        .sidebar,
+        .btn,
+        .card:first-of-type {
+            display: none !important;
+        }
+    }
+</style>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" />
+
+    <script>
+        $(document).ready(function () {
+            $('#propertyTable').DataTable({
+                "order": [[1, "asc"], [3, "asc"]], // Sort by project, then block
+                "pageLength": 25,
+                "language": {
+                    "search": "Search properties:",
+                    "lengthMenu": "Show _MENU_ records per page",
+                    "info": "Showing _START_ to _END_ of _TOTAL_ properties",
+                    "infoEmpty": "No properties found",
+                    "infoFiltered": "(filtered from _MAX_ total records)"
+                }
+            });
+        });
+    </script>
+}
+

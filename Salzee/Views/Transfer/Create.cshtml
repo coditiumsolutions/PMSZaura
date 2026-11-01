@@ -1,0 +1,710 @@
+@model Salzee.Models.Transfer
+
+@{
+    ViewData["Title"] = "New Transfer";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <h5 class="mb-0">New Transfer</h5>
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-controller="TransferFee" asp-action="Index" class="btn btn-outline-secondary btn-sm py-0 px-2">
+            <i class="fas fa-tags me-1"></i>Transfer Fee Module
+        </a>
+        @if (ViewBag.ShowDuplicateFileTransferLink as bool? == true)
+        {
+            <a asp-controller="DuplicateFileTransfer" asp-action="Index" class="btn btn-outline-secondary btn-sm py-0 px-2">
+                <i class="fas fa-copy me-1"></i>Duplicate file transfer
+            </a>
+        }
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm py-0 px-2"><i class="fas fa-arrow-left me-1"></i>Back to List</a>
+    </div>
+</div>
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card border-0 shadow-sm pms-mp-header mb-3">
+    <div class="card-header py-2 pms-mp-header-bar">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0"><i class="fas fa-file-signature me-2"></i>Create Transfer – Setup Wizard</h6>
+            <span class="small" id="wizardStepIndicator">Step 1 of 3</span>
+        </div>
+    </div>
+    <div class="card-body py-3 px-3">
+        <form asp-action="Create" method="post" id="transferForm">
+            <!-- Progress Bar -->
+            <div class="mb-4">
+                <div class="progress" style="height: 30px;">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" id="wizardProgress"
+                         style="width: 33.33%;">
+                        <strong>Step 1: Customer & Seller</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div id="wizardSteps">
+                <!-- Step 1: Customer ID (File) + Search -->
+                <div class="wizard-step" id="step1" data-step="1">
+                    <h5 class="mb-4" style="color: rgb(104, 167, 226);">
+                        <i class="fas fa-user-tag me-2"></i>Step 1: Customer ID (File) & Seller
+                    </h5>
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">Customer ID (File) <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <input type="text" id="CustomerID" name="CustomerID" class="form-control" value="@Model.CustomerID" placeholder="Enter Customer ID" required />
+                                <button type="button" id="btnSearchCustomer" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i>Search
+                                </button>
+                            </div>
+                            <span class="text-danger" id="customerIdValidation"></span>
+                            <div id="ndcMessage" class="small mt-1" style="display:none;"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Workflow Status</label>
+                            <select asp-for="WorkFlowStatus" class="form-select">
+                                @foreach (var s in (string[])ViewBag.WorkflowStatuses)
+                                {
+                                    <option value="@s" selected="@(Model.WorkFlowStatus == s)">@s</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card border-secondary mb-0">
+                        <div class="card-header bg-light py-2">
+                            <h6 class="mb-0"><i class="fas fa-user me-2"></i>Seller (Current Owner) – filled from Search</h6>
+                        </div>
+                        <div class="card-body py-3">
+                            <div class="row g-2">
+                                <div class="col-md-6"><label class="form-label small text-muted">Seller Name</label><input asp-for="SellerName" class="form-control form-control-sm" readonly /></div>
+                                <div class="col-md-6"><label class="form-label small text-muted">Son/D/W/o</label><input asp-for="SellerFatherName" class="form-control form-control-sm" readonly /></div>
+                                <div class="col-md-6"><label class="form-label small text-muted">CNIC</label><input asp-for="SellerCNIC" class="form-control form-control-sm" readonly /></div>
+                                <div class="col-md-6"><label class="form-label small text-muted">Contact</label><input asp-for="SellerContact" class="form-control form-control-sm" readonly /></div>
+                                <div class="col-12"><label class="form-label small text-muted">Address</label><input asp-for="SellerAddress" class="form-control form-control-sm" readonly /></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card border-secondary mt-3 mb-0">
+                        <div class="card-header bg-light py-2">
+                            <h6 class="mb-0"><i class="fas fa-users me-2"></i>Joint Owners (Current Customer)</h6>
+                        </div>
+                        <div class="card-body py-3">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0" id="currentJointOwnersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Son/D/W/o</th>
+                                            <th>CNIC</th>
+                                            <th>Contact</th>
+                                            <th>Percentage</th>
+                                            <th>Address</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td colspan="6" class="text-muted text-center">Search customer to load joint owners.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Payment & Fee (mandatory fee / payment fields) -->
+                <div class="wizard-step" id="step2" data-step="2" style="display: none;">
+                    <h5 class="mb-4" style="color: rgb(104, 167, 226);">
+                        <i class="fas fa-money-bill-wave me-2"></i>Step 2: Payment & Fee
+                    </h5>
+                    <p class="text-muted small mb-3">Required fee and payment fields. Transfer fee amounts can be loaded from the <a asp-controller="TransferFee" asp-action="Index" target="_blank" rel="noopener">Transfer Fee</a> module using the customer's project and sub-project (from Step 1 search).</p>
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold" for="transferFeeTypeSelect">Transfer Type</label>
+                            <select id="transferFeeTypeSelect" class="form-select">
+                                <option value="">— Select type to load fee —</option>
+                                @{
+                                    var transferTypeOptions = ViewBag.TransferTypes as IEnumerable<string> ?? Array.Empty<string>();
+                                }
+                                @foreach (var tt in transferTypeOptions)
+                                {
+                                    <option value="@tt">@tt</option>
+                                }
+                            </select>
+                            <small class="text-muted">Same list as Transfer Fee setup (configuration key NDCType). Transfer Fee Due is auto-calculated as: per-unit fee x numeric size from customer Registered Size.</small>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="TransferFeeDue" class="form-label">Transfer Fee Due <span class="text-danger">*</span></label>
+                            <input asp-for="TransferFeeDue" id="TransferFeeDue" type="number" step="0.01" class="form-control" required />
+                            <span asp-validation-for="TransferFeeDue" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="TransferFeePaid" class="form-label">Transfer Fee Paid <span class="text-danger">*</span></label>
+                            <input asp-for="TransferFeePaid" id="TransferFeePaid" type="number" step="0.01" class="form-control" required />
+                            <span asp-validation-for="TransferFeePaid" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PaymentDate" class="form-label">Payment Date <span class="text-danger">*</span></label>
+                            <input asp-for="PaymentDate" type="date" class="form-control" required />
+                            <span asp-validation-for="PaymentDate" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PaymentMode" class="form-label">Payment Mode <span class="text-danger">*</span></label>
+                            <select asp-for="PaymentMode" class="form-select" required>
+                                <option value="">Select Payment Mode</option>
+                                @if (ViewBag.PaymentMethods != null)
+                                {
+                                    @foreach (var pm in (IEnumerable<string>)ViewBag.PaymentMethods)
+                                    {
+                                        <option value="@pm">@pm</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="PaymentMode" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PaymentChallanNo" class="form-label">Challan No <span class="text-danger">*</span></label>
+                            <input asp-for="PaymentChallanNo" class="form-control" required />
+                            <span asp-validation-for="PaymentChallanNo" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BankName" class="form-label">Bank name</label>
+                            <select asp-for="BankName" class="form-select">
+                                <option value="">Select bank</option>
+                                @{
+                                    var bankNamesCreate = ViewBag.BankNames as IEnumerable<string> ?? Array.Empty<string>();
+                                    var currentBankCreate = Model.BankName?.Trim() ?? "";
+                                }
+                                @if (!string.IsNullOrEmpty(currentBankCreate) && !bankNamesCreate.Any(b => string.Equals(b, currentBankCreate, StringComparison.OrdinalIgnoreCase)))
+                                {
+                                    <option value="@currentBankCreate" selected>@currentBankCreate</option>
+                                }
+                                @foreach (var bank in bankNamesCreate)
+                                {
+                                    if (string.Equals(bank, currentBankCreate, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        <option value="@bank" selected>@bank</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@bank">@bank</option>
+                                    }
+                                }
+                            </select>
+                            <small class="text-muted">Loaded from configuration key <code>banks</code> (same as Payments).</small>
+                            <span asp-validation-for="BankName" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="PaymentDetails" class="form-label">Payment details</label>
+                            <textarea asp-for="PaymentDetails" class="form-control" rows="2" placeholder="Additional payment notes (optional)"></textarea>
+                            <span asp-validation-for="PaymentDetails" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Buyer (New Owner) -->
+                <div class="wizard-step" id="step3" data-step="3" style="display: none;">
+                    <h5 class="mb-4" style="color: rgb(104, 167, 226);">
+                        <i class="fas fa-user-plus me-2"></i>Step 3: Buyer (New Owner)
+                    </h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="BuyerName" class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <input asp-for="BuyerName" id="BuyerName" class="form-control" placeholder="Enter full name" required />
+                            <span asp-validation-for="BuyerName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerFatherName" class="form-label">Son/D/W/o</label>
+                            <input asp-for="BuyerFatherName" id="BuyerFatherName" class="form-control" />
+                            <span asp-validation-for="BuyerFatherName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerCNIC" class="form-label">National ID (CNIC)</label>
+                            <input asp-for="BuyerCNIC" id="BuyerCNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" maxlength="15" />
+                            <small class="text-muted">Required format: 5 digits, hyphen, 7 digits, hyphen, 1 digit (e.g. 11111-1111111-1).</small>
+                            <span asp-validation-for="BuyerCNIC" class="text-danger small d-block"></span>
+                            <span id="buyerCnicValidation" class="text-danger small d-none"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerPassportNo" class="form-label">Passport Number</label>
+                            <input asp-for="BuyerPassportNo" id="BuyerPassportNo" class="form-control" placeholder="Min 5 characters if no CNIC" />
+                            <small class="text-muted">Provide at least 5 characters if not providing CNIC.</small>
+                            <span asp-validation-for="BuyerPassportNo" class="text-danger small d-block"></span>
+                            <span id="buyerPassportValidation" class="text-danger small d-none"></span>
+                        </div>
+                        <div id="buyerCnicPassportRuleError" class="col-12 d-none">
+                            <div class="alert alert-warning small py-2 mb-1"><i class="fas fa-exclamation-triangle me-1"></i>Either CNIC (valid format) or Passport Number (minimum 5 characters) is required.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerDOB" class="form-label">Date of Birth</label>
+                            <input asp-for="BuyerDOB" id="BuyerDOB" type="date" class="form-control" lang="en-GB" value="@(Model.BuyerDOB?.ToString("yyyy-MM-dd") ?? "1990-01-01")" />
+                            <small class="text-muted">Default: 01-01-1990. Use calendar selection (DD-MM-YYYY).</small>
+                            <span asp-validation-for="BuyerDOB" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerGender" class="form-label">Gender</label>
+                            <select asp-for="BuyerGender" class="form-select">
+                                <option value="">Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="BuyerGender" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerNationality" class="form-label">Nationality</label>
+                            <input asp-for="BuyerNationality" class="form-control" list="nationalityList-transfer-create" autocomplete="off" placeholder="Select from list or type a value" />
+                            <datalist id="nationalityList-transfer-create">
+                                @if (ViewBag.Nationalities != null)
+                                {
+                                    foreach (var nationality in (IEnumerable<string>)ViewBag.Nationalities)
+                                    {
+                                        <option value="@nationality"></option>
+                                    }
+                                }
+                            </datalist>
+                            <small class="text-muted d-block">Suggestions from configuration; you may enter any nationality.</small>
+                            <span asp-validation-for="BuyerNationality" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold">Contact Information</label>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerEmail" class="form-label">Email Address</label>
+                            <input asp-for="BuyerEmail" type="email" class="form-control" />
+                            <span asp-validation-for="BuyerEmail" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerPhone" class="form-label">Phone (landline / primary contact) <span class="text-danger">*</span></label>
+                            <input asp-for="BuyerPhone" id="BuyerPhone" class="form-control" required />
+                            <span asp-validation-for="BuyerPhone" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerMobile" class="form-label">Mobile <span class="text-danger">*</span></label>
+                            <input asp-for="BuyerMobile" id="BuyerMobile" class="form-control" required />
+                            <span asp-validation-for="BuyerMobile" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerMobile2" class="form-label">Mobile 2</label>
+                            <input asp-for="BuyerMobile2" id="BuyerMobile2" class="form-control" />
+                            <small class="text-muted">Optional. Must differ from Phone and Mobile.</small>
+                            <span asp-validation-for="BuyerMobile2" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="BuyerMailingAddress" class="form-label">Mailing Address <span class="text-danger">*</span></label>
+                            <textarea asp-for="BuyerMailingAddress" class="form-control" rows="2" required></textarea>
+                            <span asp-validation-for="BuyerMailingAddress" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="BuyerPermanentAddress" class="form-label">Permanent Address</label>
+                            <textarea asp-for="BuyerPermanentAddress" class="form-control" rows="2"></textarea>
+                            <span asp-validation-for="BuyerPermanentAddress" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerCity" class="form-label">City <span class="text-danger">*</span></label>
+                            <select asp-for="BuyerCity" class="form-select" required>
+                                <option value="">Select City</option>
+                                @if (ViewBag.Cities != null)
+                                {
+                                    @foreach (var city in (IEnumerable<string>)ViewBag.Cities)
+                                    {
+                                        <option value="@city">@city</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="BuyerCity" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="BuyerCountry" class="form-label">Country <span class="text-danger">*</span></label>
+                            <select asp-for="BuyerCountry" class="form-select" required>
+                                <option value="">Select Country</option>
+                                @if (ViewBag.Countries != null)
+                                {
+                                    @foreach (var country in (IEnumerable<string>)ViewBag.Countries)
+                                    {
+                                        <option value="@country">@country</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="BuyerCountry" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" asp-for="Details" value="" />
+            <input type="hidden" asp-for="SellerAttachments" value="[]" />
+            <input type="hidden" asp-for="BuyerAttachments" value="[]" />
+
+            <!-- Wizard Navigation -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <hr />
+                    <div class="d-flex justify-content-between">
+                        <button type="button" id="prevBtn" class="btn btn-secondary" style="display: none;">
+                            <i class="fas fa-arrow-left me-2"></i>Previous
+                        </button>
+                        <div class="ms-auto d-flex gap-2">
+                            <button type="button" id="nextBtn" class="btn btn-sm btn-primary">
+                                Next <i class="fas fa-arrow-right ms-1"></i>
+                            </button>
+                            <button type="submit" id="btnCreateTransfer" class="btn btn-sm fw-semibold pms-mp-btn-save" style="display: none;">
+                                <i class="fas fa-check me-1"></i>Create Transfer
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-times me-2"></i>Cancel</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .wizard-step { min-height: 320px; }
+    .wizard-step h5 { font-weight: 700; padding-bottom: 0.5rem; border-bottom: 2px solid rgba(104, 167, 226, 0.3); }
+    .progress { border-radius: 10px; overflow: hidden; }
+    .progress-bar { display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; }
+</style>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        (function() {
+            var currentStep = 1;
+            var totalSteps = 3;
+            var transferHasActiveNDC = false;
+            var getProjectDetailsUrl = '@Url.Action("GetCustomerForTransfer", "Transfer")';
+            var getTransferFeeUrl = '@Url.Action("GetTransferFeeForTransfer", "Transfer")';
+
+            var ndcMessageEl = document.getElementById('ndcMessage');
+            var customerIdValidation = document.getElementById('customerIdValidation');
+            var step1 = document.getElementById('step1');
+            var step2 = document.getElementById('step2');
+            var step3 = document.getElementById('step3');
+            var wizardProgress = document.getElementById('wizardProgress');
+            var wizardStepIndicator = document.getElementById('wizardStepIndicator');
+            var prevBtn = document.getElementById('prevBtn');
+            var nextBtn = document.getElementById('nextBtn');
+            var btnCreateTransfer = document.getElementById('btnCreateTransfer');
+
+            function updateWizardUI() {
+                step1.style.display = currentStep === 1 ? 'block' : 'none';
+                step2.style.display = currentStep === 2 ? 'block' : 'none';
+                step3.style.display = currentStep === 3 ? 'block' : 'none';
+
+                var progress = (currentStep / totalSteps) * 100;
+                wizardProgress.style.width = progress + '%';
+                var stepTitles = ['Step 1: Customer & Seller', 'Step 2: Payment & Fee', 'Step 3: Buyer'];
+                wizardProgress.innerHTML = '<strong>' + stepTitles[currentStep - 1] + '</strong>';
+                wizardStepIndicator.textContent = 'Step ' + currentStep + ' of ' + totalSteps;
+
+                prevBtn.style.display = currentStep === 1 ? 'none' : 'inline-block';
+                nextBtn.style.display = currentStep < totalSteps ? 'inline-block' : 'none';
+                btnCreateTransfer.style.display = currentStep === totalSteps ? 'inline-block' : 'none';
+            }
+
+            function validateStep1() {
+                var customerId = document.getElementById('CustomerID').value.trim();
+                if (!customerId) {
+                    customerIdValidation.textContent = 'Enter Customer ID.';
+                    return false;
+                }
+                if (!transferHasActiveNDC) {
+                    alert('Please search for the customer and ensure an active NDC is found before proceeding.');
+                    return false;
+                }
+                customerIdValidation.textContent = '';
+                return true;
+            }
+
+            var cnicPattern = /^\d{5}-\d{7}-\d$/;
+
+            // Name filters: letters, spaces, dots, hyphens only
+            ['BuyerName','BuyerFatherName'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.addEventListener('input', function() { this.value = this.value.replace(/[^a-zA-Z\s\.\-]/g, ''); });
+            });
+
+            // Contact filters
+            var buyerPhoneEl = document.getElementById('BuyerPhone');
+            var buyerMobileEl = document.getElementById('BuyerMobile');
+            var buyerMobile2El = document.getElementById('BuyerMobile2');
+            if (buyerPhoneEl) buyerPhoneEl.addEventListener('input', function() { this.value = this.value.replace(/[^0-9\+]/g, ''); });
+            if (buyerMobileEl) buyerMobileEl.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
+            if (buyerMobile2El) buyerMobile2El.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
+
+            // CNIC auto-hyphen: digits only
+            var cnicEl = document.getElementById('BuyerCNIC');
+            if (cnicEl) {
+                cnicEl.addEventListener('input', function() {
+                    var raw = this.value.replace(/[^0-9]/g, '');
+                    var f = '';
+                    if (raw.length <= 5)       f = raw;
+                    else if (raw.length <= 12) f = raw.slice(0,5) + '-' + raw.slice(5);
+                    else                       f = raw.slice(0,5) + '-' + raw.slice(5,12) + '-' + raw.slice(12,13);
+                    this.value = f;
+                    validateBuyerCnicPassport();
+                });
+            }
+
+            // Passport: alphanumeric only
+            var passportEl = document.getElementById('BuyerPassportNo');
+            if (passportEl) {
+                passportEl.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^a-zA-Z0-9]/g, '');
+                    validateBuyerCnicPassport();
+                });
+            }
+
+            function validateBuyerCnicPassport() {
+                var cnic     = (cnicEl     ? cnicEl.value.trim()     : '');
+                var passport = (passportEl ? passportEl.value.trim() : '');
+                var cnicValid    = cnicPattern.test(cnic);
+                var passportValid = passport.length >= 5;
+                var ruleEl = document.getElementById('buyerCnicPassportRuleError');
+                var cnicErrEl    = document.getElementById('buyerCnicValidation');
+                var passErrEl    = document.getElementById('buyerPassportValidation');
+
+                if (cnicEl)     cnicEl.classList.remove('is-invalid');
+                if (passportEl) passportEl.classList.remove('is-invalid');
+                if (cnicErrEl)  { cnicErrEl.classList.add('d-none'); cnicErrEl.textContent = ''; }
+                if (passErrEl)  { passErrEl.classList.add('d-none'); passErrEl.textContent = ''; }
+                if (ruleEl)     ruleEl.classList.add('d-none');
+
+                if (cnic && !cnicValid) {
+                    if (cnicEl)    cnicEl.classList.add('is-invalid');
+                    if (cnicErrEl) { cnicErrEl.classList.remove('d-none'); cnicErrEl.textContent = 'CNIC must be XXXXX-XXXXXXX-X (digits only).'; }
+                }
+                if (!cnic && passport && !passportValid) {
+                    if (passportEl) passportEl.classList.add('is-invalid');
+                    if (passErrEl) { passErrEl.classList.remove('d-none'); passErrEl.textContent = 'Passport Number must be at least 5 characters.'; }
+                }
+
+                if (cnic) {
+                    return cnicValid;
+                }
+                return passportValid;
+            }
+
+            // Keep old name for existing event bindings below
+            function validateBuyerCnic() { return validateBuyerCnicPassport(); }
+
+            function validateStepFields(stepEl) {
+                var required = stepEl.querySelectorAll('[required]');
+                var valid = true;
+                required.forEach(function(inp) {
+                    if (!inp.value || !inp.value.trim()) {
+                        valid = false;
+                        inp.classList.add('is-invalid');
+                    } else {
+                        inp.classList.remove('is-invalid');
+                    }
+                });
+                return valid;
+            }
+
+            function normalizeDigits(value) {
+                return (value || '').replace(/\D/g, '');
+            }
+
+            function fetchTransferFeeFromTable() {
+                var typeSel = document.getElementById('transferFeeTypeSelect');
+                if (!typeSel || !typeSel.value) return;
+                var customerId = document.getElementById('CustomerID').value.trim();
+                if (!customerId) {
+                    alert('Enter and search for a customer in Step 1 before loading a transfer fee.');
+                    typeSel.value = '';
+                    return;
+                }
+                var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                var body = (token ? '__RequestVerificationToken=' + encodeURIComponent(token.value) + '&' : '')
+                    + 'customerId=' + encodeURIComponent(customerId)
+                    + '&transferType=' + encodeURIComponent(typeSel.value)
+                    + '&transferPriority=';
+                fetch(getTransferFeeUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: body
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    if (data.success && typeof data.amount === 'number') {
+                        var due = document.getElementById('TransferFeeDue');
+                        var paid = document.getElementById('TransferFeePaid');
+                        if (due) due.value = Number(data.amount).toFixed(2);
+                        if (paid) paid.value = Number(data.amount).toFixed(2);
+                    } else {
+                        alert(data.message || 'Could not load transfer fee.');
+                    }
+                })
+                .catch(function () { alert('Fee lookup failed.'); });
+            }
+
+            var transferFeeTypeSelect = document.getElementById('transferFeeTypeSelect');
+            if (transferFeeTypeSelect) {
+                transferFeeTypeSelect.addEventListener('change', fetchTransferFeeFromTable);
+            }
+
+            function validatePaymentStep() {
+                return validateStepFields(step2);
+            }
+
+            function validateBuyerStep() {
+                var isValid = validateStepFields(step3);
+                if (!validateBuyerCnicPassport()) {
+                    isValid = false;
+                }
+
+                var buyerDobEl = document.getElementById('BuyerDOB');
+                if (buyerDobEl) {
+                    buyerDobEl.classList.remove('is-invalid');
+                }
+
+                var phoneNorm = normalizeDigits(buyerPhoneEl ? buyerPhoneEl.value : '');
+                var mobileNorm = normalizeDigits(buyerMobileEl ? buyerMobileEl.value : '');
+                var mobile2Norm = normalizeDigits(buyerMobile2El ? buyerMobile2El.value : '');
+                if (mobile2Norm && phoneNorm && mobile2Norm === phoneNorm) {
+                    if (buyerMobile2El) buyerMobile2El.classList.add('is-invalid');
+                    isValid = false;
+                }
+                if (mobile2Norm && mobileNorm && mobile2Norm === mobileNorm) {
+                    if (buyerMobile2El) buyerMobile2El.classList.add('is-invalid');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            document.getElementById('btnSearchCustomer').addEventListener('click', function() {
+                var customerId = document.getElementById('CustomerID').value.trim();
+                customerIdValidation.textContent = '';
+                ndcMessageEl.style.display = 'none';
+                ndcMessageEl.innerHTML = '';
+                transferHasActiveNDC = false;
+
+                if (!customerId) {
+                    customerIdValidation.textContent = 'Enter Customer ID.';
+                    return;
+                }
+                var token = document.querySelector('input[name="__RequestVerificationToken"]');
+                var body = (token ? '__RequestVerificationToken=' + encodeURIComponent(token.value) + '&' : '') + 'customerId=' + encodeURIComponent(customerId);
+                fetch(getProjectDetailsUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: body
+                })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data.success) {
+                        document.querySelector('input[name="SellerName"]').value = data.sellerName || '';
+                        document.querySelector('input[name="SellerFatherName"]').value = data.sellerFatherName || '';
+                        document.querySelector('input[name="SellerCNIC"]').value = data.sellerCNIC || '';
+                        document.querySelector('input[name="SellerContact"]').value = data.sellerContact || '';
+                        document.querySelector('input[name="SellerAddress"]').value = data.sellerAddress || '';
+                        transferHasActiveNDC = data.hasActiveNDC === true;
+                        ndcMessageEl.style.display = 'block';
+                        if (data.hasActiveNDC) {
+                            ndcMessageEl.className = 'small mt-1 text-success';
+                            ndcMessageEl.innerHTML = '<i class="fas fa-check-circle me-1"></i>Active NDC found. You can proceed to Next.';
+                        } else {
+                            ndcMessageEl.className = 'small mt-1 text-danger';
+                            ndcMessageEl.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i>' + (data.ndcMessage || 'No active NDC found.');
+                        }
+
+                        var tbody = document.querySelector('#currentJointOwnersTable tbody');
+                        if (tbody) {
+                            tbody.innerHTML = '';
+                            if (data.jointOwners && data.jointOwners.length > 0) {
+                                data.jointOwners.forEach(function(item) {
+                                    var row = '<tr>'
+                                        + '<td>' + (item.jointOwnerName || '—') + '</td>'
+                                        + '<td>' + (item.fatherName || '—') + '</td>'
+                                        + '<td>' + (item.cnic || '—') + '</td>'
+                                        + '<td>' + (item.contact || '—') + '</td>'
+                                        + '<td>' + (item.percentage != null ? item.percentage : '—') + '</td>'
+                                        + '<td>' + (item.address || '—') + '</td>'
+                                        + '</tr>';
+                                    tbody.insertAdjacentHTML('beforeend', row);
+                                });
+                            } else {
+                                tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No joint owners found for this customer.</td></tr>';
+                            }
+                        }
+                    } else {
+                        customerIdValidation.textContent = data.message || 'Customer not found.';
+                    }
+                })
+                .catch(function() { customerIdValidation.textContent = 'Request failed.'; });
+            });
+
+            nextBtn.addEventListener('click', function() {
+                if (currentStep === 1) {
+                    if (!validateStep1()) return;
+                } else if (currentStep === 2) {
+                    if (!validatePaymentStep()) {
+                        alert('Please fill all required Payment & Fee fields.');
+                        return;
+                    }
+                }
+                if (currentStep < totalSteps) {
+                    currentStep++;
+                    updateWizardUI();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+
+            prevBtn.addEventListener('click', function() {
+                if (currentStep > 1) {
+                    currentStep--;
+                    updateWizardUI();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+
+            // CNIC/Passport live validation already wired above
+
+            document.getElementById('transferForm').addEventListener('submit', function(e) {
+                if (!validatePaymentStep()) {
+                    e.preventDefault();
+                    alert('Please fill all required Payment & Fee fields.');
+                    currentStep = 2;
+                    updateWizardUI();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return false;
+                }
+                if (!validateBuyerCnicPassport()) {
+                    e.preventDefault();
+                    var ruleEl = document.getElementById('buyerCnicPassportRuleError');
+                    if (ruleEl) ruleEl.classList.remove('d-none');
+                    currentStep = 3;
+                    updateWizardUI();
+                    var cnicField = document.getElementById('BuyerCNIC');
+                    if (cnicField) cnicField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    return false;
+                }
+                if (!validateBuyerStep()) {
+                    e.preventDefault();
+                    alert('Please correct Buyer information before submitting.');
+                    currentStep = 3;
+                    updateWizardUI();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return false;
+                }
+                if (!transferHasActiveNDC) {
+                    e.preventDefault();
+                    alert('No active NDC found for this customer. Go back to Step 1 and search for a customer with an active NDC.');
+                    currentStep = 1;
+                    updateWizardUI();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    return false;
+                }
+            });
+
+            updateWizardUI();
+        })();
+    </script>
+}

@@ -1,0 +1,212 @@
+@model Salzee.Models.Customer
+
+@{
+    ViewData["Title"] = "Delete Customer";
+}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-danger">
+                <i class="fas fa-trash-alt me-2"></i>Delete Customer
+            </h2>
+        </div>
+
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">
+                <i class="fas fa-exclamation-triangle me-2"></i>Warning!
+            </h4>
+            <p>Are you sure you want to delete this customer? This action cannot be undone.</p>
+            <hr>
+            <p class="mb-0">
+                <strong>Note:</strong> Deleting this customer may affect related records such as allotments, payments, and logs.
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>Customer Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="detail-field">
+                            <label><i class="fas fa-id-badge me-2"></i>Customer ID</label>
+                            <p><code>@Model.CustomerID</code></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="detail-field">
+                            <label><i class="fas fa-toggle-on me-2"></i>Status</label>
+                            <p>
+                                <span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-warning")">
+                                    @Model.Status
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="detail-field">
+                            <label><i class="fas fa-user me-2"></i>Full Name</label>
+                            <p>@Model.FullName</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="detail-field">
+                            <label><i class="fas fa-user-friends me-2"></i>Father Name</label>
+                            <p>@Model.FatherName</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="detail-field">
+                            <label><i class="fas fa-id-card me-2"></i>National ID</label>
+                            <p>@Model.CNIC</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="detail-field">
+                            <label><i class="fas fa-phone me-2"></i>Phone</label>
+                            <p>@Model.Phone</p>
+                            <label class="mt-2"><i class="fas fa-mobile-alt me-2"></i>Mobile</label>
+                            <p>@Model.MobileNo</p>
+                            @if (!string.IsNullOrWhiteSpace(Model.MobileNo2))
+                            {
+                                <label class="mt-2"><i class="fas fa-mobile-alt me-2"></i>Mobile 2</label>
+                                <p>@Model.MobileNo2</p>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="detail-field">
+                            <label><i class="fas fa-envelope me-2"></i>Email</label>
+                            <p>@Model.Email</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="detail-field">
+                            <label><i class="fas fa-city me-2"></i>City</label>
+                            <p>@Model.City</p>
+                        </div>
+                    </div>
+                    @if (Model.PaymentPlan != null)
+                    {
+                        <div class="col-md-12 mb-3">
+                            <div class="detail-field">
+                                <label><i class="fas fa-credit-card me-2"></i>Payment Plan</label>
+                                <p>@Model.PaymentPlan.PlanName - @Model.PaymentPlan.TotalAmount.ToString("C")</p>
+                            </div>
+                        </div>
+                    }
+                    <div class="col-md-6">
+                        <div class="detail-field">
+                            <label><i class="fas fa-calendar-alt me-2"></i>Created Date</label>
+                            <p>@Model.CreatedAt.ToString("MMMM dd, yyyy")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form asp-action="Delete" method="post">
+            <input type="hidden" asp-for="CustomerID" />
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <h5 class="text-danger mb-4">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Confirm Deletion
+                    </h5>
+                    <p class="mb-4">
+                        Type <strong>DELETE</strong> below to confirm this action:
+                    </p>
+                    <div class="mb-4">
+                        <input type="text" id="confirmText" class="form-control text-center" 
+                               placeholder="Type DELETE to confirm" style="max-width: 300px; margin: 0 auto;" />
+                    </div>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="submit" class="btn btn-danger" id="deleteBtn" disabled>
+                            <i class="fas fa-trash-alt me-2"></i>Yes, Delete Customer
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .detail-field {
+        padding: 12px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #fff5f5 100%);
+        border-radius: 8px;
+        border-left: 3px solid #dc3545;
+    }
+
+    .detail-field label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #666;
+        font-weight: 600;
+    }
+
+    .detail-field p {
+        font-size: 15px;
+        color: var(--text-dark);
+        margin-bottom: 0;
+        font-weight: 500;
+    }
+
+    code {
+        background: #ffe5e5;
+        color: #dc3545;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        document.getElementById('confirmText').addEventListener('input', function() {
+            const deleteBtn = document.getElementById('deleteBtn');
+            if (this.value.toUpperCase() === 'DELETE') {
+                deleteBtn.disabled = false;
+                deleteBtn.classList.add('pulse');
+            } else {
+                deleteBtn.disabled = true;
+                deleteBtn.classList.remove('pulse');
+            }
+        });
+
+        // Prevent accidental form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const confirmText = document.getElementById('confirmText').value;
+            if (confirmText.toUpperCase() !== 'DELETE') {
+                e.preventDefault();
+                alert('Please type DELETE to confirm deletion.');
+                return false;
+            }
+            return confirm('Are you absolutely sure you want to delete this customer?');
+        });
+    </script>
+
+    <style>
+        @@keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .pulse {
+            animation: pulse 1s infinite;
+        }
+    </style>
+}
+

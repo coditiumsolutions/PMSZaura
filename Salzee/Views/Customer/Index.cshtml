@@ -1,0 +1,573 @@
+@model IEnumerable<Salzee.Models.Customer>
+
+@{
+    ViewData["Title"] = ViewBag.IsPendingCustomers == true ? "Pending" : "Search Customers";
+    ViewData["ListingAddUrl"] = ViewBag.CanCreate == true ? Url.Action("Create") : null;
+    ViewData["ListingShowAdd"] = false;
+    ViewData["ListingHideRefresh"] = true;
+    ViewData["ListingHideToolbarActions"] = true;
+
+    var isPendingCustomers = ViewBag.IsPendingCustomers == true || (ViewBag.StatusFilter as string) == "Pending";
+    var showBulkSelection = isPendingCustomers && ViewBag.CanEdit == true;
+    ViewData["ShowBulkSelection"] = showBulkSelection;
+    ViewData["IsPendingCustomers"] = isPendingCustomers;
+    var customerCount = Model?.Count() ?? 0;
+    var listAction = isPendingCustomers ? "PendingCustomers" : "Index";
+    var pageHeading = isPendingCustomers ? "Pending" : "Customers";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show py-2 mb-2 small" role="alert">
+        <i class="fas fa-check-circle me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show py-2 mb-2 small" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="pms-customer-listing pms-listing-page">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+        <h5 class="pms-grid-title pms-customer-page-heading mb-0">@pageHeading</h5>
+        <span class="badge rounded-pill pms-record-badge">@customerCount record@(customerCount == 1 ? "" : "s")</span>
+    </div>
+
+<form method="get" asp-action="@listAction" class="mb-2">
+    <div class="pms-customer-search-wrap pms-listing-search-wrap pms-customer-search-panel">
+        @if (isPendingCustomers)
+        {
+            <input type="hidden" name="statusFilter" value="Pending" />
+            <div class="row g-2 pms-customer-search-fields align-items-center">
+                <div class="col-12 col-md-4">
+                    <div class="pms-compact-field pms-select-dropdown pms-customer-equal-field">
+                        <label for="projectFilter" class="visually-hidden">Project</label>
+                        <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()" aria-label="Project">
+                            <option value="All" selected="@(ViewBag.ProjectFilter == "All")">All Projects</option>
+                            @if (ViewBag.Projects != null)
+                            {
+                                @foreach (var project in ViewBag.Projects)
+                                {
+                                    <option value="@project.ProjectID" selected="@(ViewBag.ProjectFilter == project.ProjectID)">
+                                        @project.ProjectName
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-md-5">
+                    <div class="pms-compact-field pms-customer-equal-field">
+                        <label for="searchTerm" class="visually-hidden">Search Customer</label>
+                        <input type="text"
+                               name="searchTerm"
+                               id="searchTerm"
+                               class="form-control"
+                               placeholder="Search Customer"
+                               aria-label="Search Customer"
+                               value="@ViewBag.SearchTerm" />
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <button type="submit" class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--search pms-customer-action-btn--row">
+                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                    </button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="row g-2 pms-customer-search-fields">
+                <div class="col-12 col-md-4">
+                    <div class="pms-compact-field pms-select-dropdown pms-customer-equal-field">
+                        <label for="projectFilter" class="visually-hidden">Project</label>
+                        <select name="projectFilter" id="projectFilter" class="form-select" onchange="this.form.submit()" aria-label="Project">
+                            <option value="All" selected="@(ViewBag.ProjectFilter == "All")">All Projects</option>
+                            @if (ViewBag.Projects != null)
+                            {
+                                @foreach (var project in ViewBag.Projects)
+                                {
+                                    <option value="@project.ProjectID" selected="@(ViewBag.ProjectFilter == project.ProjectID)">
+                                        @project.ProjectName
+                                    </option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="pms-compact-field pms-select-dropdown pms-customer-equal-field">
+                        <label for="statusFilter" class="visually-hidden">Status</label>
+                        <select name="statusFilter" id="statusFilter" class="form-select" onchange="this.form.submit()" aria-label="Status">
+                            <option value="All" selected="@(ViewBag.StatusFilter == "All")">All Status</option>
+                            <option value="Active" selected="@(ViewBag.StatusFilter == "Active")">Active</option>
+                            <option value="Pending" selected="@(ViewBag.StatusFilter == "Pending")">Pending</option>
+                            <option value="Inactive" selected="@(ViewBag.StatusFilter == "Inactive")">Inactive</option>
+                            <option value="Marked for Deletion" selected="@(ViewBag.StatusFilter == "Marked for Deletion")">Marked for Deletion</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="pms-compact-field pms-customer-equal-field">
+                        <label for="searchTerm" class="visually-hidden">Search Customer</label>
+                        <input type="text"
+                               name="searchTerm"
+                               id="searchTerm"
+                               class="form-control"
+                               placeholder="Search Customer"
+                               aria-label="Search Customer"
+                               value="@ViewBag.SearchTerm" />
+                    </div>
+                </div>
+            </div>
+            <div class="row g-2 mt-2 pms-customer-search-actions-row">
+                <div class="col-12 col-md-4">
+                    <button type="button"
+                            id="btnAccountReport"
+                            class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--report pms-customer-action-btn--row"
+                            disabled
+                            title="Select a customer with the radio first">
+                        <i class="bi bi-file-earmark-pdf me-1" aria-hidden="true"></i>Account Report
+                    </button>
+                </div>
+                <div class="col-12 col-md-4">
+                    <partial name="_OperationsDropdown" />
+                </div>
+                <div class="col-12 col-md-4">
+                    <button type="submit" class="btn btn-sm pms-customer-action-btn pms-customer-action-btn--search pms-customer-action-btn--row">
+                        <i class="bi bi-search me-1" aria-hidden="true"></i>Search
+                    </button>
+                </div>
+            </div>
+            <small class="text-muted d-block mt-2">Use the radio to select a customer, then open Account Report. Click a row to open details.</small>
+        }
+    </div>
+</form>
+
+@if (showBulkSelection)
+{
+    <form asp-action="BulkUpdatePendingCustomers" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="projectFilter" value="@ViewBag.ProjectFilter" />
+        <input type="hidden" name="searchTerm" value="@ViewBag.SearchTerm" />
+
+        <div class="mb-3 pms-pending-update-status">
+            <div class="row g-2 align-items-center">
+                <div class="col-auto">
+                    <span class="fw-bold">Update Status</span>
+                </div>
+                <div class="col-12 col-md-3">
+                    <label for="bulkAction" class="visually-hidden">Select Action</label>
+                    <select name="bulkAction" id="bulkAction" class="form-select form-select-sm" required>
+                        <option value="">Select Action</option>
+                        <option value="Activate">Make Active</option>
+                        <option value="MarkForDeletion">Mark for Deletion</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md">
+                    <label for="bulkActionComments" class="visually-hidden">Comments</label>
+                    <textarea id="bulkActionComments"
+                              name="comments"
+                              class="form-control form-control-sm pms-pending-comments"
+                              rows="1"
+                              maxlength="1000"
+                              placeholder="Comments *"
+                              required></textarea>
+                </div>
+                <div class="col-12 col-md-auto">
+                    <button type="submit" class="btn btn-warning btn-sm pms-pending-apply-btn" id="applyBulkActionBtn" disabled>
+                        <i class="fas fa-check-double me-1"></i>Apply to Selected
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card pms-grid-card pms-listing-flat pms-customer-listing pms-customer-grid-compact mb-2">
+            <div class="card-body py-2">
+                <partial name="_CustomerDataGrid" model="Model" />
+            </div>
+        </div>
+    </form>
+}
+else
+{
+    <div class="card pms-grid-card pms-listing-flat pms-customer-listing pms-customer-grid-compact mb-2">
+        <div class="card-body py-2">
+            <partial name="_CustomerDataGrid" model="Model" />
+        </div>
+    </div>
+}
+</div>
+
+<style>
+    .pms-customer-page-heading {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .pms-customer-search-panel {
+        padding: 0.75rem 1rem !important;
+        background: #e8eef8 !important;
+        border: 1px solid #c5d0e0 !important;
+        border-radius: 12px;
+    }
+
+    .pms-customer-search-fields {
+        margin-top: 0 !important;
+        align-items: stretch !important;
+    }
+
+    .pms-customer-listing .pms-customer-search-panel .form-label:not(.visually-hidden) {
+        display: none !important;
+    }
+
+    .pms-customer-equal-field .form-select,
+    .pms-customer-equal-field .form-control {
+        width: 100% !important;
+        border-radius: 0 !important;
+        min-height: var(--pms-listing-control-h, 36px);
+        height: var(--pms-listing-control-h, 36px);
+    }
+
+    .pms-customer-search-actions-row .pms-customer-operations-dropdown,
+    .pms-customer-search-actions-row .pms-customer-action-btn--row {
+        width: 100% !important;
+        display: block;
+    }
+
+    .pms-customer-search-actions-row .pms-customer-action-btn--row,
+    .pms-customer-search-actions-row .pms-customer-operations-btn,
+    .pms-customer-search-actions-row .pms-customer-action-btn--operations {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        flex: 1 1 auto !important;
+    }
+
+    .pms-customer-grid-compact > .card-body {
+        padding-top: 0.25rem !important;
+    }
+
+    .pms-customer-listing .pms-customer-dt-footer {
+        width: 100%;
+        padding: 0.5rem 0.25rem 0.25rem;
+    }
+
+    .pms-customer-listing .pms-customer-dt-footer .dataTables_length,
+    .pms-customer-listing .pms-customer-dt-footer .dataTables_info,
+    .pms-customer-listing .pms-customer-dt-footer .dataTables_paginate {
+        float: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-size: 0.8125rem;
+        color: #64748b;
+    }
+
+    .pms-customer-listing .pms-customer-dt-footer .dataTables_length select {
+        border-radius: 8px;
+        border: 1px solid #94a3b8;
+        padding: 0.2rem 1.75rem 0.2rem 0.5rem;
+        min-height: 32px;
+        height: 32px;
+        font-size: 0.8125rem;
+        margin: 0 0.35rem;
+        background-color: #fff;
+    }
+
+    .pms-customer-listing .pms-customer-dt-footer .dataTables_paginate {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.15rem;
+    }
+
+    .pms-customer-listing .pms-saas-table,
+    .pms-customer-listing .pms-saas-table tbody td,
+    .pms-customer-listing .pms-cell-primary-title {
+        color: #000 !important;
+    }
+
+    .pms-customer-listing .pms-saas-table thead th {
+        background-color: #6059A6 !important;
+        color: #fff !important;
+        border-color: #524c96 !important;
+    }
+
+    .pms-customer-listing .pms-saas-table tbody td .text-muted {
+        color: #333 !important;
+    }
+
+    .pms-customer-listing .pms-saas-table tbody td[data-label="Customer ID"],
+    .pms-customer-listing .pms-saas-table tbody td[data-label="Customer ID"] a,
+    .pms-customer-listing .pms-saas-table tbody td[data-label="Customer ID"] .pms-cell-primary-title {
+        color: #000 !important;
+    }
+
+    .pms-customer-listing .pms-copy-customer-id {
+        color: #475569 !important;
+        line-height: 1;
+        text-decoration: none !important;
+        vertical-align: middle;
+    }
+
+    .pms-customer-listing .pms-copy-customer-id:hover,
+    .pms-customer-listing .pms-copy-customer-id:focus {
+        color: #1d3557 !important;
+    }
+
+    .pms-customer-listing .pms-copy-customer-id.pms-copied {
+        color: #198754 !important;
+    }
+
+    .pms-customer-listing .pms-customer-selectable-row {
+        cursor: pointer;
+    }
+
+    .pms-customer-listing .pms-customer-selectable-row.pms-row-selected,
+    .pms-customer-listing .pms-customer-selectable-row.pms-row-selected > td {
+        background-color: #e7f1ff !important;
+    }
+
+    /* Rectangle action buttons — equal width on action row */
+    .pms-customer-listing .pms-customer-action-btn--search,
+    .pms-customer-listing .pms-customer-action-btn--operations,
+    .pms-customer-listing .pms-customer-operations-btn,
+    .pms-customer-listing .pms-customer-action-btn--report {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0 !important;
+        font-weight: 600;
+        min-height: var(--pms-listing-control-h, 36px);
+        height: var(--pms-listing-control-h, 36px);
+        padding: 0.35rem 0.5rem !important;
+        border: 1px solid transparent;
+        white-space: nowrap;
+        box-sizing: border-box;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn {
+        border-radius: 0 !important;
+        font-weight: 600;
+        min-height: var(--pms-listing-control-h, 36px);
+        padding: 0.35rem 0.95rem;
+        border: 1px solid transparent;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--operations,
+    .pms-customer-listing .pms-customer-operations-btn {
+        color: #fff !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--search {
+        background-color: #a8dadc !important;
+        border-color: #8fc9cc !important;
+        color: #1d3557 !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--search:hover,
+    .pms-customer-listing .pms-customer-action-btn--search:focus {
+        background-color: #95d0d3 !important;
+        border-color: #7dbec2 !important;
+        color: #1d3557 !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--operations {
+        background-color: #457b9d !important;
+        border-color: #3a6a88 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--operations:hover,
+    .pms-customer-listing .pms-customer-action-btn--operations:focus,
+    .pms-customer-listing .pms-customer-action-btn--operations.show {
+        background-color: #3a6a88 !important;
+        border-color: #315c76 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-listing .pms-customer-operations-dropdown .dropdown-menu {
+        background: #ffffff !important;
+        border: 1px solid #1d3557 !important;
+        box-shadow: 0 8px 22px rgba(29, 53, 87, 0.22) !important;
+    }
+
+    .pms-customer-listing .pms-customer-operations-dropdown .dropdown-item {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        font-weight: 600;
+    }
+
+    .pms-customer-listing .pms-customer-operations-dropdown .dropdown-item:hover,
+    .pms-customer-listing .pms-customer-operations-dropdown .dropdown-item:focus {
+        background: #1d3557 !important;
+        color: #ffffff !important;
+    }
+
+    .pms-customer-listing .pms-customer-operations-dropdown .dropdown-divider {
+        border-top-color: #c5d0e0;
+        opacity: 1;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--report,
+    .pms-customer-listing .pms-customer-action-btn--report:disabled {
+        background-color: #1d3557 !important;
+        border-color: #1d3557 !important;
+        color: #fff !important;
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--report:hover:not(:disabled),
+    .pms-customer-listing .pms-customer-action-btn--report:focus:not(:disabled) {
+        background-color: #1d3557 !important;
+        border-color: #1d3557 !important;
+        color: #fff !important;
+        filter: brightness(1.08);
+    }
+
+    .pms-customer-listing .pms-customer-action-btn--report:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .pms-pending-update-status .pms-pending-comments {
+        min-height: 32px;
+        height: 32px;
+        resize: vertical;
+        padding-top: 0.35rem;
+        padding-bottom: 0.35rem;
+        line-height: 1.25;
+    }
+
+    .pms-pending-update-status .form-select-sm,
+    .pms-pending-update-status .pms-pending-apply-btn {
+        min-height: 32px;
+        height: 32px;
+    }
+
+    .pms-pending-update-status .pms-pending-apply-btn {
+        white-space: nowrap;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            var showBulkSelection = @showBulkSelection.ToString().ToLowerInvariant();
+            // Col 0 = report radio (listing) or bulk checkbox (pending); then Customer ID
+            var customerIdColumnIndex = 1;
+            var accountReportUrl = '@Url.Action("AccountStatement", "Report")';
+            var $accountReportBtn = $('#btnAccountReport');
+            var selectedCustomerId = null;
+
+            function setSelectedCustomer(customerId) {
+                selectedCustomerId = (customerId || '').trim() || null;
+                $('#customersTable tbody tr.pms-customer-selectable-row').removeClass('pms-row-selected');
+                if (selectedCustomerId) {
+                    var $row = $('#customersTable tbody tr.pms-customer-selectable-row').filter(function() {
+                        return String($(this).data('customer-id') || '') === selectedCustomerId;
+                    }).first();
+                    $row.addClass('pms-row-selected');
+                    $row.find('.customer-report-radio').prop('checked', true);
+                    $accountReportBtn.prop('disabled', false).attr('title', 'Open Account Report for ' + selectedCustomerId);
+                } else {
+                    $('.customer-report-radio').prop('checked', false);
+                    $accountReportBtn.prop('disabled', true).attr('title', 'Select a customer with the radio first');
+                }
+            }
+
+            if ($('#customersTable').length) {
+                PmsListingDataTable.init('#customersTable', {
+                    searching: false,
+                    order: [[ customerIdColumnIndex, "desc" ]],
+                    columnDefs: [
+                        { orderable: false, targets: [0] }
+                    ],
+                    dom: 'rt<"pms-customer-dt-footer d-flex flex-wrap align-items-center justify-content-between gap-2 mt-2"lip>'
+                });
+
+                // Click anywhere on the row (except radios/checkboxes/links) to open Details.
+                PmsListingDataTable.bindRowNavigation('#customersTable', {
+                    rowSelector: 'tr.pms-customer-selectable-row'
+                });
+
+                // Account Report selection via the row radio only.
+                $('#customersTable tbody').on('change', '.customer-report-radio', function () {
+                    setSelectedCustomer($(this).val());
+                });
+
+                $('#customersTable tbody').on('click', '.pms-copy-customer-id', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var $btn = $(this);
+                    var id = String($btn.data('customer-id') || '').trim();
+                    if (!id) return;
+
+                    var $icon = $btn.find('i');
+                    var markCopied = function () {
+                        $btn.addClass('pms-copied').attr('title', 'Copied!');
+                        $icon.removeClass('bi-clipboard').addClass('bi-clipboard-check');
+                        setTimeout(function () {
+                            $btn.removeClass('pms-copied').attr('title', 'Copy Customer ID');
+                            $icon.removeClass('bi-clipboard-check').addClass('bi-clipboard');
+                        }, 1200);
+                    };
+
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(id).then(markCopied).catch(function () {
+                            window.prompt('Copy Customer ID:', id);
+                        });
+                    } else {
+                        window.prompt('Copy Customer ID:', id);
+                    }
+                });
+            }
+
+            $accountReportBtn.on('click', function () {
+                if (!selectedCustomerId) {
+                    alert('Please select a customer with the radio first.');
+                    return;
+                }
+                var url = accountReportUrl + (accountReportUrl.indexOf('?') >= 0 ? '&' : '?')
+                    + 'accountNo=' + encodeURIComponent(selectedCustomerId);
+                window.open(url, '_blank', 'noopener');
+            });
+
+            if (showBulkSelection) {
+                var $selectAll = $('#selectAllPendingCustomers');
+                var $rowChecks = $('.pending-customer-checkbox');
+                var $applyBtn = $('#applyBulkActionBtn');
+                var $bulkAction = $('#bulkAction');
+                var $comments = $('#bulkActionComments');
+
+                function refreshBulkButtonState() {
+                    var anyChecked = $('.pending-customer-checkbox:checked').length > 0;
+                    var hasAction = ($bulkAction.val() || '').trim().length > 0;
+                    var hasComments = ($comments.val() || '').trim().length > 0;
+                    $applyBtn.prop('disabled', !(anyChecked && hasAction && hasComments));
+                }
+
+                $selectAll.on('change', function() {
+                    $rowChecks.prop('checked', this.checked);
+                    refreshBulkButtonState();
+                });
+
+                $(document).on('change', '.pending-customer-checkbox', function() {
+                    var total = $rowChecks.length;
+                    var checked = $('.pending-customer-checkbox:checked').length;
+                    $selectAll.prop('checked', total > 0 && total === checked);
+                    refreshBulkButtonState();
+                });
+
+                $bulkAction.on('change', refreshBulkButtonState);
+                $comments.on('input', refreshBulkButtonState);
+
+                refreshBulkButtonState();
+            }
+        });
+    </script>
+}

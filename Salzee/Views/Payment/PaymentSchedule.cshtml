@@ -1,0 +1,815 @@
+@model Salzee.Models.PaymentPlan
+@using System.Globalization
+
+@{
+    ViewData["Title"] = "Edit Payment Plan";
+    var EnUs = CultureInfo.GetCultureInfo("en-US");
+    var customersOnPlan = (int)(ViewBag.CustomersOnPlanCount ?? 0);
+    var schedulesSumPkr = Model.PaymentSchedules?.Sum(s => s.Amount) ?? 0m;
+    var balancePkr = Model.TotalAmount - schedulesSumPkr;
+    var balanceState = balancePkr > 0.0000001m ? "positive" : balancePkr < -0.0000001m ? "negative" : "zero";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <h5 class="mb-0">
+        <i class="fas fa-file-invoice-dollar me-1"></i>Edit Payment Plan
+    </h5>
+    <div class="d-flex gap-1">
+        @if (ViewBag.CanCreate == true)
+        {
+        <a asp-action="CreatePaymentSchedule" asp-route-planId="@Model.PlanID" class="btn btn-sm btn-primary py-0 px-2">
+            <i class="fas fa-plus me-1"></i>Add Installment
+        </a>
+        }
+        <a asp-action="PaymentPlans" class="btn btn-sm btn-outline-secondary py-0 px-2">
+            <i class="fas fa-arrow-left me-1"></i>Back to Plans
+        </a>
+    </div>
+</div>
+
+<div id="pmsSaveSuccessAlert" class="alert alert-success alert-dismissible fade show d-none py-2 mb-2" role="alert">
+    <i class="fas fa-check-circle me-1"></i>
+    <span id="pmsSaveSuccessText"></span>
+    <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+
+<!-- Payment Plan Details -->
+<div class="card border-0 shadow-sm pms-mp-header pms-ps-plan-card mb-3">
+    <div class="card-header py-2 pms-mp-header-bar pms-ps-header-bar">
+        <h6 class="mb-0">
+            <i class="fas fa-file-invoice-dollar me-2"></i>@Model.PlanName
+        </h6>
+    </div>
+    <div class="card-body py-2 px-3 pms-ps-plan-body">
+        <div class="pms-registration-4col-form pms-ps-4col">
+            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Total Amount (PKR)</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field pms-ps-field-amount">@Model.TotalAmount.ToString("N0", EnUs)</div>
+                </div>
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Primary Currency</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field text-uppercase">@Model.Currency</div>
+                </div>
+            </div>
+
+            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Balance (unallocated)</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field plan-balance-inline plan-balance--@balanceState" title="Plan total minus the sum of all installment amounts on this plan.">
+                        @balancePkr.ToString("N0", EnUs) <span class="pms-ps-field-unit">PKR</span>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Duration</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field">@(Model.DurationMonths?.ToString() ?? "N/A") Months</div>
+                </div>
+            </div>
+
+            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Frequency</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field">@(string.IsNullOrWhiteSpace(Model.Frequency) ? "—" : Model.Frequency)</div>
+                </div>
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Total Schedules</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field">@(Model.PaymentSchedules?.Count ?? 0)</div>
+                </div>
+            </div>
+
+            <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                <div class="col-12 col-lg-2">
+                    <div class="form-label pms-registration-4col-label mb-0">Customers on this plan</div>
+                </div>
+                <div class="col-12 col-lg-4">
+                    <div class="pms-ps-field">@customersOnPlan</div>
+                </div>
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div class="col-12 col-lg-2">
+                        <div class="form-label pms-registration-4col-label mb-0">Description</div>
+                    </div>
+                    <div class="col-12 col-lg-4">
+                        <div class="pms-ps-field">@Model.Description</div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="pms-ps-balance-hint text-muted">Plan total minus the sum of all installment amounts on this plan.</div>
+    </div>
+</div>
+
+<!-- Payment Schedules Table -->
+<div class="card border-0 shadow-sm pms-mp-header pms-ps-schedule-card mb-3">
+    <div class="card-header py-2 pms-mp-header-bar pms-ps-header-bar">
+        <h6 class="mb-0">
+            <i class="fas fa-list-alt me-2"></i>Installment Schedule
+        </h6>
+    </div>
+    <div class="card-body py-2 px-3 pms-ps-schedule-body">
+        @if (Model.PaymentSchedules != null && Model.PaymentSchedules.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Installment #</th>
+                            <th>Description</th>
+                            <th>Due Date</th>
+                            <th>Amount</th>
+                            <th>Surcharge</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var schedule in Model.PaymentSchedules.OrderBy(s => s.InstallmentNo ?? int.MaxValue))
+                        {
+                            var othersAmountSum = Model.PaymentSchedules.Where(s => s.ScheduleID != schedule.ScheduleID).Sum(s => s.Amount);
+                            var totalPaid = schedule.Payments?.Where(p => p.Status == "Completed").Sum(p => p.Amount) ?? 0;
+                            var isPaid = totalPaid >= schedule.Amount;
+                            var isOverdue = schedule.DueDate < DateTime.Now && !isPaid;
+
+                            <tr class="@(isPaid ? "table-success" : isOverdue ? "table-warning" : "")">
+                                <td>
+                                    <strong>#@(schedule.InstallmentNo?.ToString() ?? "N/A")</strong>
+                                </td>
+                                <td>
+                                    @schedule.PaymentDescription
+                                    @if (!string.IsNullOrEmpty(schedule.Description))
+                                    {
+                                        <br><small class="text-muted">@schedule.Description</small>
+                                    }
+                                </td>
+                                <td>
+                                    <i class="far fa-calendar-alt me-1"></i>
+                                    @schedule.DueDate.ToString("dd-MM-yyyy")
+                                    @if (isOverdue)
+                                    {
+                                        <br><small class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>Overdue</small>
+                                    }
+                                </td>
+                                <td>
+                                    <strong style="color: #1d4ed8;">
+                                        PKR @schedule.Amount.ToString("N0", EnUs)
+                                    </strong>
+                                    @if (totalPaid > 0)
+                                    {
+                                        <br /><small class="text-muted">Paid: @totalPaid.ToString("N0", EnUs) PKR</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (schedule.SurchargeApplied)
+                                    {
+                                        <span class="badge bg-warning">
+                                            @schedule.SurchargeRate.ToString("0.####")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">None</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (isPaid)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle me-1"></i>Paid
+                                        </span>
+                                    }
+                                    else if (isOverdue)
+                                    {
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-exclamation-circle me-1"></i>Overdue
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">
+                                            <i class="far fa-clock me-1"></i>Pending
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-info" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#scheduleModal@(schedule.ScheduleID)"
+                                                title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        @if (ViewBag.CanEdit == true)
+                                        {
+                                        <a asp-action="EditPaymentSchedule"
+                                           asp-route-scheduleId="@schedule.ScheduleID"
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        }
+                                        @if (ViewBag.CanDelete == true)
+                                        {
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-danger" 
+                                                onclick="deleteSchedule('@schedule.ScheduleID')"
+                                                title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Modals for each schedule (placed outside table) -->
+            @foreach (var schedule in Model.PaymentSchedules.OrderBy(s => s.InstallmentNo ?? int.MaxValue))
+            {
+                var othersAmountSum = Model.PaymentSchedules.Where(s => s.ScheduleID != schedule.ScheduleID).Sum(s => s.Amount);
+                var totalPaid = schedule.Payments?.Where(p => p.Status == "Completed").Sum(p => p.Amount) ?? 0;
+                var isPaid = totalPaid >= schedule.Amount;
+
+                <!-- View Details Modal -->
+                <div class="modal fade" id="scheduleModal@(schedule.ScheduleID)" tabindex="-1" data-bs-backdrop="false">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background: var(--primary-green);">
+                                <h5 class="modal-title text-white">
+                                    <i class="fas fa-receipt me-2"></i>Installment #@(schedule.InstallmentNo?.ToString() ?? "N/A") Details
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row mb-3">
+                                    <div class="col-6">
+                                        <label class="text-muted small">Schedule ID</label>
+                                        <p><code>@schedule.ScheduleID</code></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="text-muted small">Installment Number</label>
+                                        <p><strong>#@(schedule.InstallmentNo?.ToString() ?? "N/A")</strong></p>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="text-muted small">Description</label>
+                                        <p>@schedule.PaymentDescription</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="text-muted small">Due Date</label>
+                                        <p>@schedule.DueDate.ToString("dd-MM-yyyy")</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="text-muted small">Amount (PKR)</label>
+                                        <p><strong style="color: #9C6ADE;">
+                                            @schedule.Amount.ToString("N0", EnUs)
+                                        </strong></p>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="text-muted small">Surcharge Applied</label>
+                                        <p>@(schedule.SurchargeApplied ? "Yes" : "No")</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="text-muted small">Surcharge Rate</label>
+                                        <p>@schedule.SurchargeRate.ToString("0.####")</p>
+                                    </div>
+                                </div>
+
+                                @if (schedule.Payments != null && schedule.Payments.Any())
+                                {
+                                    <hr />
+                                    <h6 class="mb-3"><i class="fas fa-money-check-alt me-2"></i>Payment History</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Amount</th>
+                                                    <th>Method</th>
+                                                    <th>Reference</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var payment in schedule.Payments.OrderByDescending(p => p.PaymentDate))
+                                                {
+                                                    <tr>
+                                                        <td>@payment.PaymentDate.ToString("dd-MM-yyyy")</td>
+                                                        <td><strong>@payment.Amount.ToString("N0", EnUs) PKR</strong></td>
+                                                        <td>@payment.Method</td>
+                                                        <td><small>@payment.ReferenceNo</small></td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                            </div>
+                            <div class="modal-footer">
+                                @if (!isPaid)
+                                {
+                                    <a asp-action="RecordPayment" asp-route-scheduleId="@schedule.ScheduleID" 
+                                       class="btn btn-success">
+                                        <i class="fas fa-money-bill-wave me-2"></i>Record Payment
+                                    </a>
+                                }
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Modal -->
+                <div class="modal fade" id="editModal@(schedule.ScheduleID)" tabindex="-1" aria-labelledby="editModalLabel@(schedule.ScheduleID)" aria-hidden="true" data-bs-backdrop="false">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header" style="background: var(--primary);">
+                            
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <form asp-action="EditPaymentSchedule" method="post" class="edit-schedule-form"
+                                  data-plan-total="@Model.TotalAmount.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                  data-others-sum="@othersAmountSum.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                  data-customers-on-plan="@customersOnPlan">
+                                @Html.AntiForgeryToken()
+                                <div class="modal-body">
+                                    <input type="hidden" name="ScheduleID" value="@schedule.ScheduleID" />
+                                    <input type="hidden" name="PlanID" value="@schedule.PlanID" />
+
+                                    <div class="alert alert-light border small mb-3 mb-md-0">
+                                        <i class="fas fa-users me-1 text-primary"></i>
+                                        <strong>@customersOnPlan</strong> customer(s) are assigned to this payment plan.
+                                        Changing amounts or the plan total affects their contract template.
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Installment Number</label>
+                                            <input type="number" name="InstallmentNo" class="form-control" value="@(schedule.InstallmentNo ?? 0)" required />
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Due Date</label>
+                                            <input type="date" name="DueDate" class="form-control" value="@schedule.DueDate.ToString("yyyy-MM-dd")" required />
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Description</label>
+                                            <input type="text" name="PaymentDescription" class="form-control" value="@schedule.PaymentDescription" required />
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Amount (PKR)</label>
+                                            <input type="number" name="Amount" step="1" min="1" class="form-control js-installment-amount" value="@Math.Round(schedule.Amount, 0, MidpointRounding.AwayFromZero).ToString(System.Globalization.CultureInfo.InvariantCulture)" required />
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Surcharge Rate</label>
+                                            <input type="number" name="SurchargeRate" step="0.0001" class="form-control" value="@schedule.SurchargeRate.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                        </div>
+
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label d-block">&nbsp;</label>
+                                            <div class="form-check form-switch">
+                                                <input type="checkbox" name="SurchargeApplied" class="form-check-input" @(schedule.SurchargeApplied ? "checked" : "") />
+                                                <label class="form-check-label">Apply Surcharge</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12 mb-3">
+                                            <label class="form-label">Additional Notes</label>
+                                            <textarea name="Description" class="form-control" rows="2">@schedule.Description</textarea>
+                                        </div>
+                                    </div>
+
+                                    <div class="plan-total-adjust-panel alert alert-warning py-3 mt-2 d-none" role="region" aria-label="Plan total adjustment">
+                                        <p class="small mb-2 plan-total-adjust-message"></p>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="adjustPlanTotal" value="true" id="adjustPlanTotal_@schedule.ScheduleID" />
+                                            <label class="form-check-label" for="adjustPlanTotal_@schedule.ScheduleID">
+                                                Increase payment plan total (PKR) to fit this installment change
+                                            </label>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="form-label small">New plan total (PKR)</label>
+                                            <input type="number" name="newPlanTotalPkr" step="1" min="0" class="form-control form-control-sm input-new-plan-total" placeholder="Defaults to sum of all installments" />
+                                        </div>
+                                        <div class="mb-0">
+                                            <label class="form-label small">Reason for plan total change <span class="text-danger">*</span></label>
+                                            <textarea name="changeReason" class="form-control form-control-sm input-change-reason" rows="2" maxlength="2000" placeholder="Required when increasing plan total (audit)"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>Save Changes
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-3">
+                <i class="fas fa-calendar-plus fa-2x mb-2 text-muted"></i>
+                <h6 class="text-muted mb-1">No Installments Added Yet</h6>
+                <p class="text-muted small mb-2">Create installment schedules for this payment plan.</p>
+                @if (ViewBag.CanCreate == true)
+                {
+                <a asp-action="CreatePaymentSchedule" asp-route-planId="@Model.PlanID" class="btn btn-sm btn-primary py-0 px-2">
+                    <i class="fas fa-plus me-1"></i>Add First Installment
+                </a>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Delete Form (Hidden) -->
+<form id="deleteForm" asp-action="DeletePaymentSchedule" method="post" style="display: none;">
+    <input type="hidden" id="deleteScheduleID" name="scheduleId" />
+    <input type="hidden" name="planId" value="@Model.PlanID" />
+</form>
+
+<style>
+    code {
+        background: rgba(37, 99, 235, 0.08);
+        color: #1e40af;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* Mildly lighter section headers vs solid primary purple */
+    .pms-ps-header-bar {
+        background: linear-gradient(
+            180deg,
+            #dbeafe 0%,
+            #eef2ff 55%,
+            #f1f5f9 100%
+        ) !important;
+        border-bottom: 1px solid #cbd5e1;
+        color: #1e3a8a;
+    }
+
+    .pms-ps-header-bar h6 {
+        color: #1e3a8a !important;
+        font-size: 0.9rem;
+        font-weight: 650;
+    }
+
+    .pms-ps-plan-body,
+    .pms-ps-schedule-body {
+        background: #f8fafc;
+    }
+
+    .pms-ps-4col .pms-registration-4col-row {
+        padding-bottom: 0.35rem;
+        margin-bottom: 0.35rem !important;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-ps-4col .pms-registration-4col-row:last-child {
+        border-bottom: 0;
+        margin-bottom: 0 !important;
+        padding-bottom: 0;
+    }
+
+    .pms-ps-4col .pms-registration-4col-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #0f172a;
+        line-height: 1.2;
+    }
+
+    .pms-ps-field {
+        min-height: 1.85rem;
+        padding: 0.25rem 0.5rem;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 6px;
+        color: #1d4ed8;
+        font-size: 0.875rem;
+        font-weight: 650;
+        line-height: 1.35;
+    }
+
+    .pms-ps-field-amount {
+        font-size: 0.95rem;
+    }
+
+    .pms-ps-field-unit {
+        font-size: 0.75rem;
+        font-weight: 700;
+        opacity: 0.85;
+    }
+
+    .pms-ps-balance-hint {
+        font-size: 0.72rem;
+        margin-top: 0.35rem;
+    }
+
+    .plan-balance-inline.plan-balance--positive {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #047857;
+    }
+
+    .plan-balance-inline.plan-balance--negative {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #b91c1c;
+    }
+
+    .plan-balance-inline.plan-balance--zero {
+        background: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1d4ed8;
+    }
+
+    .pms-ps-schedule-body .table {
+        background: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 0;
+        font-size: 0.85rem;
+    }
+
+    .pms-ps-schedule-body .table > :not(caption) > * > * {
+        padding: 0.4rem 0.55rem;
+    }
+
+    .pms-ps-schedule-body .table thead th {
+        background: #f1f5f9;
+        border-bottom-color: #e2e8f0;
+        color: #334155;
+        font-weight: 650;
+        font-size: 0.78rem;
+        white-space: nowrap;
+    }
+
+    .plan-balance-callout {
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+    }
+
+    .plan-balance-callout-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        opacity: 0.9;
+        margin-bottom: 0.35rem;
+    }
+
+    .plan-balance-callout-pkr {
+        font-size: 1.85rem;
+        font-weight: 800;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+    }
+
+    .plan-balance-callout-currency {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-left: 0.35rem;
+        opacity: 0.85;
+    }
+
+    .plan-balance-callout-hint {
+        font-size: 0.8rem;
+        margin-top: 0.35rem;
+        opacity: 0.85;
+    }
+
+    .plan-balance-callout-sub {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        opacity: 0.8;
+        margin-bottom: 0.2rem;
+    }
+
+    .plan-balance-callout-usd {
+        font-size: 1.25rem;
+        font-weight: 800;
+    }
+
+    .plan-balance--positive {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(236, 253, 245, 0.9) 100%);
+        border-left: 4px solid #34d399;
+    }
+
+    .plan-balance--positive .plan-balance-callout-title,
+    .plan-balance--positive .plan-balance-callout-pkr {
+        color: #047857;
+    }
+
+    .plan-balance--negative {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(254, 242, 242, 0.95) 100%);
+        border-left: 4px solid #f87171;
+    }
+
+    .plan-balance--negative .plan-balance-callout-title,
+    .plan-balance--negative .plan-balance-callout-pkr {
+        color: #b91c1c;
+    }
+
+    .plan-balance--zero {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(239, 246, 255, 0.95) 100%);
+        border-left: 4px solid #60a5fa;
+    }
+
+    .plan-balance--zero .plan-balance-callout-title,
+    .plan-balance--zero .plan-balance-callout-pkr {
+        color: #1d4ed8;
+    }
+
+    /* Remove backdrop completely */
+    .modal-backdrop {
+        display: none !important;
+    }
+
+    body.modal-open .modal-backdrop {
+        display: none !important;
+    }
+
+    /* Disable global dim overlay from layout */
+    body.modal-open::before {
+        display: none !important;
+        background: transparent !important;
+    }
+
+    /* Ensure modals display properly */
+    .modal {
+        z-index: 1055 !important;
+        background: rgba(0, 0, 0, 0) !important;
+        padding: 0 !important;
+    }
+
+    .modal.show {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0) !important;
+        padding: 0 !important;
+    }
+
+    .modal-dialog {
+        z-index: 1056 !important;
+        margin: 1.75rem auto;
+        position: relative;
+    }
+
+    .modal-content {
+        background: white !important;
+        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+        border-radius: 0.5rem !important;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+        position: relative;
+        z-index: 1057 !important;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        background: white !important;
+        position: relative;
+        z-index: 1058 !important;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        function deleteSchedule(scheduleId) {
+            if (confirm('Are you sure you want to delete this installment?\n\nThis action cannot be undone.')) {
+                document.getElementById('deleteScheduleID').value = scheduleId;
+                document.getElementById('deleteForm').submit();
+            }
+        }
+
+        // Remove backdrop and ensure modals display properly
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                var flash = sessionStorage.getItem('pmsPaymentPlanSaveSuccess');
+                if (flash) {
+                    sessionStorage.removeItem('pmsPaymentPlanSaveSuccess');
+                    var alertEl = document.getElementById('pmsSaveSuccessAlert');
+                    var textEl = document.getElementById('pmsSaveSuccessText');
+                    if (alertEl && textEl) {
+                        textEl.textContent = flash;
+                        alertEl.classList.remove('d-none');
+                    }
+                } else if (new URLSearchParams(window.location.search).get('created') === '1') {
+                    var alertEl2 = document.getElementById('pmsSaveSuccessAlert');
+                    var textEl2 = document.getElementById('pmsSaveSuccessText');
+                    if (alertEl2 && textEl2) {
+                        textEl2.textContent = 'Payment plan and schedules were saved successfully.';
+                        alertEl2.classList.remove('d-none');
+                    }
+                }
+            } catch (e) { /* ignore */ }
+
+            // Function to remove backdrops
+            function removeBackdrops() {
+                var backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(function(backdrop) {
+                    backdrop.remove();
+                });
+            }
+
+            // Remove any existing backdrops immediately
+            removeBackdrops();
+
+            // Initialize all modals with no backdrop
+            var allModals = document.querySelectorAll('.modal');
+            allModals.forEach(function(modalElement) {
+                // Ensure backdrop is disabled
+                modalElement.setAttribute('data-bs-backdrop', 'false');
+                
+                // Initialize modal with no backdrop
+                var modal = new bootstrap.Modal(modalElement, {
+                    backdrop: false,
+                    keyboard: true,
+                    focus: true
+                });
+                
+                // Remove backdrop on show
+                modalElement.addEventListener('show.bs.modal', function() {
+                    removeBackdrops();
+                    modalElement.style.display = 'block';
+                });
+                
+                modalElement.addEventListener('shown.bs.modal', function() {
+                    removeBackdrops();
+                    modalElement.classList.add('show');
+                    modalElement.style.display = 'block';
+                });
+
+                modalElement.addEventListener('hidden.bs.modal', function() {
+                    removeBackdrops();
+                });
+            });
+
+            // Also remove backdrops periodically as a safeguard
+            setInterval(removeBackdrops, 100);
+
+            document.querySelectorAll('form.edit-schedule-form').forEach(function (form) {
+                var amountInput = form.querySelector('.js-installment-amount');
+                var panel = form.querySelector('.plan-total-adjust-panel');
+                var msg = form.querySelector('.plan-total-adjust-message');
+                var newTotalInput = form.querySelector('.input-new-plan-total');
+                var chk = form.querySelector('input[name="adjustPlanTotal"]');
+                var reasonInput = form.querySelector('.input-change-reason');
+
+                function fmt(n) {
+                    return Math.round(Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                }
+
+                // TEMPORARY: installment sum vs plan total balance check disabled.
+                function syncPlanAdjustPanel() {
+                    if (panel) panel.classList.add('d-none');
+                    if (chk) chk.checked = false;
+                }
+
+                if (amountInput) {
+                    amountInput.addEventListener('input', syncPlanAdjustPanel);
+                    amountInput.addEventListener('change', syncPlanAdjustPanel);
+                }
+                var modalEl = form.closest('.modal');
+                if (modalEl) modalEl.addEventListener('shown.bs.modal', syncPlanAdjustPanel);
+            });
+        });
+    </script>
+}
+
+

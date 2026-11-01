@@ -1,0 +1,356 @@
+@model Salzee.Models.Transfer
+@{
+    Layout = null;
+    ViewData["Title"] = "Property Transfer Certificate - " + Model.TransferID;
+    var orgName = "ZKB";
+    var orgSubName = "Property Management System";
+    var headOfficeAddress = "Head Office";
+    var projectName = Model.Customer?.PaymentPlan?.Project?.ProjectName ?? "—";
+    var subProject = Model.Customer?.SubProject ?? Model.Customer?.PaymentPlan?.SubProject ?? "—";
+    var registeredSize = Model.Customer?.RegisteredSize ?? Model.Customer?.PaymentPlan?.RegisteredSize ?? "—";
+    var propertyType = "Property/File";
+    var unitOrPlotNo = Model.CustomerID ?? "—";
+    var issueDate = DateTime.Now;
+    var jointOwnerNames = (Model.Customer?.JointOwners ?? new List<Salzee.Models.JointOwner>())
+        .Select(j => j.JointOwnerName?.Trim())
+        .Where(n => !string.IsNullOrWhiteSpace(n))
+        .ToList();
+    var customerNameWithJointOwners = jointOwnerNames.Any()
+        ? string.Join(" / ", (new[] { Model.Customer?.FullName ?? "—" }).Concat(jointOwnerNames.Where(n => !string.Equals(n, Model.Customer?.FullName, StringComparison.OrdinalIgnoreCase))))
+        : (Model.Customer?.FullName ?? "—");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ZKB Eclipse</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/juba-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <h3 class="mb-0"><i class="fas fa-file-signature me-2"></i>Property Transfer Certificate</h3>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()"><i class="fas fa-print me-1"></i>Print</button>
+    </div>
+</div>
+
+<div class="a4-container">
+    <div class="a4-header">
+        <div class="header-grid">
+            <div class="header-logo-wrap">
+                <img src="~/images/logo.jpeg" alt="Organization Logo" class="a4-logo" />
+            </div>
+            <div class="header-center">
+                <div class="org-name">@orgName</div>
+                <div class="org-subname">@orgSubName</div>
+                <div class="statement-title">Property Transfer Certificate</div>
+            </div>
+            <div class="header-meta">
+                <div><strong>Date:</strong> @issueDate.ToString("MMM dd, yyyy")</div>
+                <div><strong>Transfer No:</strong> @Model.TransferID</div>
+                <div><strong>File No:</strong> @(Model.CustomerID ?? "—")</div>
+            </div>
+        </div>
+        <div class="header-secondary mt-2">
+            <div><strong>Head Office:</strong> @headOfficeAddress</div>
+            <div><strong>Project:</strong> @projectName</div>
+        </div>
+    </div>
+
+    <div class="a4-section">
+        <p class="certificate-paragraph">
+            This is to certify that the ownership/allotment of <strong>@propertyType</strong> No. <strong>@unitOrPlotNo</strong>, measuring
+            <strong>@registeredSize</strong>, situated in <strong>@projectName / @subProject</strong>, has been transferred as per record
+            maintained by <strong>@orgName</strong>.
+        </p>
+    </div>
+
+    <div class="a4-section">
+        <div class="owner-grid">
+            <div class="owner-col">
+                <div class="a4-section-title">Current Owner Details</div>
+                <div class="a4-info-block">
+                    <div class="a4-info-row"><span class="a4-info-label">Name:</span><span class="a4-info-value">@customerNameWithJointOwners</span></div>
+                    <div class="a4-info-row"><span class="a4-info-label">CNIC:</span><span class="a4-info-value">@(Model.BuyerCNIC ?? "—")</span></div>
+                    <div class="a4-info-row"><span class="a4-info-label">Son/D/W/o:</span><span class="a4-info-value">@(Model.BuyerFatherName ?? "—")</span></div>
+                    <div class="a4-info-row"><span class="a4-info-label">Passport No:</span><span class="a4-info-value">@(Model.BuyerPassportNo ?? "—")</span></div>
+                </div>
+            </div>
+            <div class="owner-col">
+                <div class="a4-section-title">Previous Owner Details</div>
+                <div class="a4-info-block">
+                    <div class="a4-info-row"><span class="a4-info-label">Name:</span><span class="a4-info-value">@(Model.SellerName ?? "—")</span></div>
+                    <div class="a4-info-row"><span class="a4-info-label">CNIC:</span><span class="a4-info-value">@(Model.SellerCNIC ?? "—")</span></div>
+                    <div class="a4-info-row"><span class="a4-info-label">Son/D/W/o:</span><span class="a4-info-value">@(Model.SellerFatherName ?? "—")</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="a4-section">
+        <p class="a4-statement">
+            The transfer has been executed after verification of documents and clearance of all outstanding dues (if applicable),
+            in accordance with the policies and regulations of the Company.
+            The New Owner shall be responsible for all future dues, charges, and compliance requirements related to the said property.
+        </p>
+    </div>
+
+    <div class="a4-section">
+        <div class="a4-section-title">Additional Record References</div>
+        <div class="a4-info-block">
+            <div class="a4-info-row"><span class="a4-info-label">Status:</span><span class="a4-info-value">@(Model.WorkFlowStatus ?? "—")</span></div>
+            <div class="a4-info-row"><span class="a4-info-label">Plan Name:</span><span class="a4-info-value">@(Model.Customer?.PaymentPlan?.PlanName ?? "—")</span></div>
+            <div class="a4-info-row"><span class="a4-info-label">Project / Sub-Project:</span><span class="a4-info-value">@projectName / @subProject</span></div>
+            <div class="a4-info-row"><span class="a4-info-label">Transfer Recorded On:</span><span class="a4-info-value">@Model.CreatedAt.ToString("MMMM dd, yyyy")</span></div>
+            @if (!string.IsNullOrWhiteSpace(Model.Details))
+            {
+                <div class="a4-info-row"><span class="a4-info-label">Details:</span><span class="a4-info-value">@Model.Details</span></div>
+            }
+        </div>
+    </div>
+
+    <div class="a4-section">
+        <p class="a4-statement">
+            This certificate is issued for record and official purposes.
+        </p>
+    </div>
+
+    <div class="a4-section">
+        <div class="a4-section-title">Issued By</div>
+        <div class="signature-grid">
+            <div class="signature-block">
+                <div><strong>@orgName</strong></div>
+                <div class="sig-line">Authorized Officer: ____________________</div>
+                <div class="sig-line">Designation: ____________________</div>
+                <div class="sig-line">Signature: ____________________</div>
+                <div class="sig-line">Official Stamp</div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="a4-footer">
+            <div>The ownership of the subject property has been transferred to the new owner as per record.</div>
+                    <div>Any dues, charges, or liabilities (if applicable) after the date of transfer shall be the responsibility of the new owner.</div>
+        <div>Payments made after blocking or cancellation due to non-payment will not be entertained.</div>
+        <div>Errors and omissions are subject to correction.</div>
+        <div>Please clear your outstanding dues promptly to avoid surcharge or cancellation.</div>
+        <div>Processing fee and discount(s), if any, are non-refundable.</div>
+        <div>For queries or feedback, please email: care@zkbeclipse.com</div>
+    </div>
+</div>
+
+<style>
+    .a4-container {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        padding: 15mm;
+        background: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow: hidden;
+    }
+
+    .a4-header {
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+    }
+
+    .header-grid {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .header-logo-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .header-center {
+        text-align: center;
+    }
+
+    .org-name {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: .4px;
+        color: #111;
+        line-height: 1.1;
+        text-transform: uppercase;
+    }
+
+    .org-subname {
+        font-size: 11px;
+        color: #666;
+        margin-top: 2px;
+        line-height: 1.2;
+    }
+
+    .statement-title {
+        margin-top: 6px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #222;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+
+    .header-meta {
+        font-size: 11px;
+        color: #333;
+        text-align: right;
+        line-height: 1.45;
+        justify-self: end;
+    }
+
+    .header-secondary {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed #ddd;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        font-size: 11px;
+        color: #444;
+    }
+
+    .a4-container {
+        page-break-inside: avoid;
+    }
+
+    .a4-section {
+        margin-bottom: 12px;
+    }
+
+    .a4-section-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 8px;
+        padding-bottom: 3px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .certificate-paragraph {
+        font-size: 11px;
+        line-height: 1.55;
+        color: #2b2b2b;
+        margin: 0;
+    }
+
+    .a4-info-block {
+        background: #fafafa;
+        padding: 10px;
+        border-radius: 2px;
+        border: 1px solid #d9d9d9;
+        margin-bottom: 0;
+    }
+
+    .a4-info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 4px;
+        font-size: 11px;
+    }
+
+    .a4-info-label {
+        font-weight: 600;
+        color: #555;
+        white-space: nowrap;
+    }
+
+    .a4-info-value {
+        color: #333;
+        text-align: right;
+    }
+
+    .a4-statement {
+        font-size: 11px;
+        line-height: 1.55;
+        color: #333;
+        margin-bottom: 0;
+        text-align: justify;
+    }
+
+    .owner-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        align-items: stretch;
+    }
+
+    .owner-col {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .owner-col .a4-info-block {
+        flex: 1;
+    }
+
+    .signature-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .signature-block {
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 10px;
+        background: #fff;
+        font-size: 11px;
+        color: #333;
+    }
+
+    .sig-line {
+        margin-top: 10px;
+    }
+
+    .a4-footer {
+        margin-top: 14px;
+        padding-top: 8px;
+        border-top: 1px solid #ddd;
+        font-size: 9px;
+        color: #666;
+        text-align: center;
+    }
+
+    .a4-logo {
+        max-width: 80px;
+        max-height: 80px;
+        object-fit: contain;
+    }
+
+    @@media print {
+        @@page { size: A4; margin: 0; }
+        body { margin: 0; padding: 0; background: white; }
+        .a4-container { width: 210mm; min-height: 297mm; margin: 0; padding: 12mm; box-shadow: none; }
+        .no-print { display: none !important; }
+    }
+
+    @@media screen {
+        body { background: #f5f5f5; padding: 20px; }
+        .a4-container { margin: 20px auto; }
+    }
+
+    @@media (max-width: 900px) {
+        .owner-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</body>
+</html>

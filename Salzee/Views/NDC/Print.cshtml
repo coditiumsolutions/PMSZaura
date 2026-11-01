@@ -1,0 +1,396 @@
+@model Salzee.Models.NDC
+
+@{
+    Layout = null;
+    ViewData["Title"] = "No Dues Certificate - " + Model.NDCID;
+    var orgName = "ZKB";
+    var orgSubName = "Property Management System";
+    var appNo = Model.NDCID;
+    var regNo = Model.CustomerID ?? "—";
+    var ndcType = string.IsNullOrWhiteSpace(Model.NDCType) ? "NDC" : Model.NDCType;
+    var jointOwnerNames = (Model.Customer?.JointOwners ?? new List<Salzee.Models.JointOwner>())
+        .Select(j => j.JointOwnerName?.Trim())
+        .Where(n => !string.IsNullOrWhiteSpace(n))
+        .ToList();
+    var customerNameWithJointOwners = jointOwnerNames.Any()
+        ? string.Join(" / ", (new[] { Model.Customer?.FullName ?? "—" }).Concat(jointOwnerNames.Where(n => !string.Equals(n, Model.Customer?.FullName, StringComparison.OrdinalIgnoreCase))))
+        : (Model.Customer?.FullName ?? "—");
+    var amountPerUnit = Math.Max(Model.AmountPerUnit ?? 0m, 0m);
+    var propertySize = Math.Max(Model.PropertySize ?? 0m, 0m);
+    var totalDueInstallments = Math.Max(Model.TotalDueAmount ?? 0m, 0m);
+    var totalPaidInstallments = Math.Max(Model.TotalDueInstallments ?? 0m, 0m);
+    var remainingInstallments = Math.Max(Model.RemainingDues ?? 0m, 0m);
+    var transferFeeAmount = Math.Max(Model.TransferFeeAmount ?? 0m, 0m);
+    var dueSurcharge = Math.Max(ViewBag.TotalDueSurcharge as decimal? ?? 0m, 0m);
+    var totalPayable = remainingInstallments + transferFeeAmount + dueSurcharge;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ZKB Eclipse</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/juba-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+
+<!-- Print/Download Controls -->
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <h3 class="mb-0"><i class="fas fa-certificate me-2"></i>No Dues Certificate</h3>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary btn-sm" onclick="window.print()"><i class="fas fa-print me-1"></i>Print</button>
+    </div>
+</div>
+
+<div class="a4-container">
+    <div id="ndc-root">
+        <!-- Header Section (reference style) -->
+        <div class="a4-header">
+            <div class="header-grid">
+                <div class="header-logo-wrap">
+                    <img src="~/images/logo.jpeg" alt="Organization Logo" class="a4-logo" />
+                </div>
+                <div class="header-center">
+                    <div class="org-name">@orgName</div>
+                    <div class="org-subname">@orgSubName</div>
+                    <div class="statement-title">Statement of NDC</div>
+                </div>
+                <div class="header-meta">
+                    <div><strong>Type:</strong> @ndcType</div>
+                    <div><strong>Registration No.:</strong> @regNo</div>
+                    <div><strong>Application No.:</strong> @appNo</div>
+                </div>
+            </div>
+            <div class="header-secondary mt-2">
+                <div><strong>Expiry Date:</strong> @(Model.NDCExpiryDate?.ToString("MMM dd, yyyy") ?? "—")</div>
+                <div><strong>Initiating Office:</strong> @(Model.Customer?.City ?? "Head Office")</div>
+            </div>
+        </div>
+
+        <!-- NDC & Customer Information -->
+        <div class="a4-section">
+            <p class="certificate-paragraph">
+                The details of dues till date against registration no. <strong>@(Model.CustomerID ?? "—")</strong>
+                for customer/applicant <strong>@customerNameWithJointOwners</strong> under plan
+                <strong>@(Model.Customer?.PaymentPlan?.PlanName ?? "—")</strong> in project
+                <strong>@(Model.Customer?.PaymentPlan?.Project?.ProjectName ?? "—")</strong> are as follows:
+            </p>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Title) || amountPerUnit > 0m || propertySize > 0m || transferFeeAmount > 0m)
+        {
+            <div class="a4-section">
+                <div class="a4-section-title">Title / Reference</div>
+                <div class="a4-info-block" style="margin-bottom: 0;">
+                    @if (!string.IsNullOrWhiteSpace(Model.Title))
+                    {
+                        <div class="a4-info-value"><strong>@Model.Title</strong></div>
+                    }
+                    @if (amountPerUnit > 0m || propertySize > 0m || transferFeeAmount > 0m)
+                    {
+                        <div class="a4-info-value mt-1">
+                            Amount/Unit: @amountPerUnit.ToString("N2") | Size: @propertySize.ToString("N2") | Transfer Fee: @transferFeeAmount.ToString("N2")
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- Remaining Dues Table -->
+        <div class="a4-section">
+            <div class="a4-section-title">Remaining Dues Summary</div>
+            <table class="a4-table">
+                <thead>
+                    <tr>
+                        <th class="text-start">Particulars</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-start">Total Due Installment</td>
+                        <td class="text-end">@totalDueInstallments.ToString("N0")</td>
+                    </tr>
+                    <tr>
+                        <td class="text-start">Total Paid Installments</td>
+                        <td class="text-end">@totalPaidInstallments.ToString("N0")</td>
+                    </tr>
+                    <tr>
+                        <td class="text-start">Remaining Installments</td>
+                        <td class="text-end">@remainingInstallments.ToString("N0")</td>
+                    </tr>
+                    <tr>
+                        <td class="text-start">Transfer Fee</td>
+                        <td class="text-end">@transferFeeAmount.ToString("N0")</td>
+                    </tr>
+                    <tr>
+                        <td class="text-start">Due Surcharge</td>
+                        <td class="text-end">@dueSurcharge.ToString("N0")</td>
+                    </tr>
+                    <tr>
+                        <td class="text-start"><strong>Total (Remaining Installments + Transfer Fee + Due Surcharge)</strong></td>
+                        <td class="text-end"><strong>@totalPayable.ToString("N0")</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Comments))
+        {
+            <div class="a4-section">
+                <div class="a4-section-title">Comments</div>
+                <div class="a4-info-block" style="margin-bottom: 0;">
+                    <div class="a4-info-value">@Model.Comments</div>
+                </div>
+            </div>
+        }
+
+        @{
+            var ndcAttachments = ViewBag.NdcAttachments as List<Salzee.Models.Attachment> ?? new List<Salzee.Models.Attachment>();
+        }
+        @if (ndcAttachments.Count > 0)
+        {
+            <div class="a4-section">
+                <div class="a4-section-title">Attachments</div>
+                <table class="a4-table">
+                    <thead>
+                        <tr>
+                            <th class="text-start">File</th>
+                            <th class="text-start">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var att in ndcAttachments)
+                        {
+                            <tr>
+                                <td class="text-start">@(att.FileName ?? "Attachment")</td>
+                                <td class="text-start">@(string.IsNullOrWhiteSpace(att.Description) ? "—" : att.Description)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <!-- Footer -->
+        <div class="a4-footer">
+            <div>This is a system generated statement and does not require a signature.</div>
+            <div style="margin-top: 10px;">
+                <strong>@orgName - @orgSubName</strong><br>
+                Generated on: @DateTime.Now.ToString("MMMM dd, yyyy at hh:mm tt")
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* A4 Paper Size Styling - same as AccountStatement */
+    .a4-container {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 0 auto;
+        padding: 15mm;
+        background: white;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        overflow: hidden;
+    }
+
+    .a4-header {
+        border-bottom: 2px solid #333;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+    }
+
+    .header-grid {
+        display: grid;
+        grid-template-columns: 88px 1fr 190px;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .header-logo-wrap {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .header-center {
+        text-align: center;
+    }
+
+    .org-name {
+        font-size: 20px;
+        font-weight: 800;
+        color: #111;
+        line-height: 1.1;
+    }
+
+    .org-subname {
+        font-size: 13px;
+        font-weight: 700;
+        color: #111;
+        line-height: 1.15;
+        margin-top: 2px;
+    }
+
+    .statement-title {
+        font-size: 16px;
+        font-weight: 800;
+        margin-top: 5px;
+    }
+
+    .header-meta {
+        font-size: 10px;
+        line-height: 1.25;
+    }
+
+    .header-secondary {
+        font-size: 10px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-left: 96px;
+    }
+
+    .certificate-paragraph {
+        font-size: 14px;
+        line-height: 1.45;
+        margin: 0;
+    }
+
+    .a4-section {
+        margin-bottom: 12px;
+    }
+
+    .a4-section-title {
+        font-size: 13px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 8px;
+        padding-bottom: 3px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .a4-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 12px;
+    }
+
+    .a4-info-block {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+    }
+
+    .a4-info-block h6 {
+        font-size: 11px;
+        font-weight: bold;
+        margin-bottom: 6px;
+        color: #333;
+    }
+
+    .a4-info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 3px;
+        font-size: 10px;
+    }
+
+    .a4-info-label {
+        font-weight: 600;
+        color: #555;
+    }
+
+    .a4-info-value {
+        color: #333;
+    }
+
+    .a4-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9px;
+        margin-bottom: 10px;
+    }
+
+    .a4-table th {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        padding: 4px 3px;
+        font-weight: bold;
+        text-align: center;
+        font-size: 9px;
+    }
+
+    .a4-table td {
+        border: 1px solid #ddd;
+        padding: 4px 3px;
+        text-align: center;
+        font-size: 9px;
+    }
+
+    .a4-table .text-start { text-align: left; }
+    .a4-table .text-end { text-align: right; }
+
+    .a4-footer {
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px solid #ddd;
+        font-size: 9px;
+        color: #666;
+        text-align: center;
+    }
+
+    .a4-logo {
+        max-width: 74px;
+        height: auto;
+    }
+
+    @@media (max-width: 992px) {
+        .header-grid {
+            grid-template-columns: 1fr;
+        }
+        .header-secondary {
+            margin-left: 0;
+            grid-template-columns: 1fr;
+        }
+        .header-center {
+            text-align: left;
+        }
+    }
+
+    @@media print {
+        @@page { size: A4; margin: 0; }
+        body { margin: 0; padding: 0; background: white; }
+        .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0;
+            padding: 12mm;
+            box-shadow: none;
+            page-break-after: avoid;
+            page-break-inside: avoid;
+            overflow: hidden;
+        }
+        .no-print { display: none !important; }
+        .a4-section { page-break-inside: avoid; margin-bottom: 8px; }
+        .a4-header { margin-bottom: 8px; padding-bottom: 8px; }
+        .a4-footer { margin-top: 8px; padding-top: 5px; }
+        .a4-info-grid { page-break-inside: avoid; }
+    }
+
+    @@media screen {
+        body { background: #f5f5f5; padding: 20px; }
+        .a4-container { margin: 20px auto; }
+    }
+</style>
+
+</body>
+</html>

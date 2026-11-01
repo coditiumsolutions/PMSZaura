@@ -1,0 +1,207 @@
+@model Salzee.Models.Possession
+@{
+    ViewData["Title"] = "Possession " + Model.PossessionID;
+    var approvedStatus = (string?)ViewBag.ApprovedStatus ?? "Approved";
+    var declinedStatus = (string?)ViewBag.DeclinedStatus ?? "Declined";
+    var opsStatus = (string?)ViewBag.OperationsDeskStatus ?? "Operations Desk";
+    var wf = Model.WorkFlowStatus ?? "";
+    var badgeClass = string.Equals(wf, approvedStatus, StringComparison.OrdinalIgnoreCase) ? "bg-success"
+        : string.Equals(wf, declinedStatus, StringComparison.OrdinalIgnoreCase) ? "bg-danger" : "bg-warning text-dark";
+    var atOps = string.Equals(wf, opsStatus, StringComparison.OrdinalIgnoreCase);
+}
+
+<div style="display:none;">@Html.AntiForgeryToken()</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <h2 class="mb-0"><i class="fas fa-key me-2"></i>Possession <code>@Model.PossessionID</code></h2>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i>Back</a>
+        @if (ViewBag.CanEdit == true && !string.Equals(wf, approvedStatus, StringComparison.OrdinalIgnoreCase) && !string.Equals(wf, declinedStatus, StringComparison.OrdinalIgnoreCase))
+        {
+            <a asp-action="Edit" asp-route-id="@Model.PossessionID" class="btn btn-primary btn-sm"><i class="fas fa-edit me-1"></i>Edit</a>
+        }
+        @if (ViewBag.CanDelete == true && !string.Equals(wf, approvedStatus, StringComparison.OrdinalIgnoreCase))
+        {
+            <form asp-action="Delete" asp-route-id="@Model.PossessionID" method="post" class="d-inline" onsubmit="return confirm('Delete this possession request?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash me-1"></i>Delete</button>
+            </form>
+        }
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<div class="alert @(string.Equals(wf, approvedStatus, StringComparison.OrdinalIgnoreCase) ? "alert-success" : string.Equals(wf, declinedStatus, StringComparison.OrdinalIgnoreCase) ? "alert-danger" : "alert-warning") d-flex align-items-center gap-2 mb-4">
+    <strong>Status:</strong> <span class="badge @badgeClass fs-6">@wf</span>
+</div>
+
+@if (atOps && ViewBag.CanEdit == true)
+{
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white fw-semibold">Approve</div>
+                <div class="card-body">
+                    <form asp-action="Approve" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.PossessionID" />
+                        <label class="form-label small">Notes (optional)</label>
+                        <textarea name="notes" class="form-control form-control-sm mb-2" rows="2"></textarea>
+                        <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check me-1"></i>Approve</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white fw-semibold">Decline</div>
+                <div class="card-body">
+                    <form asp-action="Decline" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.PossessionID" />
+                        <label class="form-label small">Notes (optional)</label>
+                        <textarea name="notes" class="form-control form-control-sm mb-2" rows="2"></textarea>
+                        <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-times me-1"></i>Decline</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<ul class="nav nav-tabs mb-0" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabOverview" type="button">Overview</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabAttachments" type="button">Attachments</button></li>
+</ul>
+<div class="tab-content border border-top-0 rounded-bottom p-3 mb-4 bg-white">
+    <div class="tab-pane fade show active" id="tabOverview">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header fw-semibold">Possession</div>
+                    <div class="card-body">
+                        <table class="table table-sm table-borderless">
+                            <tr><th style="width:40%">Property</th><td><code>@(Model.PropertyID ?? "—")</code></td></tr>
+                            <tr><th>Customer</th><td><code>@(Model.CustomerID ?? "—")</code></td></tr>
+                            <tr><th>Possession date</th><td>@Model.PossessionDate.ToString("yyyy-MM-dd")</td></tr>
+                            <tr><th>Due charges</th><td>PKR @Model.PossessionDueCharges.ToString("N2")</td></tr>
+                            <tr><th>Paid charges</th><td>PKR @Model.PossessionPaidCharges.ToString("N2")</td></tr>
+                            <tr><th>Bank</th><td>@(Model.BankName ?? "—")</td></tr>
+                            <tr><th>Paid date</th><td>@(Model.PaidDate?.ToString("yyyy-MM-dd") ?? "—")</td></tr>
+                            <tr><th>Instrument</th><td>@(Model.InstrumentNo ?? "—")</td></tr>
+                            <tr><th>Payment method</th><td>@(Model.PaymentMethod ?? "—")</td></tr>
+                            <tr><th>Comments</th><td>@(Model.Comments ?? "—")</td></tr>
+                            <tr><th>Remarks</th><td>@(Model.Remarks ?? "—")</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header fw-semibold">Audit</div>
+                    <div class="card-body">
+                        <table class="table table-sm table-borderless">
+                            <tr><th style="width:40%">Created</th><td>@(Model.CreatedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—") by @(Model.CreatedByUser?.FullName ?? Model.CreatedBy ?? "—")</td></tr>
+                            <tr><th>Modified</th><td>@(Model.ModifiedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—") by @(Model.ModifiedByUser?.FullName ?? Model.ModifiedBy ?? "—")</td></tr>
+                            <tr><th>Approved</th><td>@(Model.ApprovedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—") by @(Model.ApprovedByUser?.FullName ?? Model.ApprovedBy ?? "—")</td></tr>
+                            <tr><th>Declined</th><td>@(Model.DeclinedAt?.ToString("yyyy-MM-dd HH:mm") ?? "—") by @(Model.DeclinedByUser?.FullName ?? Model.DeclinedBy ?? "—")</td></tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tabAttachments">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header fw-semibold"><i class="fas fa-paperclip me-2"></i>Attachments</div>
+            <div class="card-body">
+                <p class="text-muted small mb-3">JPG, PNG, GIF, BMP, PDF. Max 8MB.</p>
+                @if (ViewBag.CanEdit == true && !string.Equals(wf, approvedStatus, StringComparison.OrdinalIgnoreCase))
+                {
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <input type="file" id="posFile" class="form-control form-control-sm" accept=".jpg,.jpeg,.png,.gif,.bmp,.pdf" />
+                        </div>
+                        <div class="col-md-4">
+                            <input type="text" id="posDesc" class="form-control form-control-sm" placeholder="Description" />
+                        </div>
+                        <div class="col-md-2 d-grid">
+                            <button type="button" class="btn btn-sm btn-primary" id="posUploadBtn"><i class="fas fa-upload me-1"></i>Upload</button>
+                        </div>
+                    </div>
+                }
+                <div id="posAttachmentsList"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .pos-att-list .att-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #eee; }
+    .pos-att-list .att-item:last-child { border-bottom: none; }
+</style>
+@section Scripts {
+<script>
+(function() {
+    var possessionId = '@Model.PossessionID';
+    var canDelete = @((ViewBag.CanDelete == true).ToString().ToLowerInvariant());
+    var tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
+    function getToken() { return tokenEl ? tokenEl.value : ''; }
+
+    function loadAttachments() {
+        $.get('@Url.Action("GetAttachments", "Possession")', { possessionId: possessionId }, function(res) {
+            if (res.success && res.attachments) renderList(res.attachments);
+        });
+    }
+    function renderList(items) {
+        var $c = $('#posAttachmentsList');
+        $c.empty().addClass('pos-att-list');
+        if (!items || items.length === 0) {
+            $c.html('<p class="text-muted mb-0 small">No attachments</p>');
+            return;
+        }
+        items.forEach(function(a) {
+            var isImg = a.fileType && a.fileType.indexOf('image') === 0;
+            var isPdf = a.fileType && a.fileType.indexOf('pdf') >= 0;
+            var icon = isImg ? 'fa-image' : (isPdf ? 'fa-file-pdf text-danger' : 'fa-file');
+            var delBtn = canDelete ? '<button type="button" class="btn btn-sm btn-outline-danger delete-att" data-id="' + a.attachmentID + '"><i class="fas fa-trash"></i></button>' : '';
+            var row = '<div class="att-item"><span><i class="fas ' + icon + ' me-2"></i>' + (a.fileName || 'File') + '</span><span>' +
+                '<a href="' + a.filePath + '" target="_blank" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></a>' + delBtn + '</span></div>';
+            $c.append(row);
+        });
+        $c.find('.delete-att').on('click', function() {
+            var id = $(this).data('id');
+            if (!confirm('Delete attachment?')) return;
+            $.post('@Url.Action("DeleteAttachment", "Possession")', { __RequestVerificationToken: getToken(), attachmentId: id })
+                .done(function(r) { if (r.success) loadAttachments(); else alert(r.message); });
+        });
+    }
+    $('#posUploadBtn').on('click', function() {
+        var fi = document.getElementById('posFile');
+        if (!fi || !fi.files || !fi.files[0]) { alert('Select a file'); return; }
+        var fd = new FormData();
+        fd.append('possessionId', possessionId);
+        fd.append('file', fi.files[0]);
+        fd.append('description', $('#posDesc').val() || '');
+        fd.append('__RequestVerificationToken', getToken());
+        var btn = $(this);
+        btn.prop('disabled', true);
+        $.ajax({ url: '@Url.Action("UploadAttachment", "Possession")', type: 'POST', data: fd, processData: false, contentType: false })
+            .done(function(r) {
+                if (r.success) { fi.value = ''; $('#posDesc').val(''); loadAttachments(); }
+                else alert(r.message || 'Upload failed');
+            })
+            .always(function() { btn.prop('disabled', false); });
+    });
+    loadAttachments();
+})();
+</script>
+}

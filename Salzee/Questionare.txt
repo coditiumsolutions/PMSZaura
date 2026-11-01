@@ -1,0 +1,128 @@
+Dear Coditium Team, following questions merit immediate reply and considerations. 
+These questions are based on last submitted evaluation template, detailed 3 hours presentation and discussion held during the meetings. 
+The ambiguities or any doubts are to be removed or properly documented prior contract signing o that there is no delay during sign-off phase. 
+Please reply inline to these questions.
+Q1.	What is the exact .NET version used? (Run 'dotnet --version' and write the output here. .NET 8 LTS is required — .NET Core 3.1, .NET 5, .NET 6, .NET 7 are all end-of-life.)
+The project targets net8.0 LTS, confirmed by <TargetFramework>net8.0</TargetFramework> in Salzee.csproj. Note: ".NET Core" as a brand ended at 3.1 — .NET 5 through .NET 8 are its direct successors under the unified ".NET" name; this project uses .NET 8, which is fully supported and not end-of-life.
+ 
+
+Q2.	Which SQL Server edition is used for production — Express, Standard, or Enterprise? Note: SQL Server Express has a 10GB relational database limit and does not support more than 1 socket or 4 core, nor supports AI function nor have maximum optimized database size of 352 MB. 
+Production: SQL Server 2022 Standard Edition (or equivalent supported version). The PMS uses Microsoft.EntityFrameworkCore.SqlServer (Program.cs, appsettings.json) and stores customers, payments, allotments, projects, properties, and payment schedules — data volume can exceed the 10GB Express limit over time. Express is not recommended: 10GB database cap, 4-core max, no AI features; Standard removes these limits and ensures scalability for multi-project deployments.
+
+
+Q3.	What are the operating system cost license , database license, antivirus software, firewall license etc cost – if local server is considered to be installed? It is to be noted that no unlicensed or pirated software is to be used in cloud or local deployment.
+Windows Server license included in VPS cost (PKR 50,000/month); SQL Server Standard licensed; no pirated software used; firewall/AV via licensed cloud tools.
+
+
+Q4. Is the frontend a full React Single Page Application (SPA) calling .NET API endpoints, or is React only used for some components inside ASP.NET MVC pages?
+Frontend is ASP.NET Core MVC with selective React components for dynamic UI sections (not a full SPA).
+
+
+Q5. Which browsers are fully tested and supported? Check all that apply and note any limitations: Chrome, Firefox, Edge, Safari, Mobile Chrome (Android), Mobile Safari (iOS).
+Fully tested on Chrome, Edge, Firefox; compatible with Safari and Mobile Chrome/Android; limited UI optimization for older Safari versions.
+
+Q6. Is the system deployed on IIS only, or can it also run on Azure App Service or Linux with Nginx?
+Currently deployed on Windows VPS with IIS; can also run on Azure App Service or Linux (Kestrel + Nginx).
+
+
+Q7. Can system be run with Postegre SQl or MySQL in Windows as well as Linux environment ?
+Primary DB is MS SQL Server; architecture supports PostgreSQL via EF Core provider; MySQL possible with minor configuration changes.
+
+
+
+Q8.	Does the PMS use DevExpress components? If yes, list every DevExpress package name and version number installed in the project (run: Get-Package in NuGet Package Manager and copy DevExpress entries).
+
+DevExpress is not used in the current PMS implementation.
+
+
+
+Q9. What DevExpress license tier does Coditium hold for this project? (e.g., Universal Subscription, DXperience, product-specific subscription.) Provide the tier name and valid-through date.
+Not applicable — no DevExpress licensing required for this project.
+
+
+
+Q10.	On a production server with 8 CPU cores, does the DevExpress reporting engine use all 8 cores, or is it restricted to fewer cores (e.g., 2 cores only)? Quote the specific DevExpress license clause or documentation that confirms this.
+Not applicable — DevExpress reporting engine not used.
+
+Q11. Are the report templates (challans, receipts, payslips, financial statements) stored in Microsoft RDLC format (.rdlc files) or DevExpress proprietary format (.repx files)? 
+Reports are rendered as Razor HTML views (e.g., Receipt.cshtml, AllotmentLetter.cshtml) and printed via browser print/PDF — no .rdlc or .repx files are used.
+
+
+
+Q12. Is DevExpress used for anything other than reports — for example, data grids (DXDataGrid), charts/dashboards (DevExtreme), or scheduling? If yes, list each component and where it is used.
+No DevExpress components used for grids, charts, dashboards, or scheduling.
+
+
+
+
+Q13.	The proposal mentions 'AI Analysis & Predictive Analytics'. Describe exactly what this module does — what data it analyses, what it predicts, and what the user sees on screen. Please Be specific.
+
+The AI Assistant (Views/Home/AIAssistant.cshtml) accepts natural language questions; it analyses customers, payments, allotments, payment schedules, and properties. The user types a question, the AI generates a SQL query, executes it live against the database, and returns a human-readable answer with the underlying data table.
+
+
+
+
+Q14. How is the AI implemented technically? Choose one and explain: (a) Trained machine learning model using ML.NET, Python, or TensorFlow, (b) External AI API such as OpenAI or Azure Cognitive Services, (c) SQL database queries and statistical calculations, (d) Rule-based logic. Name the code file where this logic lives.
+
+Implemented using option (b): Groq Cloud API (model: openai/gpt-oss-120b) combined with option (c): live SQL execution against the PMS database. Logic lives in Services/GroqAIService.cs and HomeController.cs (AIChat action).
+
+
+
+
+Q15.	Does any AI or analytics feature call an external paid API? If yes: which service, what data is sent to it, and what is the estimated monthly API cost for a system with 1,000 customers?
+Yes — Groq Cloud API (groq.com); only the user's natural language question and the database schema summary are sent (no personal customer records). Groq offers a generous free tier; estimated cost for 1,000 active users is approximately $0–$30/month depending on query volume.
+
+
+
+
+Q16.	What's the preliminary size of data or historical record, after which the AI model gives useful output ?
+Minimum 3–6 months of transactional data recommended for meaningful predictive output.
+
+
+
+Q17.	How are user passwords stored in the database? State the exact hashing algorithm used — BCrypt, Argon2, PBKDF2 ?
+Passwords are hashed using BCrypt (BCrypt.Net-Next v4.0.3 package); confirmed in AccountController.cs via BCrypt.Net.BCrypt.HashPassword() and BCrypt.Net.BCrypt.Verify() — salted hashes, never plain text.
+
+
+Q18.  Is user access control (RBAC) enforced at the API level — meaning a restricted API endpoint rejects requests even if called directly — or only at the screen/menu level in the UI?
+RBAC enforced at API level with authorization policies; restricted endpoints reject unauthorized direct requests.
+
+
+
+Q19. Are there any hardcoded passwords, API keys, or connection strings in the source code itself (not in config files)? 
+Currently the Groq API keys are stored in Services/GroqAIService.cs for development convenience; prior to production deployment these will be moved to environment variables or the .NET Secret Manager — no user passwords or DB credentials are hardcoded.
+
+
+Q20.	What happens after repeated failed login attempts — is the account locked? After how many attempts, and for how long?
+Account lockout is not implemented in the current version; the login controller validates credentials and rejects invalid attempts but does not auto-lock. This feature will be added using ASP.NET Core Identity lockout options (configurable attempt threshold and lockout duration) before production go-live.
+
+
+Q22.	Is each client deployment completely isolated — meaning every client gets their own separate database on their own server? Or do multiple clients share one database but with appropriate segregation at table and entries level – secure multi tenancy ? Please provide what options are available with seleted SQL version.
+1.	Each project can have a different database. (new installation required) 
+2.	Users of each individual project will be connected to a centralized database.
+3.	One installation/database can support multiple projects, if required.
+
+Q23. Is there an Admin configuration panel in the system where WE can change the company name, logo, email settings, SMS credentials, and database connection for each new client — without modifying or recompiling the source code?
+Yes — Admin panel allows changing company profile, branding, email/SMS settings without recompilation.
+
+
+Q24.	Is there any requirement licensed version of Visual Studio required to be bought for development team ?
+No mandatory paid Visual Studio license; development possible with Visual Studio Community edition.
+
+
+
+Q25.	Can PMS be run in following cloud environment Microsoft Azure (App Service, Virtual Machines)
+   - Amazon Web Services (EC2, Elastic Beanstalk) ,   - Google Cloud Platform (Compute Engine, App Engine),   - Digital Ocean, Linode, Vultr (VPS)
+Yes — compatible with Azure, AWS, GCP, DigitalOcean, Linode, Vultr (VM-based deployment).
+
+
+Q26.	How SSL certificates, essential for secure communication, will be managed ? What will be associated cost – if any ?
+SSL managed via Let's Encrypt or cloud provider SSL; cost typically free (Let's Encrypt) or included in hosting.
+
+Q27. Can Role Based Access Control may be optimized with Rule Based Access Control (Granular Permission Based) ? This will be required where some individual account in a group needs custom control.
+
+Yes — RBAC extendable to granular permission-based control for individual user-level overrides.
+
+
+
+

@@ -1,0 +1,251 @@
+@model Salzee.Models.Rental
+
+@{
+    ViewData["Title"] = "New Rental";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+    <h5 class="mb-0">New Rental</h5>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm py-0 px-2"><i class="fas fa-arrow-left me-1"></i>Back to List</a>
+</div>
+
+<div class="card border-0 shadow-sm pms-mp-header mb-3">
+    <div class="card-header py-2 pms-mp-header-bar">
+        <h6 class="mb-0"><i class="fas fa-home me-2"></i>Select Property &amp; Create Rental</h6>
+    </div>
+    <div class="card-body py-3 px-3">
+        <form asp-action="Create" method="post" id="rentalForm">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Property ID <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <input type="text" id="PropertyID" name="PropertyID" class="form-control" value="@Model.PropertyID" placeholder="Enter Property ID" required />
+                        <button type="button" id="btnSearchProperty" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i>Search
+                        </button>
+                    </div>
+                    <span class="text-danger" id="propertyIdValidation"></span>
+                    <div class="form-text text-muted">Start by searching a property (same flow as Transfer module).</div>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Property Summary</label>
+                    <div class="p-3 rounded" style="background: rgba(72, 123, 165, 0.06); border: 1px solid rgba(72, 123, 165, 0.15);">
+                        <div class="small text-muted">Project</div>
+                        <div class="fw-bold" id="propProjectName">—</div>
+                        <div class="d-flex gap-3 mt-2">
+                            <div>
+                                <div class="small text-muted">Plot</div>
+                                <div class="fw-bold" id="propPlotNo">—</div>
+                            </div>
+                            <div>
+                                <div class="small text-muted">Block</div>
+                                <div class="fw-bold" id="propBlock">—</div>
+                            </div>
+                            <div>
+                                <div class="small text-muted">Type</div>
+                                <div class="fw-bold" id="propType">—</div>
+                            </div>
+                            <div>
+                                <div class="small text-muted">Size</div>
+                                <div class="fw-bold" id="propSize">—</div>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <span class="badge bg-secondary" id="propStatus">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs customer-tabs" id="createTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" type="button" data-bs-toggle="tab" data-bs-target="#tenant" role="tab">Tenant</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#terms" role="tab">Terms</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" type="button" data-bs-toggle="tab" data-bs-target="#notes" role="tab">Notes</button>
+                </li>
+            </ul>
+
+            <div class="tab-content border border-top-0 p-3" id="createTabContent">
+                <div class="tab-pane fade show active" id="tenant" role="tabpanel">
+                    <p class="text-muted small mb-2">Tenant data is stored inside Rental (not connected to Customers).</p>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">Tenant Name <span class="text-danger">*</span></label>
+                            <input asp-for="TenantName" class="form-control" required />
+                            <span asp-validation-for="TenantName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">CNIC <span class="text-danger">*</span></label>
+                            <input asp-for="TenantCNIC" id="TenantCNIC" class="form-control" placeholder="XXXXX-XXXXXXX-X" />
+                            <span asp-validation-for="TenantCNIC" class="text-danger"></span>
+                            <span id="cnicValidationError" class="text-danger small d-none"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone <span class="text-danger">*</span></label>
+                            <input asp-for="TenantPhone" class="form-control" />
+                            <span asp-validation-for="TenantPhone" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email <span class="text-danger">*</span></label>
+                            <input asp-for="TenantEmail" class="form-control" />
+                            <span asp-validation-for="TenantEmail" class="text-danger"></span>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Address <span class="text-danger">*</span></label>
+                            <input asp-for="TenantAddress" class="form-control" />
+                            <span asp-validation-for="TenantAddress" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="terms" role="tabpanel">
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="form-label">Monthly Rent <span class="text-danger">*</span></label>
+                            <input asp-for="MonthlyRent" type="number" step="0.01" class="form-control" required />
+                            <span asp-validation-for="MonthlyRent" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Currency <span class="text-danger">*</span></label>
+                            <input asp-for="Currency" class="form-control" required />
+                            <span asp-validation-for="Currency" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Start Date <span class="text-danger">*</span></label>
+                            <input asp-for="StartDate" type="date" class="form-control" required />
+                            <span asp-validation-for="StartDate" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Duration (Months) <span class="text-danger">*</span></label>
+                            <input asp-for="DurationMonths" type="number" class="form-control" min="1" required />
+                            <span asp-validation-for="DurationMonths" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Security Deposit <span class="text-danger">*</span></label>
+                            <input asp-for="SecurityDeposit" type="number" step="0.01" class="form-control" required />
+                            <span asp-validation-for="SecurityDeposit" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Advance Rent <span class="text-danger">*</span></label>
+                            <input asp-for="AdvanceRent" type="number" step="0.01" class="form-control" required />
+                            <span asp-validation-for="AdvanceRent" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Due Day (1-28) <span class="text-danger">*</span></label>
+                            <input asp-for="PaymentDueDayOfMonth" type="number" class="form-control" min="1" max="28" required />
+                            <span asp-validation-for="PaymentDueDayOfMonth" class="text-danger"></span>
+                            <div class="form-text text-muted">Used to generate monthly payment schedule.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="notes" role="tabpanel">
+                    <label class="form-label">Notes / Remarks</label>
+                    <textarea asp-for="Notes" class="form-control" rows="4"></textarea>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-sm fw-semibold pms-mp-btn-save" id="btnCreateRental">
+                    <i class="fas fa-check me-1"></i>Create Rental
+                </button>
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function clearPropertySummary() {
+            document.getElementById('propProjectName').textContent = '—';
+            document.getElementById('propPlotNo').textContent = '—';
+            document.getElementById('propBlock').textContent = '—';
+            document.getElementById('propType').textContent = '—';
+            document.getElementById('propSize').textContent = '—';
+            document.getElementById('propStatus').textContent = '—';
+            document.getElementById('propStatus').className = 'badge bg-secondary';
+        }
+
+        function setPropertySummary(data) {
+            document.getElementById('propProjectName').textContent = data.projectName || '—';
+            document.getElementById('propPlotNo').textContent = data.plotNo || '—';
+            document.getElementById('propBlock').textContent = data.block || '—';
+            document.getElementById('propType').textContent = (data.propertyType || data.plotType || '—');
+            document.getElementById('propSize').textContent = data.size || '—';
+            document.getElementById('propStatus').textContent = data.status || '—';
+            document.getElementById('propStatus').className = 'badge ' + ((data.status || '').toLowerCase() === 'available' ? 'bg-success' : 'bg-warning');
+        }
+
+        // CNIC validation: format XXXXX-XXXXXXX-X (same as Customer module)
+        var cnicRegex = /^\d{5}-\d{7}-\d$/;
+        function validateCnic() {
+            var cnic = (document.getElementById('TenantCNIC').value || '').trim();
+            var valid = cnicRegex.test(cnic);
+            var errEl = document.getElementById('cnicValidationError');
+            var inputEl = document.getElementById('TenantCNIC');
+            if (valid || !cnic) {
+                inputEl.classList.remove('is-invalid');
+                errEl.classList.add('d-none');
+                errEl.textContent = '';
+            } else {
+                inputEl.classList.add('is-invalid');
+                errEl.classList.remove('d-none');
+                errEl.textContent = 'CNIC must be in format XXXXX-XXXXXXX-X (5-7-1 digits).';
+            }
+            return valid;
+        }
+        document.getElementById('TenantCNIC').addEventListener('input', validateCnic);
+        document.getElementById('TenantCNIC').addEventListener('blur', validateCnic);
+
+        document.getElementById('rentalForm').addEventListener('submit', function (e) {
+            var cnic = (document.getElementById('TenantCNIC').value || '').trim();
+            if (cnic && !cnicRegex.test(cnic)) {
+                e.preventDefault();
+                validateCnic();
+                document.getElementById('TenantCNIC').focus();
+                return false;
+            }
+        });
+
+        document.getElementById('btnSearchProperty').addEventListener('click', function () {
+            var propertyId = document.getElementById('PropertyID').value.trim();
+            var validationEl = document.getElementById('propertyIdValidation');
+            validationEl.textContent = '';
+
+            if (!propertyId) {
+                validationEl.textContent = 'Enter Property ID.';
+                clearPropertySummary();
+                return;
+            }
+
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            var body = (token ? '__RequestVerificationToken=' + encodeURIComponent(token.value) + '&' : '') + 'propertyId=' + encodeURIComponent(propertyId);
+
+            fetch('@Url.Action("GetPropertyForRental", "Rental")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data.success) {
+                    setPropertySummary(data);
+                } else {
+                    validationEl.textContent = data.message || 'Property not found.';
+                    clearPropertySummary();
+                }
+            })
+            .catch(function () {
+                validationEl.textContent = 'Request failed.';
+                clearPropertySummary();
+            });
+        });
+    </script>
+}
+

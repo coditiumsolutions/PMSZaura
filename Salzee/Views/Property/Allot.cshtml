@@ -1,0 +1,242 @@
+@{
+    ViewData["Title"] = "Allot Property";
+    var property = ViewBag.Property as Salzee.Models.Property;
+}
+
+<div class="pms-property-allot">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="mb-0 pms-registration-page-title">Property</h2>
+        <a asp-action="Details" asp-route-id="@property?.PropertyID" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left me-1"></i>Back to Property
+        </a>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show py-1 px-2 mb-2 small" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Warning"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show py-1 px-2 mb-2 small" role="alert">
+            @TempData["Warning"]
+            <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card pms-listing-flat pms-registration-details pms-registration-create">
+        <div class="card-body">
+            @if (property != null)
+            {
+                <div class="pms-registration-4col-form pms-property-allot-summary">
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Property ID</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value"><code>@property.PropertyID</code></div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Unit No</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@property.PlotNo</div>
+                        </div>
+                    </div>
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Tower</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@property.Block</div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Subproject</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@(string.IsNullOrWhiteSpace(property.SubProject) ? "—" : property.SubProject)</div>
+                        </div>
+                    </div>
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <div class="pms-registration-4col-label">Size</div>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="pms-registration-details-value">@property.Size</div>
+                        </div>
+                        @if (property.Project != null)
+                        {
+                            <div class="col-12 col-lg-2">
+                                <div class="pms-registration-4col-label">Project</div>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <div class="pms-registration-details-value">@property.Project.ProjectName — @property.Project.Location</div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <form asp-action="Allot" method="post" enctype="multipart/form-data" class="pms-property-allot-form">
+                <input type="hidden" name="propertyId" value="@property?.PropertyID" />
+
+                <div class="pms-registration-4col-form">
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label for="customerId" class="form-label pms-registration-4col-label mb-0">Customer *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            @if (ViewBag.MatchingCustomerCount is int mc && mc == 0)
+                            {
+                                <div class="alert alert-warning py-1 px-2 mb-1 small">No matching customers found. Align Project ID, Subproject, and Registered size.</div>
+                            }
+                            <select name="customerId" id="customerId" class="form-select" required @(ViewBag.MatchingCustomerCount is int mco && mco == 0 ? "disabled" : null)>
+                                <option value="">Select Customer</option>
+                                @if (ViewBag.Customers != null)
+                                {
+                                    @foreach (var customer in ViewBag.Customers)
+                                    {
+                                        <option value="@customer.CustomerID"
+                                                data-name="@customer.FullName"
+                                                data-email="@customer.Email"
+                                                data-phone="@customer.Phone">
+                                            @customer.FullName - @customer.CustomerID
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <div class="form-text mb-0">Matching project, subproject, and registered size only.</div>
+                            <div id="customerPreview" class="mt-1 small text-muted" style="display: none;">
+                                <div class="fw-semibold text-dark" id="customerName"></div>
+                                <div><i class="fas fa-envelope me-1"></i><span id="customerEmail"></span></div>
+                                <div><i class="fas fa-phone me-1"></i><span id="customerPhone"></span></div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label for="allotmentType" class="form-label pms-registration-4col-label mb-0">Allotment Type *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select name="allotmentType" id="allotmentType" class="form-select" required>
+                                <option value="">Select Type</option>
+                                <option value="Direct">Direct Allotment</option>
+                                <option value="Balloting">Balloting</option>
+                                <option value="Transfer">Transfer</option>
+                                <option value="Special">Special Allotment</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label for="comments" class="form-label pms-registration-4col-label mb-0">Comments</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <textarea name="comments" id="comments" class="form-control" rows="2"
+                                      placeholder="Enter any comments or notes about this allotment"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label mb-0">Attachments</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <input type="file" name="attachmentFiles" id="attachmentFiles" class="form-control" multiple
+                                   accept=".pdf,.jpg,.jpeg,.png,.gif,.bmp,application/pdf" @(ViewBag.MatchingCustomerCount is int ma && ma == 0 ? "disabled" : null) />
+                            <div class="form-text mb-0">Optional. Images or PDF, max 8 MB per file.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="small text-muted mt-1 mb-0">
+                    <i class="fas fa-info-circle me-1"></i>
+                    Once allotted, property status becomes &ldquo;Allotted&rdquo; and workflow is set to &ldquo;Pending&rdquo; approval.
+                </p>
+
+                <div class="d-flex justify-content-end gap-2 pms-registration-create-actions mt-2">
+                    <a asp-action="Details" asp-route-id="@property?.PropertyID" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-sm btn-success" @(ViewBag.MatchingCustomerCount is int ms && ms == 0 ? "disabled" : null)>
+                        <i class="fas fa-check me-1"></i>Allot Property
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .pms-property-allot .pms-registration-4col-label,
+    .pms-property-allot .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .form-label,
+    .pms-property-allot .pms-registration-create .pms-registration-4col-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label {
+        color: #000 !important;
+        font-weight: 500 !important;
+    }
+
+    .pms-property-allot .pms-registration-4col-form .pms-registration-4col-row {
+        padding-bottom: 0.35rem;
+        margin-bottom: 0;
+    }
+
+    .pms-property-allot .pms-property-allot-summary {
+        margin-bottom: 0.25rem;
+    }
+
+    .pms-property-allot .pms-property-allot-summary .pms-registration-4col-row:last-child {
+        border-bottom: 1px solid #cbd5e1;
+        padding-bottom: 0.45rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .pms-property-allot .pms-property-allot-form .pms-registration-4col-form .pms-registration-4col-row:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .pms-property-allot .form-text {
+        font-size: 0.7rem;
+        margin-top: 0.15rem;
+    }
+
+    .pms-property-allot textarea.form-control {
+        min-height: calc(var(--pms-listing-control-h) * 1.5);
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#customerId').on('change', function() {
+                var selectedOption = $(this).find('option:selected');
+                var name = selectedOption.data('name');
+                var email = selectedOption.data('email');
+                var phone = selectedOption.data('phone');
+
+                if (name) {
+                    $('#customerName').text(name);
+                    $('#customerEmail').text(email || 'N/A');
+                    $('#customerPhone').text(phone || 'N/A');
+                    $('#customerPreview').slideDown();
+                } else {
+                    $('#customerPreview').slideUp();
+                }
+            });
+
+            $('form').on('submit', function(e) {
+                var customerId = $('#customerId').val();
+                var allotmentType = $('#allotmentType').val();
+
+                if (!customerId || !allotmentType) {
+                    e.preventDefault();
+                    alert('Please select both customer and allotment type.');
+                    return false;
+                }
+
+                return confirm('Are you sure you want to allot this property to the selected customer?');
+            });
+        });
+    </script>
+}

@@ -1,0 +1,102 @@
+@model Salzee.Models.Possession
+@{
+    ViewData["Title"] = "Edit Possession";
+    var initiated = (string?)ViewBag.InitiatedStatus ?? "Initiated";
+    var ops = (string?)ViewBag.OperationsDeskStatus ?? "Operations Desk";
+    var canBack = ViewBag.CanMoveBackward as bool? == true;
+    var canFwd = ViewBag.CanMoveForward as bool? == true;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="fas fa-edit me-2"></i>Edit <code>@Model.PossessionID</code></h2>
+    <a asp-action="Details" asp-route-id="@Model.PossessionID" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left me-1"></i>Back</a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<div class="card mb-4">
+    <div class="card-header fw-semibold"><i class="fas fa-route me-2"></i>Workflow</div>
+    <div class="card-body">
+        <p class="mb-2">Current: <span class="badge bg-primary">@(Model.WorkFlowStatus ?? "—")</span></p>
+        <p class="small text-muted mb-3">Move between <strong>@initiated</strong> and <strong>@ops</strong>. From <strong>@ops</strong>, use the details page to <strong>Approve</strong> or <strong>Decline</strong>.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <form asp-action="MoveStatus" asp-route-id="@Model.PossessionID" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="direction" value="backward" />
+                <button type="submit" class="btn btn-outline-secondary btn-sm"@(canBack ? "" : " disabled=\"disabled\"")>
+                    <i class="fas fa-arrow-left me-1"></i>Back to @initiated
+                </button>
+            </form>
+            <form asp-action="MoveStatus" asp-route-id="@Model.PossessionID" method="post" class="d-inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="direction" value="forward" />
+                <button type="submit" class="btn btn-primary btn-sm"@(canFwd ? "" : " disabled=\"disabled\"")>
+                    <i class="fas fa-arrow-right me-1"></i>Forward to @ops
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Edit" asp-route-id="@Model.PossessionID" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="PossessionID" />
+    <div asp-validation-summary="All" class="text-danger small mb-3"></div>
+    <div class="card mb-3">
+        <div class="card-header fw-semibold">Details</div>
+        <div class="card-body row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Property ID <span class="text-danger">*</span></label>
+                <input asp-for="PropertyID" class="form-control" maxlength="10" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Customer ID <span class="text-danger">*</span></label>
+                <input asp-for="CustomerID" class="form-control" maxlength="10" required />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Possession date</label>
+                <input asp-for="PossessionDate" class="form-control" type="date" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Due charges (PKR)</label>
+                <input asp-for="PossessionDueCharges" class="form-control" type="number" step="0.01" min="0" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Paid charges (PKR)</label>
+                <input asp-for="PossessionPaidCharges" class="form-control" type="number" step="0.01" min="0" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Payment method</label>
+                <input asp-for="PaymentMethod" class="form-control" maxlength="100" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Bank name</label>
+                <input asp-for="BankName" class="form-control" maxlength="200" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Paid date</label>
+                <input asp-for="PaidDate" class="form-control" type="date" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Instrument no.</label>
+                <input asp-for="InstrumentNo" class="form-control" maxlength="100" />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Comments</label>
+                <textarea asp-for="Comments" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Remarks</label>
+                <textarea asp-for="Remarks" class="form-control" rows="2" maxlength="255"></textarea>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save</button>
+</form>

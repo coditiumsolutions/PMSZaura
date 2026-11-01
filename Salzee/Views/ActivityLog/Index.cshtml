@@ -1,0 +1,244 @@
+@model Salzee.Models.ActivityLogIndexViewModel
+@{
+    ViewData["Title"] = "Logs / History";
+    var routeVals = new Dictionary<string, object> { ["pageSize"] = Model.PageSize };
+    if (Model.FromDate.HasValue) routeVals["dateFrom"] = Model.FromDate.Value.ToString("yyyy-MM-dd");
+    if (Model.ToDate.HasValue) routeVals["dateTo"] = Model.ToDate.Value.ToString("yyyy-MM-dd");
+    if (!string.IsNullOrEmpty(Model.UserId)) routeVals["userId"] = Model.UserId;
+    string PageUrl(int p) {
+        var r = new RouteValueDictionary(routeVals) { ["page"] = p };
+        return Url.Action("Index", "ActivityLog", r) ?? "#";
+    }
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h3 class="mb-1"><i class="fas fa-history me-2"></i>Logs / History</h3>
+        <div class="text-muted">All activity log data (raw)</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="BlockingLogs" class="btn btn-outline-primary">
+            <i class="fas fa-ban me-2"></i>BlockingLogs
+        </a>
+        <a asp-controller="Home" asp-action="Workspace" class="btn btn-outline-secondary">
+            <i class="fas fa-th-large me-2"></i>Workspace
+        </a>
+    </div>
+</div>
+
+<form method="get" asp-action="Index" class="mb-4">
+    <input type="hidden" name="page" value="1" />
+    <input type="hidden" name="pageSize" value="@Model.PageSize" />
+    <div class="card">
+        <div class="card-body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Date From</label>
+                    <input type="date" name="dateFrom" class="form-control form-control-sm" value="@(Model.FromDate?.ToString("yyyy-MM-dd") ?? "")" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Date To</label>
+                    <input type="date" name="dateTo" class="form-control form-control-sm" value="@(Model.ToDate?.ToString("yyyy-MM-dd") ?? "")" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">User</label>
+                    <select name="userId" class="form-select form-select-sm">
+                        <option value="">All Users</option>
+                        @foreach (var u in Model.Users)
+                        {
+                            if (Model.UserId == u.UserId)
+                            {
+                                <option value="@u.UserId" selected>@u.Label</option>
+                            }
+                            else
+                            {
+                                <option value="@u.UserId">@u.Label</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 d-flex gap-1">
+                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1"><i class="fas fa-filter me-1"></i>Filter</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-sm" title="Clear filters">Clear</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between">
+        <div>
+            <strong>Results</strong>
+            <span class="text-muted ms-2">
+                (@Model.TotalCount total)
+            </span>
+        </div>
+        <div class="text-muted">
+            Page @Model.Page of @Model.TotalPages
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle pms-enterprise-table mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 140px;">Date</th>
+                        <th style="width: 180px;">User</th>
+                        <th>Action</th>
+                        <th style="width: 140px;">Ref Type</th>
+                        <th style="width: 140px;">Ref ID</th>
+                        <th style="width: 70px;">Details</th>
+                        <th style="width: 90px;" class="text-end">LogID</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Logs.Count == 0)
+                    {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                                No rows in ActivityLog table.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var row in Model.Logs)
+                        {
+                            <tr class="log-row cursor-pointer"
+                                role="button"
+                                tabindex="0"
+                                data-log-id="@row.LogId"
+                                data-created-at="@row.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")"
+                                data-user-id="@(row.UserId ?? "")"
+                                data-user-name="@(row.UserName ?? "")"
+                                data-action="@(row.Action ?? "")"
+                                data-ref-type="@(row.RefType ?? "")"
+                                data-ref-id="@(row.RefId ?? "")"
+                                data-details="@(row.Details ?? "")">
+                                <td>@row.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@row.UserName</td>
+                                <td>@row.Action</td>
+                                <td>@row.RefType</td>
+                                <td>@row.RefId</td>
+                                <td class="small text-muted">@(string.IsNullOrEmpty(row.Details) ? "—" : "JSON")</td>
+                                <td class="text-end">@row.LogId</td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer d-flex align-items-center justify-content-between">
+        <div class="text-muted small">
+            Showing @((Model.TotalCount == 0) ? 0 : ((Model.Page - 1) * Model.PageSize + 1))
+            -
+            @Math.Min(Model.Page * Model.PageSize, Model.TotalCount)
+            of @Model.TotalCount
+        </div>
+
+        <nav>
+            <ul class="pagination mb-0">
+                <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                    <a class="page-link" href="@(Model.Page <= 1 ? "#" : PageUrl(Model.Page - 1))">Prev</a>
+                </li>
+
+                @{
+                    var start = Math.Max(1, Model.Page - 2);
+                    var end = Math.Min(Model.TotalPages, Model.Page + 2);
+                }
+
+                @for (var p = start; p <= end; p++)
+                {
+                    <li class="page-item @(p == Model.Page ? "active" : "")">
+                        <a class="page-link" href="@PageUrl(p)">@p</a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@(Model.Page >= Model.TotalPages ? "#" : PageUrl(Model.Page + 1))">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+<!-- Log details modal -->
+<div class="modal fade" id="logDetailModal" tabindex="-1" aria-labelledby="logDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logDetailModalLabel"><i class="fas fa-info-circle me-2"></i>Log details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4 text-muted">Log ID</dt>
+                    <dd class="col-sm-8" id="dlg-logId">—</dd>
+
+                    <dt class="col-sm-4 text-muted">Created at</dt>
+                    <dd class="col-sm-8" id="dlg-createdAt">—</dd>
+
+                    <dt class="col-sm-4 text-muted">User ID</dt>
+                    <dd class="col-sm-8" id="dlg-userId">—</dd>
+
+                    <dt class="col-sm-4 text-muted">User name</dt>
+                    <dd class="col-sm-8" id="dlg-userName">—</dd>
+
+                    <dt class="col-sm-4 text-muted">Action</dt>
+                    <dd class="col-sm-8" id="dlg-action">—</dd>
+
+                    <dt class="col-sm-4 text-muted">Ref type</dt>
+                    <dd class="col-sm-8" id="dlg-refType">—</dd>
+
+                    <dt class="col-sm-4 text-muted">Ref ID</dt>
+                    <dd class="col-sm-8" id="dlg-refId">—</dd>
+
+                    <dt class="col-sm-4 text-muted align-top">Details</dt>
+                    <dd class="col-sm-8"><pre class="small mb-0 text-break" style="max-height: 240px; overflow: auto; white-space: pre-wrap;" id="dlg-details">—</pre></dd>
+                </dl>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .log-row.cursor-pointer { cursor: pointer; }
+    .log-row:hover { background-color: rgba(0, 0, 0, 0.04) !important; }
+</style>
+
+@section Scripts {
+<script>
+    (function () {
+        var modalEl = document.getElementById('logDetailModal');
+        if (!modalEl) return;
+        var modal = new bootstrap.Modal(modalEl);
+        document.querySelectorAll('.log-row').forEach(function (tr) {
+            tr.addEventListener('click', function () {
+                var setText = function (id, value) {
+                    var el = document.getElementById(id);
+                    if (!el) return;
+                    el.textContent = value && value.trim() !== '' ? value : '—';
+                };
+
+                setText('dlg-logId', tr.getAttribute('data-log-id') || '');
+                setText('dlg-createdAt', tr.getAttribute('data-created-at') || '');
+                setText('dlg-userId', tr.getAttribute('data-user-id') || '');
+                setText('dlg-userName', tr.getAttribute('data-user-name') || '');
+                setText('dlg-action', tr.getAttribute('data-action') || '');
+                setText('dlg-refType', tr.getAttribute('data-ref-type') || '');
+                setText('dlg-refId', tr.getAttribute('data-ref-id') || '');
+                setText('dlg-details', tr.getAttribute('data-details') || '');
+                modal.show();
+            });
+            tr.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); tr.click(); }
+            });
+        });
+    })();
+</script>
+}

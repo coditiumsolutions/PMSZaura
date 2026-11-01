@@ -1,0 +1,89 @@
+@model List<Salzee.Models.CustomerUpdateRequest>
+@{
+    ViewData["Title"] = "Customer Update Requests";
+    var selectedStatus = (ViewBag.Status as string) ?? "All";
+    var selectedCustomerId = (ViewBag.CustomerId as string) ?? string.Empty;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="fas fa-user-edit me-2"></i>Customer Update Requests</h2>
+    <a asp-action="CreateUpdateRequest" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>New Request
+    </a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <form asp-action="UpdateRequests" method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="All" selected="@(selectedStatus == "All")">All</option>
+                    <option value="Pending" selected="@(selectedStatus == "Pending")">Pending</option>
+                    <option value="Approved" selected="@(selectedStatus == "Approved")">Approved</option>
+                    <option value="Rejected" selected="@(selectedStatus == "Rejected")">Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Customer ID</label>
+                <input type="text" class="form-control" name="customerId" value="@selectedCustomerId" />
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary me-2"><i class="fas fa-search me-1"></i>Filter</button>
+                <a asp-action="UpdateRequests" class="btn btn-outline-secondary">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped mb-0">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Customer ID</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Requested By</th>
+                        <th>Requested At</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        var statusClass = item.Status == "Approved"
+                            ? "bg-success"
+                            : item.Status == "Rejected"
+                                ? "bg-danger"
+                                : "bg-warning text-dark";
+                        <tr>
+                            <td><code>@item.RequestID</code></td>
+                            <td>@item.CustomerID</td>
+                            <td>@(item.Customer?.FullName ?? "-")</td>
+                            <td><span class="badge @statusClass">@item.Status</span></td>
+                            <td>@(item.RequestedByUser?.FullName ?? item.RequestedBy ?? "-")</td>
+                            <td>@item.RequestedAt.ToString("MMM dd, yyyy hh:mm tt")</td>
+                            <td>
+                                <a asp-action="UpdateRequestDetails" asp-route-id="@item.RequestID" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i>View
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No update requests found.</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

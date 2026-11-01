@@ -1,0 +1,1008 @@
+@model Salzee.Models.PaymentPlan
+
+@{
+    ViewData["Title"] = "Create Payment Plan";
+}
+
+<div class="pms-create-payment-plan">
+    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+        <h5 class="mb-0">Create Payment Plan</h5>
+        <a asp-action="PaymentPlans" class="btn btn-outline-secondary btn-sm py-0 px-2">
+            <i class="fas fa-arrow-left me-1"></i>Back to Payment Plans
+        </a>
+    </div>
+
+    <form id="paymentPlanForm" asp-action="CreatePaymentPlan" method="post" novalidate>
+        @Html.AntiForgeryToken()
+
+        <div id="cppFormAlert" class="alert alert-danger d-none mb-3" role="alert">
+            <div class="d-flex align-items-start gap-2">
+                <i class="fas fa-exclamation-circle mt-1" aria-hidden="true"></i>
+                <div>
+                    <strong class="d-block">Could not save payment plan</strong>
+                    <span id="cppFormAlertText"></span>
+                </div>
+            </div>
+        </div>
+        <!-- Payment Plan Section -->
+        <div class="card border-0 shadow-sm pms-mp-header mb-3">
+            <div class="card-header py-2 pms-mp-header-bar">
+                <h6 class="mb-0">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>Payment Plan Information
+                </h6>
+            </div>
+            <div class="card-body py-2 px-3">
+                <div class="pms-registration-4col-form pms-cpp-form">
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="PlanName" class="form-label pms-registration-4col-label">Plan Name *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="PlanName" id="PlanName" class="form-control form-control-sm" type="text" required placeholder="e.g. 2 Year Plan" />
+                            <span asp-validation-for="PlanName" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="ProjectID" class="form-label pms-registration-4col-label">Project *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select asp-for="ProjectID" id="ProjectID" class="form-select form-select-sm" required>
+                                <option value="">Select Project</option>
+                                @if (ViewBag.Projects != null)
+                                {
+                                    @foreach (var project in ViewBag.Projects)
+                                    {
+                                        <option value="@project.ProjectID">@project.ProjectName</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="ProjectID" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Primary Currency</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="text" class="form-control form-control-sm" value="PKR (Pakistani Rupee)" readonly />
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Size</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input id="RegisteredSize" list="RegisteredSizeOptions" class="form-control form-control-sm" type="text" inputmode="decimal" autocomplete="off" placeholder="e.g. 5, 10.5" />
+                            <datalist id="RegisteredSizeOptions"></datalist>
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Subproject *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select id="SubProject" class="form-select form-select-sm" required>
+                                <option value="">Select Subproject</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label class="form-label pms-registration-4col-label">Price per unit</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input id="PricePerUnit" type="text" inputmode="decimal" class="form-control form-control-sm" placeholder="e.g., 85000" />
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="TotalAmount" class="form-label pms-registration-4col-label">Total Amount (PKR) *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input asp-for="TotalAmount" id="TotalAmount" type="number" step="1" min="1" max="1000000000" class="form-control form-control-sm" placeholder="e.g., 5000000" required />
+                            <span asp-validation-for="TotalAmount" class="text-danger"></span>
+                        </div>
+                        <div class="col-12 col-lg-2" id="durationMonthsLabel" style="display: none;">
+                            <label asp-for="DurationMonths" class="form-label pms-registration-4col-label">Plan Duration (Months) *</label>
+                        </div>
+                        <div class="col-12 col-lg-4" id="durationMonthsGroup" style="display: none;">
+                            <input asp-for="DurationMonths" id="DurationMonths" type="number" class="form-control form-control-sm" placeholder="e.g., 36" required readonly />
+                            <span asp-validation-for="DurationMonths" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="ExchangeRate" value="@((decimal?)ViewBag.UsdToPkrRate ?? 1m)" />
+                    <input type="hidden" asp-for="Frequency" id="Frequency" />
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-start">
+                        <div class="col-12 col-lg-2">
+                            <label asp-for="Description" class="form-label pms-registration-4col-label">Description</label>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <textarea asp-for="Description" id="Description" class="form-control form-control-sm" rows="2" placeholder="Enter payment plan details and terms"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Schedule Section -->
+        <div class="card border-0 shadow-sm pms-mp-header mb-3">
+            <div class="card-header py-2 pms-mp-header-bar">
+                <h6 class="mb-0">
+                    <i class="fas fa-calendar-check me-2"></i>Payment Schedule Configuration
+                </h6>
+            </div>
+            <div class="card-body py-2 px-3">
+                <div class="pms-registration-4col-form pms-cpp-form">
+                    <!-- Token -->
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <span class="form-label pms-registration-4col-label mb-0">Token Payment</span>
+                        </div>
+                        <div class="col-12 col-lg-10">
+                            <div class="form-check mb-0 py-1">
+                                <input class="form-check-input" type="checkbox" id="includeToken" checked>
+                                <label class="form-check-label small" for="includeToken">
+                                    Include Token Payment (Installment 0) — no surcharge
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="tokenAmountSection">
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <label for="tokenAmount" class="form-label pms-registration-4col-label mb-0">Token Amount (PKR) *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="number" id="tokenAmount" step="1" min="1" max="1000000000" class="form-control form-control-sm" placeholder="e.g., 50000" required />
+                            </div>
+                            <div class="col-12 col-lg-2">
+                                <label for="tokenDueDate" class="form-label pms-registration-4col-label mb-0">Token Due Date *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="date" id="tokenDueDate" class="form-control form-control-sm" required />
+                            </div>
+                        </div>
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2">
+                                <label for="tokenPaymentDescription" class="form-label pms-registration-4col-label mb-0">Token Description *</label>
+                            </div>
+                            <div class="col-12 col-lg-4">
+                                <input type="text" id="tokenPaymentDescription" class="form-control form-control-sm" placeholder="e.g., Booking Token" required />
+                            </div>
+                            <div class="col-12 col-lg-2"></div>
+                            <div class="col-12 col-lg-4"></div>
+                        </div>
+                    </div>
+
+                    <!-- Possession -->
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label for="possessionAmount" class="form-label pms-registration-4col-label mb-0">Possession Amount (PKR)</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="number" id="possessionAmount" step="1" min="0" max="1000000000" class="form-control form-control-sm" value="0" placeholder="e.g., 200000" />
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label for="possessionDueDate" class="form-label pms-registration-4col-label mb-0">Possession Due Date</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="date" id="possessionDueDate" class="form-control form-control-sm" />
+                        </div>
+                    </div>
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label for="possessionPaymentDescription" class="form-label pms-registration-4col-label mb-0">Possession Account Head</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="text" id="possessionPaymentDescription" class="form-control form-control-sm" placeholder="e.g., Possession Charges" />
+                        </div>
+                        <div class="col-12 col-lg-2"></div>
+                        <div class="col-12 col-lg-4">
+                            <small class="text-muted">Possession has no surcharge.</small>
+                        </div>
+                    </div>
+
+                    <!-- Bulk installments -->
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label for="totalInstallments" class="form-label pms-registration-4col-label mb-0">Total Installments *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="number" id="totalInstallments" class="form-control form-control-sm" min="1" value="1" required />
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label for="installmentAmount" class="form-label pms-registration-4col-label mb-0">Installment Amount (PKR) *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="number" id="installmentAmount" step="1" min="1" max="1000000000" class="form-control form-control-sm" placeholder="Enter amount per installment" required />
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label for="scheduleFrequency" class="form-label pms-registration-4col-label mb-0">Frequency *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <select id="scheduleFrequency" class="form-select form-select-sm" required>
+                                <option value="">Select Frequency</option>
+                                <option value="Monthly">Monthly</option>
+                                <option value="Quarterly">Quarterly</option>
+                                <option value="Half Yearly">Half Yearly</option>
+                                <option value="Yearly">Yearly</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label for="firstInstallmentDueDate" class="form-label pms-registration-4col-label mb-0">1st Installment Due Date *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="date" id="firstInstallmentDueDate" class="form-control form-control-sm" required />
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <label for="paymentDescription" class="form-label pms-registration-4col-label mb-0">Payment Description *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="text" id="paymentDescription" class="form-control form-control-sm" placeholder="e.g., Monthly Installment" required />
+                        </div>
+                        <div class="col-12 col-lg-2">
+                            <label for="surchargeRate" class="form-label pms-registration-4col-label mb-0">Surcharge Rate *</label>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <input type="number" id="surchargeRate" step="0.0001" class="form-control form-control-sm" value="0.05" required />
+                        </div>
+                    </div>
+
+                    <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                        <div class="col-12 col-lg-2">
+                            <span class="form-label pms-registration-4col-label mb-0">Surcharge</span>
+                        </div>
+                        <div class="col-12 col-lg-4">
+                            <div class="form-check mb-0 py-1">
+                                <input class="form-check-input" type="checkbox" id="surchargeApplied" checked>
+                                <label class="form-check-label small" for="surchargeApplied">Apply Surcharge (Default: Yes)</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-2"></div>
+                        <div class="col-12 col-lg-4"></div>
+                    </div>
+                </div>
+
+                <!-- Preview Section -->
+                <div class="alert alert-info py-2 mb-0 mt-2">
+                    <h6 class="alert-heading mb-2 small fw-semibold"><i class="fas fa-info-circle me-1"></i>Installment Preview</h6>
+                    <div id="installmentPreview" class="pms-registration-4col-form pms-cpp-form">
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2"><span class="form-label pms-registration-4col-label mb-0">Total Installments</span></div>
+                            <div class="col-12 col-lg-4"><span id="previewTotalInstallments" class="small fw-semibold">0</span></div>
+                            <div class="col-12 col-lg-2"><span class="form-label pms-registration-4col-label mb-0">Token</span></div>
+                            <div class="col-12 col-lg-4"><span id="previewToken" class="small fw-semibold">Not included</span></div>
+                        </div>
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2"><span class="form-label pms-registration-4col-label mb-0">Possession</span></div>
+                            <div class="col-12 col-lg-4"><span id="previewPossession" class="small fw-semibold">Not included</span></div>
+                            <div class="col-12 col-lg-2"><span class="form-label pms-registration-4col-label mb-0">Amount / Installment</span></div>
+                            <div class="col-12 col-lg-4"><span class="small fw-semibold">PKR <span id="previewAmount">0</span></span></div>
+                        </div>
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2"><span class="form-label pms-registration-4col-label mb-0">Frequency</span></div>
+                            <div class="col-12 col-lg-4"><span id="previewFrequency" class="small fw-semibold">-</span></div>
+                            <div class="col-12 col-lg-2"><span class="form-label pms-registration-4col-label mb-0">Installments Total</span></div>
+                            <div class="col-12 col-lg-4"><span class="small fw-semibold">PKR <span id="previewTotalInstallmentsAmount">0</span></span></div>
+                        </div>
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2"><span class="form-label pms-registration-4col-label mb-0">Token Amount</span></div>
+                            <div class="col-12 col-lg-4"><span class="small fw-semibold">PKR <span id="previewTokenAmount">0</span></span></div>
+                            <div class="col-12 col-lg-2"><span class="form-label pms-registration-4col-label mb-0">Possession Amount</span></div>
+                            <div class="col-12 col-lg-4"><span class="small fw-semibold">PKR <span id="previewPossessionAmount">0</span></span></div>
+                        </div>
+                        <div class="row g-1 g-lg-2 pms-registration-4col-row align-items-center">
+                            <div class="col-12 col-lg-2"><span class="form-label pms-registration-4col-label mb-0">Grand Total</span></div>
+                            <div class="col-12 col-lg-4"><span class="small fw-semibold">PKR <span id="previewGrandTotal">0</span></span></div>
+                            <div class="col-12 col-lg-2"><span class="form-label pms-registration-4col-label mb-0">Plan Total</span></div>
+                            <div class="col-12 col-lg-4"><span class="small fw-semibold">PKR <span id="previewPlanTotal">0</span></span></div>
+                        </div>
+                    </div>
+                    <div id="amountValidationMessage" class="mt-2" style="display: none;">
+                        <div class="alert alert-danger mb-0 py-2">
+                            <i class="fas fa-exclamation-triangle me-2"></i><span id="validationMessageText"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="d-flex justify-content-end gap-2 mb-3">
+            <button type="submit" id="btnCreatePaymentPlan" class="btn btn-sm fw-semibold pms-mp-btn-save">
+                <i class="fas fa-check me-1"></i>Create Payment Plan &amp; Schedules
+            </button>
+            <a asp-action="PaymentPlans" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-times me-1"></i>Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+    .pms-create-payment-plan > .d-flex > h5 {
+        color: #000 !important;
+        font-weight: 700;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-row {
+        margin-bottom: 0.35rem !important;
+        padding-bottom: 0.35rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0 !important;
+        padding-bottom: 0;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-label,
+    .pms-create-payment-plan .pms-cpp-form .pms-registration-4col-label,
+    .pms-create-payment-plan .pms-cpp-form .form-check-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-lg-2 .form-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-lg-2 .pms-registration-4col-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-md-2 .form-label,
+    .pms-create-payment-plan .pms-mp-header .pms-cpp-form .pms-registration-4col-row > .col-md-2 .pms-registration-4col-label,
+    .pms-create-payment-plan .pms-mp-header .form-label,
+    .pms-create-payment-plan .pms-mp-header label.form-label {
+        color: #000 !important;
+        font-weight: 600 !important;
+        font-size: 0.75rem;
+        margin-bottom: 0;
+        padding-top: 0.2rem;
+        line-height: 1.2;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-control,
+    .pms-create-payment-plan .pms-cpp-form .form-select,
+    .pms-create-payment-plan .pms-cpp-form .form-control-sm,
+    .pms-create-payment-plan .pms-cpp-form .form-select-sm {
+        color: #1d4ed8 !important;
+        background-color: #e8f0fe !important;
+        border: 1px solid #93c5fd !important;
+        border-radius: 0 !important;
+        font-size: 0.8125rem;
+        min-height: 28px;
+        height: 28px;
+        padding-top: 0.15rem;
+        padding-bottom: 0.15rem;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-control:focus,
+    .pms-create-payment-plan .pms-cpp-form .form-select:focus,
+    .pms-create-payment-plan .pms-cpp-form .form-control-sm:focus,
+    .pms-create-payment-plan .pms-cpp-form .form-select-sm:focus {
+        color: #1e3a8a !important;
+        background-color: #dbeafe !important;
+        border-color: #3b82f6 !important;
+        box-shadow: none !important;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-control:disabled,
+    .pms-create-payment-plan .pms-cpp-form .form-control[readonly],
+    .pms-create-payment-plan .pms-cpp-form .form-select:disabled {
+        color: #1d4ed8 !important;
+        background-color: #e8f0fe !important;
+        opacity: 1;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form textarea.form-control,
+    .pms-create-payment-plan .pms-cpp-form textarea.form-control-sm {
+        height: auto;
+        min-height: 48px;
+        color: #1d4ed8 !important;
+        background-color: #e8f0fe !important;
+        border-radius: 0 !important;
+    }
+
+    .pms-create-payment-plan .pms-cpp-form .form-check-label {
+        font-size: 0.8125rem;
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            const maxAmountPkr = 1000000000;
+            const numberFormat = { minimumFractionDigits: 0, maximumFractionDigits: 0 };
+            let installmentAmountManual = false;
+
+            function formatAmount(value) {
+                if (!isFinite(value)) {
+                    return '0';
+                }
+                return value.toLocaleString('en-US', numberFormat);
+            }
+
+            function parseAmount(selector) {
+                var value = parseFloat($(selector).val());
+                return isNaN(value) ? 0 : value;
+            }
+
+            function writeAmount(selector, value) {
+                if (!isFinite(value)) {
+                    $(selector).val('');
+                } else {
+                    var whole = Math.round(value);
+                    if (whole < 0) {
+                        whole = 0;
+                    }
+                    if (whole > maxAmountPkr) {
+                        whole = maxAmountPkr;
+                    }
+                    $(selector).val(whole);
+                }
+            }
+
+            function sanitizeWholeAmountField(selector, allowZero) {
+                var raw = String($(selector).val() || '').trim();
+                if (raw === '') {
+                    return;
+                }
+
+                var amount = parseFloat(raw);
+                if (!isFinite(amount)) {
+                    $(selector).val('');
+                    return;
+                }
+
+                amount = Math.round(amount);
+                if (amount < 0 || (!allowZero && amount === 0)) {
+                    amount = allowZero ? 0 : 1;
+                }
+                if (amount > maxAmountPkr) {
+                    amount = maxAmountPkr;
+                }
+
+                $(selector).val(amount);
+            }
+
+            function hasDecimal(value) {
+                return Math.floor(value) !== value;
+            }
+
+            function getExchangeRate() {
+                var rate = parseFloat($('#ExchangeRate').val());
+                return rate && rate > 0 ? rate : 1;
+            }
+
+            function fillDropdown(selector, values, placeholder) {
+                const $dd = $(selector);
+                $dd.empty();
+                $dd.append($('<option/>').val('').text(placeholder));
+                (values || []).forEach(function(item) {
+                    $dd.append($('<option/>').val(item).text(item));
+                });
+            }
+
+            function fillDatalist(selector, values) {
+                const $dl = $(selector);
+                $dl.empty();
+                (values || []).forEach(function(item) {
+                    $dl.append($('<option/>').attr('value', item));
+                });
+            }
+
+            function normalizeNumericText(raw) {
+                var text = String(raw || '').replace(/,/g, '').trim();
+                if (text === '') return '';
+                text = text.replace(/[^0-9.]/g, '');
+                var parts = text.split('.');
+                if (parts.length > 2) {
+                    text = parts[0] + '.' + parts.slice(1).join('');
+                }
+                return text;
+            }
+
+            function parseDecimalText(selector) {
+                var normalized = normalizeNumericText($(selector).val());
+                if (normalized === '') return 0;
+                var val = parseFloat(normalized);
+                return isNaN(val) ? 0 : val;
+            }
+
+            function sanitizeNumericTextField(selector) {
+                $(selector).val(normalizeNumericText($(selector).val()));
+            }
+
+            function autoFillTotalAmountFromSizeAndUnitPrice() {
+                var size = parseDecimalText('#RegisteredSize');
+                var pricePerUnit = parseDecimalText('#PricePerUnit');
+                if (size > 0 && pricePerUnit > 0) {
+                    var computed = Math.round(size * pricePerUnit);
+                    writeAmount('#TotalAmount', computed);
+                    installmentAmountManual = false;
+                    updatePreview();
+                }
+            }
+
+            async function loadProjectMeta(projectId) {
+                $('#RegisteredSize').val('');
+                fillDatalist('#RegisteredSizeOptions', []);
+                fillDropdown('#SubProject', [], 'Select Subproject');
+
+                if (!projectId) {
+                    return;
+                }
+
+                try {
+                    const [sizes, subprojects] = await Promise.all([
+                        $.getJSON('@Url.Action("GetProjectSizes", "Payment")', { projectId: projectId }),
+                        $.getJSON('@Url.Action("GetProjectSubProjects", "Payment")', { projectId: projectId })
+                    ]);
+
+                    fillDatalist('#RegisteredSizeOptions', sizes);
+                    fillDropdown('#SubProject', subprojects, 'Select Subproject');
+                } catch (e) {
+                    console.error('Failed loading project size/subproject values.', e);
+                }
+            }
+
+            function updatePossessionFieldRequirements() {
+                var amount = parseAmount('#possessionAmount');
+                var needsDetails = amount > 0;
+                $('#possessionPaymentDescription').prop('required', needsDetails);
+                $('#possessionDueDate').prop('required', needsDetails);
+            }
+
+            function toggleTokenSection() {
+                var includeToken = $('#includeToken').is(':checked');
+                $('#tokenAmountSection').toggle(includeToken);
+                $('#tokenAmount').prop('required', includeToken);
+                $('#tokenPaymentDescription').prop('required', includeToken);
+                $('#tokenDueDate').prop('required', includeToken);
+            }
+
+            function recalculateInstallmentAmount(force) {
+                if (installmentAmountManual && !force) {
+                    return;
+                }
+
+                var planTotalPkr = parseAmount('#TotalAmount');
+                var includeToken = $('#includeToken').is(':checked');
+                var tokenAmountPkr = includeToken ? parseAmount('#tokenAmount') : 0;
+                var possessionAmountPkr = parseAmount('#possessionAmount');
+                var totalInstallments = parseInt($('#totalInstallments').val(), 10) || 0;
+                var remainder = planTotalPkr - tokenAmountPkr - possessionAmountPkr;
+                var installmentPkr = (totalInstallments > 0 && remainder >= 0) ? Math.round(remainder / totalInstallments) : 0;
+
+                writeAmount('#installmentAmount', installmentPkr);
+            }
+
+            function validateTotalAmount(planTotalPkr, grandTotalPkr, includeToken, tokenAmountPkr, totalInstallmentsAmountPkr, possessionAmountPkr) {
+                var validationDiv = $('#amountValidationMessage');
+                var messageText = $('#validationMessageText');
+
+                if (planTotalPkr > 0 && grandTotalPkr > planTotalPkr) {
+                    var excessPkr = grandTotalPkr - planTotalPkr;
+                    messageText.html(
+                        'Total Installments Amount (PKR ' + formatAmount(totalInstallmentsAmountPkr) + ') + ' +
+                        'Token Amount (PKR ' + (includeToken ? formatAmount(tokenAmountPkr) : '0') + ') + ' +
+                        'Possession Amount (PKR ' + formatAmount(possessionAmountPkr) + ') = PKR ' +
+                        formatAmount(grandTotalPkr) +
+                        ' exceeds Parent Total Amount (PKR ' + formatAmount(planTotalPkr) + '). Excess: PKR ' +
+                        formatAmount(excessPkr) + '.'
+                    );
+                    validationDiv.show();
+                    return false;
+                }
+
+                validationDiv.hide();
+                return true;
+            }
+
+            function updatePreview() {
+                recalculateInstallmentAmount(false);
+
+                var totalInstallments = parseInt($('#totalInstallments').val(), 10) || 0;
+                var includeToken = $('#includeToken').is(':checked');
+                var tokenAmountPkr = includeToken ? parseAmount('#tokenAmount') : 0;
+                var possessionAmountPkr = parseAmount('#possessionAmount');
+                var installmentAmountPkr = parseAmount('#installmentAmount');
+                var frequency = $('#scheduleFrequency').val();
+                var planTotalPkr = parseAmount('#TotalAmount');
+
+                var totalInstallmentsAmountPkr = totalInstallments * installmentAmountPkr;
+                var grandTotalPkr = totalInstallmentsAmountPkr + (includeToken ? tokenAmountPkr : 0) + possessionAmountPkr;
+
+                var includePossession = possessionAmountPkr > 0;
+                var totalCount = totalInstallments + (includeToken ? 1 : 0) + (includePossession ? 1 : 0);
+
+                $('#previewTotalInstallments').text(totalCount);
+                $('#previewToken').text(includeToken
+                    ? (tokenAmountPkr > 0 ? 'Included (Installment 0) - No surcharge' : 'Included (Installment 0) - Amount not set')
+                    : 'Not included');
+                $('#previewPossession').text(includePossession ? 'Included (Last Payment)' : 'Not included');
+                $('#previewAmount').text(formatAmount(installmentAmountPkr));
+                $('#previewFrequency').text(frequency || '-');
+                $('#previewTotalInstallmentsAmount').text(formatAmount(totalInstallmentsAmountPkr));
+                $('#previewTokenAmount').text(formatAmount(tokenAmountPkr));
+                $('#previewPossessionAmount').text(formatAmount(possessionAmountPkr));
+                $('#previewGrandTotal').text(formatAmount(grandTotalPkr));
+                $('#previewPlanTotal').text(formatAmount(planTotalPkr));
+
+                validateTotalAmount(planTotalPkr, grandTotalPkr, includeToken, tokenAmountPkr, totalInstallmentsAmountPkr, possessionAmountPkr);
+
+                var monthsPerInstallment = { Monthly: 1, Quarterly: 3, 'Half Yearly': 6, Yearly: 12 }[frequency] || 1;
+                $('#DurationMonths').val(frequency && totalInstallments > 0 ? totalInstallments * monthsPerInstallment : '');
+            }
+
+            $('#includeToken').on('change', function() {
+                toggleTokenSection();
+                updatePreview();
+            });
+
+            $('#scheduleFrequency').on('change', function() {
+                $('#Frequency').val($(this).val());
+                updatePreview();
+            });
+            $('#ProjectID').on('change', function() {
+                const projectId = $(this).val();
+                loadProjectMeta(projectId);
+            });
+
+            $('#RegisteredSize').on('input blur change', function() {
+                sanitizeNumericTextField('#RegisteredSize');
+                autoFillTotalAmountFromSizeAndUnitPrice();
+            });
+
+            $('#PricePerUnit').on('input blur change', function() {
+                sanitizeNumericTextField('#PricePerUnit');
+                autoFillTotalAmountFromSizeAndUnitPrice();
+            });
+
+            $('#TotalAmount').on('input blur change', function() {
+                sanitizeWholeAmountField('#TotalAmount', false);
+                updatePossessionFieldRequirements();
+                updatePreview();
+            });
+
+            $('#tokenAmount').on('input blur change', function() {
+                sanitizeWholeAmountField('#tokenAmount', false);
+                updatePossessionFieldRequirements();
+                updatePreview();
+            });
+
+            $('#possessionAmount').on('input blur change', function() {
+                sanitizeWholeAmountField('#possessionAmount', true);
+                updatePossessionFieldRequirements();
+                updatePreview();
+            });
+
+            $('#installmentAmount').on('input blur change', function() {
+                sanitizeWholeAmountField('#installmentAmount', false);
+                installmentAmountManual = $(this).val() !== '';
+                updatePreview();
+            });
+
+            $('#totalInstallments, #paymentDescription, #DurationMonths, #tokenPaymentDescription, #possessionPaymentDescription').on('change input', updatePreview);
+
+            toggleTokenSection();
+            updatePossessionFieldRequirements();
+            recalculateInstallmentAmount(true);
+            updatePreview();
+            loadProjectMeta($('#ProjectID').val());
+
+            function showCppError(message) {
+                var text = message || 'Something went wrong while saving. Please review the form and try again.';
+                $('#cppFormAlertText').text(text);
+                $('#cppFormAlert').removeClass('d-none');
+                try {
+                    var el = document.getElementById('cppFormAlert');
+                    if (el && el.scrollIntoView) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                } catch (e) { /* ignore */ }
+                alert(text);
+            }
+
+            function clearCppError() {
+                $('#cppFormAlert').addClass('d-none');
+                $('#cppFormAlertText').text('');
+            }
+
+            function fieldLabel(el) {
+                if (!el) return 'A required field';
+                var id = el.id;
+                if (id) {
+                    var $label = $('label[for="' + id + '"]');
+                    if ($label.length) {
+                        return $label.first().text().replace(/\*/g, '').trim() || id;
+                    }
+                }
+                return el.getAttribute('placeholder') || el.name || el.id || 'A required field';
+            }
+
+            function findHtml5ValidationMessage(form) {
+                if (!form || form.checkValidity()) {
+                    return null;
+                }
+                var invalid = form.querySelector(':invalid');
+                if (!invalid) {
+                    return 'Please complete all required fields before saving.';
+                }
+                invalid.focus();
+                $(invalid).addClass('is-invalid');
+                var label = fieldLabel(invalid);
+                if (invalid.validity.valueMissing) {
+                    return 'Please fill in "' + label + '".';
+                }
+                if (invalid.validity.rangeUnderflow) {
+                    return '"' + label + '" must be at least ' + invalid.min + '.';
+                }
+                if (invalid.validity.rangeOverflow) {
+                    return '"' + label + '" cannot exceed ' + invalid.max + '.';
+                }
+                if (invalid.validity.stepMismatch || invalid.validity.badInput) {
+                    return '"' + label + '" has an invalid value. Use a whole number where required.';
+                }
+                return invalid.validationMessage
+                    ? ('"' + label + '": ' + invalid.validationMessage)
+                    : ('Please correct "' + label + '" before saving.');
+            }
+
+            function setSaveButtonBusy(isBusy) {
+                var $btn = $('#btnCreatePaymentPlan');
+                $btn.prop('disabled', !!isBusy);
+                if (isBusy) {
+                    $btn.data('original-html', $btn.html());
+                    $btn.html('<i class="fas fa-spinner fa-spin me-1"></i>Saving...');
+                } else if ($btn.data('original-html')) {
+                    $btn.html($btn.data('original-html'));
+                }
+            }
+
+            function extractAjaxErrorMessage(xhr) {
+                if (!xhr) {
+                    return 'Network error while saving. Please try again.';
+                }
+                if (xhr.responseJSON) {
+                    if (xhr.responseJSON.message) return xhr.responseJSON.message;
+                    if (xhr.responseJSON.title) return xhr.responseJSON.title;
+                }
+                if (xhr.status === 0) {
+                    return 'Could not reach the server. Check your connection and try again.';
+                }
+                if (xhr.status === 400) {
+                    return 'Request was rejected (400). The anti-forgery token may be missing or the submitted data is invalid.';
+                }
+                if (xhr.status === 401 || xhr.status === 403) {
+                    return 'You are not authorized to create a payment plan. Please sign in again or contact an administrator.';
+                }
+                if (xhr.status === 404) {
+                    return 'Save endpoint was not found (404). Refresh the page and try again.';
+                }
+                if (xhr.status >= 500) {
+                    return 'Server error (' + xhr.status + ') while saving. Please try again or contact support.';
+                }
+                var raw = (xhr.responseText || '').trim();
+                if (raw) {
+                    if (raw.indexOf('<html') >= 0 || raw.indexOf('<!DOCTYPE') >= 0) {
+                        return 'Server returned an unexpected page (HTTP ' + xhr.status + '). You may need to sign in again.';
+                    }
+                    if (raw.length < 300) {
+                        return raw;
+                    }
+                }
+                return 'Error creating payment plan (HTTP ' + xhr.status + '). Please try again.';
+            }
+
+            $('#paymentPlanForm').on('submit', function(e) {
+                e.preventDefault();
+                clearCppError();
+                $('#paymentPlanForm').find('.is-invalid').removeClass('is-invalid');
+
+                try {
+                    var html5Error = findHtml5ValidationMessage(this);
+                    if (html5Error) {
+                        $(this).addClass('was-validated');
+                        showCppError(html5Error);
+                        return false;
+                    }
+
+                    if (!$('#ProjectID').val()) {
+                        showCppError('Please select a Project.');
+                        $('#ProjectID').focus().addClass('is-invalid');
+                        return false;
+                    }
+                    if (!$('#SubProject').val()) {
+                        showCppError('Please select a Subproject.');
+                        $('#SubProject').focus().addClass('is-invalid');
+                        return false;
+                    }
+
+                    var includeToken = $('#includeToken').is(':checked');
+                    var tokenAmountPkr = includeToken ? parseAmount('#tokenAmount') : null;
+                    var possessionAmountPkr = parseAmount('#possessionAmount');
+                    var totalInstallments = parseInt($('#totalInstallments').val(), 10) || 0;
+                    var installmentAmountPkr = parseAmount('#installmentAmount');
+                    var planTotalPkr = parseAmount('#TotalAmount');
+                    var exchangeRate = getExchangeRate();
+                    var durationMonths = parseInt($('#DurationMonths').val(), 10);
+
+                    if (!planTotalPkr || planTotalPkr <= 0) {
+                        showCppError('Total Amount (PKR) must be greater than zero.');
+                        $('#TotalAmount').focus().addClass('is-invalid');
+                        return false;
+                    }
+                    if (!isFinite(durationMonths) || durationMonths <= 0) {
+                        showCppError('Plan Duration (Months) is missing. Select Frequency and Total Installments so duration can be calculated.');
+                        $('#scheduleFrequency').focus().addClass('is-invalid');
+                        return false;
+                    }
+                    if (!$('#scheduleFrequency').val()) {
+                        showCppError('Please select Frequency.');
+                        $('#scheduleFrequency').focus().addClass('is-invalid');
+                        return false;
+                    }
+                    if (!$('#firstInstallmentDueDate').val()) {
+                        showCppError('Please enter First Installment Due Date.');
+                        $('#firstInstallmentDueDate').focus().addClass('is-invalid');
+                        return false;
+                    }
+                    if (!totalInstallments || totalInstallments <= 0) {
+                        showCppError('Total Installments must be greater than zero.');
+                        $('#totalInstallments').focus().addClass('is-invalid');
+                        return false;
+                    }
+                    if (!installmentAmountPkr || installmentAmountPkr <= 0) {
+                        showCppError('Installment Amount (PKR) must be greater than zero. Check Total Amount, Token, and Possession so the remainder can be split across installments.');
+                        $('#installmentAmount').focus().addClass('is-invalid');
+                        return false;
+                    }
+
+                    if (planTotalPkr > maxAmountPkr || (tokenAmountPkr != null && tokenAmountPkr > maxAmountPkr) || possessionAmountPkr > maxAmountPkr || installmentAmountPkr > maxAmountPkr) {
+                        showCppError('Amount cannot exceed PKR 1,000,000,000 (100 crores).');
+                        return false;
+                    }
+
+                    if (hasDecimal(planTotalPkr) || (includeToken && hasDecimal(tokenAmountPkr)) || hasDecimal(possessionAmountPkr) || hasDecimal(installmentAmountPkr)) {
+                        showCppError('Only whole amounts are allowed. Decimal values are not permitted.');
+                        return false;
+                    }
+
+                    if (includeToken && (!tokenAmountPkr || tokenAmountPkr <= 0)) {
+                        showCppError('Please enter Token Amount if Token is included.');
+                        $('#tokenAmount').focus().addClass('is-invalid');
+                        return false;
+                    }
+                    if (includeToken && !$('#tokenPaymentDescription').val().trim()) {
+                        showCppError('Please enter Token Payment Description if Token is included.');
+                        $('#tokenPaymentDescription').focus().addClass('is-invalid');
+                        return false;
+                    }
+                    if (possessionAmountPkr > 0 && !$('#possessionPaymentDescription').val().trim()) {
+                        showCppError('Please enter Possession Account Head when Possession Amount is greater than zero.');
+                        $('#possessionPaymentDescription').focus().addClass('is-invalid');
+                        return false;
+                    }
+                    if (includeToken && !$('#tokenDueDate').val()) {
+                        showCppError('Please enter Token Due Date if Token is included.');
+                        $('#tokenDueDate').focus().addClass('is-invalid');
+                        return false;
+                    }
+                    if (possessionAmountPkr > 0 && !$('#possessionDueDate').val()) {
+                        showCppError('Please enter Possession Due Date when Possession Amount is greater than zero.');
+                        $('#possessionDueDate').focus().addClass('is-invalid');
+                        return false;
+                    }
+
+                    var totalInstallmentsAmount = totalInstallments * installmentAmountPkr;
+                    var grandTotal = totalInstallmentsAmount + (includeToken ? tokenAmountPkr : 0) + possessionAmountPkr;
+
+                    if (grandTotal > planTotalPkr) {
+                        var excess = grandTotal - planTotalPkr;
+                        showCppError(
+                            'Validation Error: Total Installments Amount (PKR ' + formatAmount(totalInstallmentsAmount) + ') + ' +
+                            'Token Amount (PKR ' + (includeToken ? formatAmount(tokenAmountPkr) : '0') + ') + ' +
+                            'Possession Amount (PKR ' + formatAmount(possessionAmountPkr) + ') = PKR ' +
+                            formatAmount(grandTotal) + ' exceeds Parent Total Amount (PKR ' + formatAmount(planTotalPkr) + '). Excess: PKR ' + formatAmount(excess) + '.'
+                        );
+                        return false;
+                    }
+
+                    var surchargeInput = parseFloat($('#surchargeRate').val());
+                    if (!isFinite(surchargeInput) || surchargeInput < 0) {
+                        surchargeInput = 0.05;
+                    }
+
+                    var planData = {
+                        PlanName: $('#PlanName').val(),
+                        ProjectID: $('#ProjectID').val() || null,
+                        RegisteredSize: null,
+                        SubProject: $('#SubProject').val() || null,
+                        TotalAmount: planTotalPkr,
+                        ExchangeRate: exchangeRate,
+                        Currency: 'PKR',
+                        DurationMonths: durationMonths,
+                        Frequency: $('#scheduleFrequency').val(),
+                        Description: $('#Description').val()
+                    };
+
+                    var scheduleData = {
+                        IncludeToken: includeToken,
+                        TokenAmount: tokenAmountPkr,
+                        TokenPaymentDescription: includeToken ? $('#tokenPaymentDescription').val() : null,
+                        TokenDueDate: includeToken ? ($('#tokenDueDate').val() || null) : null,
+                        PossessionAmount: possessionAmountPkr,
+                        PossessionPaymentDescription: possessionAmountPkr > 0 ? $('#possessionPaymentDescription').val() : null,
+                        PossessionDueDate: possessionAmountPkr > 0 ? ($('#possessionDueDate').val() || null) : null,
+                        TotalInstallments: totalInstallments,
+                        InstallmentAmount: installmentAmountPkr,
+                        Frequency: $('#scheduleFrequency').val(),
+                        FirstInstallmentDueDate: $('#firstInstallmentDueDate').val(),
+                        PaymentDescription: $('#paymentDescription').val(),
+                        SurchargeApplied: $('#surchargeApplied').is(':checked'),
+                        SurchargeRate: surchargeInput
+                    };
+
+                    var formData = {
+                        PaymentPlan: planData,
+                        PaymentSchedules: scheduleData
+                    };
+
+                    var token = $('input[name="__RequestVerificationToken"]').val();
+                    if (!token) {
+                        showCppError('Security token is missing. Refresh the page and try again.');
+                        return false;
+                    }
+
+                    setSaveButtonBusy(true);
+
+                    $.ajax({
+                        url: '@Url.Action("CreatePaymentPlan", "Payment")',
+                        type: 'POST',
+                        contentType: 'application/json; charset=utf-8',
+                        dataType: 'json',
+                        data: JSON.stringify(formData),
+                        headers: {
+                            'RequestVerificationToken': token,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        success: function(response) {
+                            if (response && response.success) {
+                                var okMsg = (response.message)
+                                    ? response.message
+                                    : ('Payment plan saved successfully' + (response.planId ? ' (Plan ID: ' + response.planId + ').' : '.'));
+                                try {
+                                    sessionStorage.setItem('pmsPaymentPlanSaveSuccess', okMsg);
+                                } catch (e) { /* ignore */ }
+                                alert(okMsg);
+                                window.location.href = '@Url.Action("PaymentSchedule", "Payment")?planId=' + encodeURIComponent(response.planId) + '&created=1';
+                                return;
+                            }
+                            setSaveButtonBusy(false);
+                            showCppError((response && response.message) ? response.message : 'Failed to create payment plan.');
+                        },
+                        error: function(xhr, status, error) {
+                            setSaveButtonBusy(false);
+                            var errorMessage = extractAjaxErrorMessage(xhr);
+                            if (status === 'parsererror') {
+                                errorMessage = 'Server returned a non-JSON response. You may need to sign in again, or the save request was rejected.';
+                            }
+                            showCppError(errorMessage);
+                            console.error('CreatePaymentPlan failed', status, error, xhr && xhr.responseText);
+                        }
+                    });
+                } catch (ex) {
+                    setSaveButtonBusy(false);
+                    showCppError('Unexpected error before save: ' + (ex && ex.message ? ex.message : ex));
+                    console.error(ex);
+                }
+
+                return false;
+            });
+        });
+    </script>
+}
